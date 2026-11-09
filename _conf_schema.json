@@ -1602,23 +1602,14 @@
         ],
         "hint": "透明背景 PNG，推荐 1024×1536 或相同比例。可一次上传多张，按轮替间隔循环使用；未上传时使用内置日常立绘。"
       },
-      "sleepwear_whale": {
-        "description": "睡衣 A 立绘 PNG",
+      "sleepwear": {
+        "description": "睡衣立绘 PNG",
         "type": "file",
         "default": [],
         "file_types": [
           "png"
         ],
-        "hint": "透明背景 PNG，推荐 1024×1536。可上传多张轮替；未上传时使用内置鲸鱼连帽睡衣。"
-      },
-      "sleepwear_set": {
-        "description": "睡衣 B 立绘 PNG",
-        "type": "file",
-        "default": [],
-        "file_types": [
-          "png"
-        ],
-        "hint": "透明背景 PNG，推荐 1024×1536。可上传多张轮替；未上传时使用内置鲸鱼印花睡衣。"
+        "hint": "透明背景 PNG，推荐 1024×1536。可一次上传多张，按立绘轮替间隔循环使用；未上传时使用内置睡衣立绘。"
       },
       "avatar": {
         "description": "头像 PNG",

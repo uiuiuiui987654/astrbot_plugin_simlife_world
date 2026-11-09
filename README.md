@@ -8,12 +8,12 @@
 
 她有自己的家、日程、衣柜和车库。你可以走进她的房间，陪她吃饭、看电视、健身、画画、开车兜风，也可以直接和她聊天。
 
-[![version](https://img.shields.io/badge/version-v2.0.1-8e7bb3?style=flat-square)](metadata.yaml)
+[![version](https://img.shields.io/badge/version-v2.0.2-8e7bb3?style=flat-square)](metadata.yaml)
 [![AstrBot](https://img.shields.io/badge/AstrBot-%E2%89%A5%204.29.3-6f9f86?style=flat-square)](https://github.com/AstrBotDevs/AstrBot)
 [![license](https://img.shields.io/badge/license-GPL--3.0-c98a5a?style=flat-square)](LICENSE)
 [![3D](https://img.shields.io/badge/WebGL-2D%20%2F%203D-5f8fb0?style=flat-square)](#-2d--3d-房间)
 
-[功能](#-功能一览) · [预览](#-预览) · [安装](#-快速开始) · [相机](#-相机与绘图模型) · [立绘](#-角色立绘替换) · [指令](#-斜杠指令) · [常见问题](#-常见问题) · [更新日志](#-更新日志)
+[功能](#-功能一览) · [预览](#-预览) · [安装](#-快速开始) · [相机](#-相机与绘图模型) · [立绘](#-角色立绘替换) · [指令](#-斜杠指令) · [常见问题](#-常见问题)
 
 </div>
 
@@ -168,9 +168,8 @@ AI 在聊天里想发自拍时会调用 `take_selfie`，生成后直接发到当
 
 | 设置项 | 用途 |
 | --- | --- |
-| 日常 / 外出立绘 PNG | 日常、外出、2D 和 3D 房间 |
-| 睡衣 A 立绘 PNG | 睡衣 A |
-| 睡衣 B 立绘 PNG | 睡衣 B |
+| 日常 / 外出立绘 PNG | 日常、外出、2D 和 3D 房间；可多张轮替 |
+| 睡衣立绘 PNG | 睡衣/睡前状态；可多张轮替 |
 | 头像 PNG | 顶部头像；未上传时跟随日常立绘 |
 
 > [!TIP]

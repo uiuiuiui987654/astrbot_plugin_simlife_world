@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  window.__VIRTUAL_LIFE_UI_VERSION = '20261107-char32';
+  window.__VIRTUAL_LIFE_UI_VERSION = '20261109-sleepwear1';
   console.log('[VirtualLife UI] ' + window.__VIRTUAL_LIFE_UI_VERSION);
 
   var $ = function (id) { return document.getElementById(id); };
@@ -4209,7 +4209,7 @@
       : (outfit.summary || outfit.style || '还没有穿搭记录');
     var appearance = data.appearance || {};
     if (appearance.is_sleepwear) {
-      $('outfit-text').textContent = (appearance.name || '睡衣') + ' · 两套睡衣每晚交替';
+      $('outfit-text').textContent = appearance.name || '睡衣';
     } else if (appearance.key === 'daily_outfit' || String(appearance.key || '').indexOf('daily_outfit') === 0) {
       $('outfit-text').textContent = text || '按今日穿搭';
     } else {

@@ -249,7 +249,7 @@ class ScheduleImageRenderer:
             if current
             else DAILY
         )
-        allowed = {entry["src"] for entry in (DAILY, *SLEEPWEAR)}
+        allowed = {entry["src"] for entry in (DAILY, SLEEPWEAR)}
         if look["src"] not in allowed:
             return None
         asset = (

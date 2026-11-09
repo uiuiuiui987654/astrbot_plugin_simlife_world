@@ -17,7 +17,8 @@ from typing import Any, Iterable
 
 from astrbot.api import logger
 
-SLOT_KEYS = ("daily", "sleepwear_whale", "sleepwear_set", "avatar")
+SLOT_KEYS = ("daily", "sleepwear", "avatar")
+LEGACY_SLEEPWEAR_SLOTS = ("sleepwear_whale", "sleepwear_set")
 CONFIG_KEY = "character_settings"
 MAX_BYTES = 12 * 1024 * 1024
 MIN_SIDE = 64
@@ -138,7 +139,13 @@ def sync_character_assets(
     for slot in SLOT_KEYS:
         urls: list[str] = []
         filenames: set[str] = set()
-        for raw in _iter_values(values.get(slot)):
+        raw_values = list(_iter_values(values.get(slot)))
+        if slot == "sleepwear":
+            # Older configs split sleepwear into two slots. Merge both upload
+            # lists into the single multi-photo sleepwear slot.
+            for legacy_slot in LEGACY_SLEEPWEAR_SLOTS:
+                raw_values.extend(_iter_values(values.get(legacy_slot)))
+        for raw in raw_values:
             candidate = _resolve_source(Path(data_dir), str(raw))
             if candidate is None:
                 continue
@@ -156,6 +163,9 @@ def sync_character_assets(
             filenames.add(filename)
             urls.append(url)
         _cleanup_slot(target_dir, slot, filenames)
+        if slot == "sleepwear":
+            for legacy_slot in LEGACY_SLEEPWEAR_SLOTS:
+                _cleanup_slot(target_dir, legacy_slot, set())
         if urls:
             mapping[slot] = urls
     if "daily" in mapping and "avatar" not in mapping:
@@ -167,7 +177,8 @@ def clear_synced_assets(view_assets_dir: Path) -> None:
     target_dir = Path(view_assets_dir) / "character"
     if not target_dir.is_dir():
         return
-    for slot in SLOT_KEYS:
+    slots = (*SLOT_KEYS, *LEGACY_SLEEPWEAR_SLOTS)
+    for slot in slots:
         for old in target_dir.glob(f"{slot}-*.png"):
             try:
                 old.unlink()

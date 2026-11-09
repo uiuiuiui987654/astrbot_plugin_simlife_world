@@ -33,20 +33,12 @@ DAILY = {
     "src": "/assets/character_daily.png",
     "description": "白紫色系日常装，按当天风格搭配",
 }
-SLEEPWEAR = (
-    {
-        "key": "sleepwear_whale",
-        "name": "白紫鲸鱼连帽睡衣",
-        "src": "/assets/character_sleepwear_whale.png",
-        "description": "白紫鲸鱼连帽连体睡衣，柔软宽松，搭配浅紫袜子",
-    },
-    {
-        "key": "sleepwear_set",
-        "name": "白紫鲸鱼印花睡衣",
-        "src": "/assets/character_sleepwear_set.png",
-        "description": "白紫鲸鱼印花翻领睡衣上装与长裤，搭配鲸鱼拖鞋",
-    },
-)
+SLEEPWEAR = {
+    "key": "sleepwear",
+    "name": "白紫鲸鱼睡衣",
+    "src": "/assets/character_sleepwear.png",
+    "description": "白紫鲸鱼主题睡衣，按睡前状态搭配；可上传多张轮替",
+}
 
 _CUSTOM_CHARACTER_SOURCES: dict[str, list[str]] = {}
 _CHARACTER_ROTATION_SECONDS = 86400
@@ -324,7 +316,7 @@ def appearance_for(
     day_outfit = outfit_description(outfit, home=home)
     if sleepwear:
         look = dict(
-            SLEEPWEAR[night.toordinal() % len(SLEEPWEAR)],
+            SLEEPWEAR,
             is_sleepwear=True,
             night_id=night.isoformat(),
             day_outfit=day_outfit,

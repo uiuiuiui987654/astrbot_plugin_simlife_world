@@ -2,7 +2,7 @@ name: astrbot_plugin_simlife_world
 display_name: 模拟人生_世界
 short_desc: 两层住宅、2D/3D 房间、家具互动、日程穿搭与自拍相机的长期生活模拟。
 desc: 含两层住宅、2D/3D 房间、家具互动、日程穿搭、观察窗拍照、AI 自拍和主动消息的长期生活模拟插件。
-version: v2.0.1
+version: v2.0.2
 repo: https://github.com/uiuiuiui987654/astrbot_plugin_simlife_world
 author: "uiuiuiui8"
 tags:
