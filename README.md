@@ -6,7 +6,7 @@
 
 **一个运行在 AstrBot 上的长期生活模拟插件**
 
-她有自己的家、日程、衣柜和车库。你可以走进她的房间，陪她吃饭、看电视、健身、画画、开车兜风，也可以直接和她聊天。
+她住在一栋带车库的两层小家里，有自己的日程、衣柜和三台车。<br>你可以走进 2D / 3D 房间陪她吃饭、看电视、健身、画画、开车兜风；她也会按当下在做的事，主动来找你聊天。
 
 [![version](https://img.shields.io/badge/version-v2.0.2-8e7bb3?style=flat-square)](metadata.yaml)
 [![AstrBot](https://img.shields.io/badge/AstrBot-%E2%89%A5%204.29.3-6f9f86?style=flat-square)](https://github.com/AstrBotDevs/AstrBot)
