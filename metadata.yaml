@@ -1,7 +1,7 @@
 name: astrbot_plugin_simlife_world
 display_name: 模拟人生_世界
-short_desc: 她住在一栋带车库的两层小家里，自己排日程、换穿搭、做饭、开车出门；你可以走进 2D/3D 房间陪她生活。
-desc: 长期生活模拟插件。角色拥有两层住宅与车库、每日日程与穿搭、厨房冰箱、三台可出行的车和自拍相机；面板提供 2D 平面图和可旋转的 3D 房间，家具几乎都能点击互动，她还会按当下场景主动找你聊天。
+short_desc: 角色拥有自己的日程、房间、穿搭和日常互动；主人可以进入她的 2D/3D 家中陪她生活，也可以直接聊天。
+desc: 一个运行在 AstrBot 上的长期生活模拟插件。角色拥有自己的日程、房间、穿搭和日常互动，主人可以通过面板进入她的家，陪她吃饭、看电视、健身、画画、出门兜风，也可以直接和她聊天。
 version: v2.0.2
 repo: https://github.com/uiuiuiui987654/astrbot_plugin_simlife_world
 author: "uiuiuiui8"
