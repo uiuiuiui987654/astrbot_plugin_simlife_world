@@ -1,0 +1,8 @@
+.garage-car-icon:has(.vehicle-preview) { width:132px; flex:0 0 132px; height:auto; background:linear-gradient(145deg,#f4f3e6,#dce6d5); border:1px solid #cbd8c3; border-radius:13px; padding:10px; }
+.vehicle-preview { width:100%; height:auto; display:block; overflow:visible; }
+.garage-room .journey-wheel,.vehicle-preview .journey-wheel { animation:none; }
+@media(max-width:480px) { .garage-car-icon:has(.vehicle-preview) { width:100px; flex-basis:100px; padding:6px; } }
+/* The garage is now a 1F room inside the home plan; the old separate strip below the house is retired. */
+.garage-room { display:none !important; }
+.garage-car-hit { cursor:pointer; }
+.garage-car-hit:hover, .garage-car-hit:focus-visible { filter:brightness(1.08) drop-shadow(0 0 3px #f3e3a6); outline:none; }

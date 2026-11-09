@@ -1,0 +1,1070 @@
+{
+  "schema_version": 1,
+  "note": "预留点位：normalized x/y 为房间平面 0-1 坐标，z_cm 为离地高度；模型完成后按 model_key 挂接。",
+  "slots": [
+    {
+      "id": "living_floor_rug",
+      "room": "客厅",
+      "floor": 1,
+      "label": "客厅中央地毯位",
+      "kind": "floor",
+      "x": 0.5,
+      "y": 0.636,
+      "z_cm": 3,
+      "w_cm": 110,
+      "d_cm": 80,
+      "h_cm": 2,
+      "facing": "S",
+      "tags": [
+        "floor_rug"
+      ],
+      "model_key": "furniture:living_floor_rug",
+      "reserved": true
+    },
+    {
+      "id": "living_floor_plant",
+      "room": "客厅",
+      "floor": 1,
+      "label": "客厅窗边绿植位",
+      "kind": "floor",
+      "x": 0.943,
+      "y": 0.282,
+      "z_cm": 0,
+      "w_cm": 40,
+      "d_cm": 40,
+      "h_cm": 90,
+      "facing": "S",
+      "tags": [
+        "floor_plant",
+        "floor_small"
+      ],
+      "model_key": "furniture:living_floor_plant",
+      "reserved": true
+    },
+    {
+      "id": "living_coffee_top",
+      "room": "客厅",
+      "floor": 1,
+      "label": "茶几摆件位",
+      "kind": "surface",
+      "x": 0.543,
+      "y": 0.573,
+      "z_cm": 45,
+      "w_cm": 60,
+      "d_cm": 40,
+      "h_cm": 20,
+      "facing": "S",
+      "tags": [
+        "surface_table",
+        "surface_small"
+      ],
+      "model_key": "furniture:living_coffee_top",
+      "reserved": true
+    },
+    {
+      "id": "living_media_top",
+      "room": "客厅",
+      "floor": 1,
+      "label": "电视柜摆件位",
+      "kind": "surface",
+      "x": 0.907,
+      "y": 0.491,
+      "z_cm": 60,
+      "w_cm": 50,
+      "d_cm": 30,
+      "h_cm": 22,
+      "facing": "S",
+      "tags": [
+        "surface_small",
+        "soft",
+        "media_console"
+      ],
+      "model_key": "furniture:living_media_top",
+      "reserved": true
+    },
+    {
+      "id": "living_sofa_soft",
+      "room": "客厅",
+      "floor": 1,
+      "label": "沙发软装位",
+      "kind": "soft",
+      "x": 0.15,
+      "y": 0.5,
+      "z_cm": 46,
+      "w_cm": 90,
+      "d_cm": 30,
+      "h_cm": 15,
+      "facing": "S",
+      "tags": [
+        "soft"
+      ],
+      "model_key": "furniture:living_sofa_soft",
+      "reserved": true
+    },
+    {
+      "id": "living_wall_curtain",
+      "room": "客厅",
+      "floor": 1,
+      "label": "客厅窗帘位",
+      "kind": "wall",
+      "x": 0.26,
+      "y": 0.1,
+      "z_cm": 220,
+      "w_cm": 120,
+      "d_cm": 8,
+      "h_cm": 240,
+      "facing": "S",
+      "tags": [
+        "wall_curtain"
+      ],
+      "model_key": "furniture:living_wall_curtain",
+      "reserved": true
+    },
+    {
+      "id": "living_floor_lamp",
+      "room": "客厅",
+      "floor": 1,
+      "label": "客厅落地灯位",
+      "kind": "floor",
+      "x": 0.3,
+      "y": 0.82,
+      "z_cm": 0,
+      "w_cm": 35,
+      "d_cm": 35,
+      "h_cm": 150,
+      "facing": "S",
+      "tags": [
+        "floor_lamp",
+        "floor_small"
+      ],
+      "model_key": "furniture:living_floor_lamp",
+      "reserved": true
+    },
+    {
+      "id": "bedroom_nightstand_top",
+      "room": "卧室",
+      "floor": 2,
+      "label": "床头柜摆件位",
+      "kind": "surface",
+      "x": 0.61,
+      "y": 0.282,
+      "z_cm": 55,
+      "w_cm": 40,
+      "d_cm": 28,
+      "h_cm": 20,
+      "facing": "S",
+      "tags": [
+        "surface_small",
+        "soft",
+        "desk_tech"
+      ],
+      "model_key": "furniture:bedroom_nightstand_top",
+      "reserved": true
+    },
+    {
+      "id": "bedroom_vanity_top",
+      "room": "卧室",
+      "floor": 2,
+      "label": "梳妆台摆件位",
+      "kind": "surface",
+      "x": 0.873,
+      "y": 0.636,
+      "z_cm": 76,
+      "w_cm": 50,
+      "d_cm": 25,
+      "h_cm": 18,
+      "facing": "S",
+      "tags": [
+        "surface_small",
+        "surface_desk",
+        "jewelry_tray"
+      ],
+      "model_key": "furniture:bedroom_vanity_top",
+      "reserved": true
+    },
+    {
+      "id": "bedroom_floor_plant",
+      "room": "卧室",
+      "floor": 2,
+      "label": "卧室窗边绿植位",
+      "kind": "floor",
+      "x": 0.067,
+      "y": 0.886,
+      "z_cm": 0,
+      "w_cm": 40,
+      "d_cm": 40,
+      "h_cm": 100,
+      "facing": "S",
+      "tags": [
+        "floor_plant"
+      ],
+      "model_key": "furniture:bedroom_floor_plant",
+      "reserved": true
+    },
+    {
+      "id": "bedroom_soft_bed",
+      "room": "卧室",
+      "floor": 2,
+      "label": "床铺软装位",
+      "kind": "soft",
+      "x": 0.3,
+      "y": 0.545,
+      "z_cm": 46,
+      "w_cm": 100,
+      "d_cm": 40,
+      "h_cm": 18,
+      "facing": "S",
+      "tags": [
+        "soft"
+      ],
+      "model_key": "furniture:bedroom_soft_bed",
+      "reserved": true
+    },
+    {
+      "id": "bedroom_wall_curtain",
+      "room": "卧室",
+      "floor": 2,
+      "label": "卧室窗帘位",
+      "kind": "wall",
+      "x": 0.22,
+      "y": 0.08,
+      "z_cm": 220,
+      "w_cm": 120,
+      "d_cm": 8,
+      "h_cm": 240,
+      "facing": "S",
+      "tags": [
+        "wall_curtain"
+      ],
+      "model_key": "furniture:bedroom_wall_curtain",
+      "reserved": true
+    },
+    {
+      "id": "kitchen_counter_left",
+      "room": "厨房",
+      "floor": 1,
+      "label": "厨房台面左侧位",
+      "kind": "surface",
+      "x": 0.369,
+      "y": 0.264,
+      "z_cm": 92,
+      "w_cm": 38,
+      "d_cm": 24,
+      "h_cm": 20,
+      "facing": "S",
+      "tags": [
+        "surface_small",
+        "surface_table"
+      ],
+      "model_key": "furniture:kitchen_counter_left",
+      "reserved": true
+    },
+    {
+      "id": "kitchen_counter_right",
+      "room": "厨房",
+      "floor": 1,
+      "label": "厨房台面右侧位",
+      "kind": "surface",
+      "x": 0.623,
+      "y": 0.264,
+      "z_cm": 92,
+      "w_cm": 38,
+      "d_cm": 24,
+      "h_cm": 20,
+      "facing": "S",
+      "tags": [
+        "surface_small"
+      ],
+      "model_key": "furniture:kitchen_counter_right",
+      "reserved": true
+    },
+    {
+      "id": "kitchen_floor_storage",
+      "room": "厨房",
+      "floor": 1,
+      "label": "厨房地面收纳位",
+      "kind": "floor",
+      "x": 0.76,
+      "y": 0.78,
+      "z_cm": 0,
+      "w_cm": 45,
+      "d_cm": 45,
+      "h_cm": 80,
+      "facing": "S",
+      "tags": [
+        "floor_storage",
+        "floor_small"
+      ],
+      "model_key": "furniture:kitchen_floor_storage",
+      "reserved": true
+    },
+    {
+      "id": "bathroom_vanity_top",
+      "room": "浴室",
+      "floor": 1,
+      "label": "洗手台摆件位",
+      "kind": "surface",
+      "x": 0.194,
+      "y": 0.682,
+      "z_cm": 86,
+      "w_cm": 45,
+      "d_cm": 25,
+      "h_cm": 18,
+      "facing": "S",
+      "tags": [
+        "surface_small"
+      ],
+      "model_key": "furniture:bathroom_vanity_top",
+      "reserved": true
+    },
+    {
+      "id": "bathroom_bath_ledge",
+      "room": "浴室",
+      "floor": 1,
+      "label": "浴缸置物位",
+      "kind": "surface",
+      "x": 0.622,
+      "y": 0.318,
+      "z_cm": 52,
+      "w_cm": 45,
+      "d_cm": 20,
+      "h_cm": 14,
+      "facing": "S",
+      "tags": [
+        "surface_small"
+      ],
+      "model_key": "furniture:bathroom_bath_ledge",
+      "reserved": true
+    },
+    {
+      "id": "bathroom_floor_mat",
+      "room": "浴室",
+      "floor": 1,
+      "label": "浴室地垫位",
+      "kind": "floor",
+      "x": 0.46,
+      "y": 0.72,
+      "z_cm": 1,
+      "w_cm": 80,
+      "d_cm": 50,
+      "h_cm": 2,
+      "facing": "S",
+      "tags": [
+        "bath_floor"
+      ],
+      "model_key": "furniture:bathroom_floor_mat",
+      "reserved": true
+    },
+    {
+      "id": "entry_hall_shelf_top",
+      "room": "玄关",
+      "floor": 1,
+      "label": "玄关台摆件位",
+      "kind": "surface",
+      "x": 0.122,
+      "y": 0.233,
+      "z_cm": 88,
+      "w_cm": 45,
+      "d_cm": 22,
+      "h_cm": 20,
+      "facing": "S",
+      "tags": [
+        "surface_small"
+      ],
+      "model_key": "furniture:entry_hall_shelf_top",
+      "reserved": true
+    },
+    {
+      "id": "dining_sideboard_top",
+      "room": "餐厅",
+      "floor": 1,
+      "label": "餐边柜摆件位",
+      "kind": "surface",
+      "x": 0.927,
+      "y": 0.5,
+      "z_cm": 85,
+      "w_cm": 60,
+      "d_cm": 26,
+      "h_cm": 20,
+      "facing": "W",
+      "tags": [
+        "surface_table",
+        "surface_small"
+      ],
+      "model_key": "furniture:dining_sideboard_top",
+      "reserved": true
+    },
+    {
+      "id": "dining_table_top",
+      "room": "餐厅",
+      "floor": 1,
+      "label": "餐桌桌面位",
+      "kind": "surface",
+      "x": 0.52,
+      "y": 0.56,
+      "z_cm": 76,
+      "w_cm": 75,
+      "d_cm": 35,
+      "h_cm": 18,
+      "facing": "S",
+      "tags": [
+        "surface_table",
+        "surface_small"
+      ],
+      "model_key": "furniture:dining_table_top",
+      "reserved": true
+    },
+    {
+      "id": "study_desk_top",
+      "room": "书房",
+      "floor": 2,
+      "label": "书桌桌面位",
+      "kind": "surface",
+      "x": 0.923,
+      "y": 0.341,
+      "z_cm": 74,
+      "w_cm": 55,
+      "d_cm": 28,
+      "h_cm": 18,
+      "facing": "S",
+      "tags": [
+        "surface_desk",
+        "surface_small",
+        "desk_tech"
+      ],
+      "model_key": "furniture:study_desk_top",
+      "reserved": true
+    },
+    {
+      "id": "study_floor_storage",
+      "room": "书房",
+      "floor": 2,
+      "label": "书房地面收纳位",
+      "kind": "floor",
+      "x": 0.22,
+      "y": 0.78,
+      "z_cm": 0,
+      "w_cm": 45,
+      "d_cm": 40,
+      "h_cm": 80,
+      "facing": "S",
+      "tags": [
+        "floor_storage",
+        "floor_instrument"
+      ],
+      "model_key": "furniture:study_floor_storage",
+      "reserved": true
+    },
+    {
+      "id": "study_wall_curtain",
+      "room": "书房",
+      "floor": 2,
+      "label": "书房窗帘位",
+      "kind": "wall",
+      "x": 0.3,
+      "y": 0.08,
+      "z_cm": 220,
+      "w_cm": 110,
+      "d_cm": 8,
+      "h_cm": 230,
+      "facing": "S",
+      "tags": [
+        "wall_curtain"
+      ],
+      "model_key": "furniture:study_wall_curtain",
+      "reserved": true
+    },
+    {
+      "id": "studio_workbench_top",
+      "room": "画室",
+      "floor": 2,
+      "label": "画桌桌面位",
+      "kind": "surface",
+      "x": 0.591,
+      "y": 0.354,
+      "z_cm": 76,
+      "w_cm": 55,
+      "d_cm": 28,
+      "h_cm": 18,
+      "facing": "S",
+      "tags": [
+        "surface_desk",
+        "surface_small",
+        "desk_tech"
+      ],
+      "model_key": "furniture:studio_workbench_top",
+      "reserved": true
+    },
+    {
+      "id": "studio_floor_plant",
+      "room": "画室",
+      "floor": 2,
+      "label": "画室绿植位",
+      "kind": "floor",
+      "x": 0.2,
+      "y": 0.78,
+      "z_cm": 0,
+      "w_cm": 40,
+      "d_cm": 40,
+      "h_cm": 95,
+      "facing": "S",
+      "tags": [
+        "floor_plant"
+      ],
+      "model_key": "furniture:studio_floor_plant",
+      "reserved": true
+    },
+    {
+      "id": "theater_popcorn_top",
+      "room": "影音室",
+      "floor": 2,
+      "label": "吧台摆件位",
+      "kind": "surface",
+      "x": 0.883,
+      "y": 0.496,
+      "z_cm": 96,
+      "w_cm": 55,
+      "d_cm": 28,
+      "h_cm": 20,
+      "facing": "S",
+      "tags": [
+        "surface_small",
+        "surface_table"
+      ],
+      "model_key": "furniture:theater_popcorn_top",
+      "reserved": true
+    },
+    {
+      "id": "theater_floor_storage",
+      "room": "影音室",
+      "floor": 2,
+      "label": "影音室地面收纳位",
+      "kind": "floor",
+      "x": 0.125,
+      "y": 0.758,
+      "z_cm": 0,
+      "w_cm": 45,
+      "d_cm": 40,
+      "h_cm": 70,
+      "facing": "S",
+      "tags": [
+        "floor_storage",
+        "soft"
+      ],
+      "model_key": "furniture:theater_floor_storage",
+      "reserved": true
+    },
+    {
+      "id": "balcony_floor_plant_left",
+      "room": "阳台",
+      "floor": 1,
+      "label": "阳台左侧绿植位",
+      "kind": "floor",
+      "x": 0.18,
+      "y": 0.55,
+      "z_cm": 0,
+      "w_cm": 40,
+      "d_cm": 40,
+      "h_cm": 100,
+      "facing": "S",
+      "tags": [
+        "floor_plant"
+      ],
+      "model_key": "furniture:balcony_floor_plant_left",
+      "reserved": true
+    },
+    {
+      "id": "balcony_floor_plant_right",
+      "room": "阳台",
+      "floor": 1,
+      "label": "阳台右侧绿植位",
+      "kind": "floor",
+      "x": 0.82,
+      "y": 0.55,
+      "z_cm": 0,
+      "w_cm": 40,
+      "d_cm": 40,
+      "h_cm": 100,
+      "facing": "S",
+      "tags": [
+        "floor_plant"
+      ],
+      "model_key": "furniture:balcony_floor_plant_right",
+      "reserved": true
+    },
+    {
+      "id": "balcony_railing_box",
+      "room": "阳台",
+      "floor": 1,
+      "label": "阳台栏杆花箱位",
+      "kind": "surface",
+      "x": 0.706,
+      "y": 0.967,
+      "z_cm": 95,
+      "w_cm": 80,
+      "d_cm": 22,
+      "h_cm": 28,
+      "facing": "S",
+      "tags": [
+        "surface_vase",
+        "surface_small"
+      ],
+      "model_key": "furniture:balcony_railing_box",
+      "reserved": true
+    },
+    {
+      "id": "terrace_floor_plant",
+      "room": "露台",
+      "floor": 2,
+      "label": "露台绿植位",
+      "kind": "floor",
+      "x": 0.147,
+      "y": 0.25,
+      "z_cm": 0,
+      "w_cm": 45,
+      "d_cm": 45,
+      "h_cm": 110,
+      "facing": "S",
+      "tags": [
+        "floor_plant"
+      ],
+      "model_key": "furniture:terrace_floor_plant",
+      "reserved": true
+    },
+    {
+      "id": "terrace_railing_box",
+      "room": "露台",
+      "floor": 2,
+      "label": "露台栏杆花箱位",
+      "kind": "surface",
+      "x": 0.971,
+      "y": 0.625,
+      "z_cm": 98,
+      "w_cm": 80,
+      "d_cm": 22,
+      "h_cm": 28,
+      "facing": "S",
+      "tags": [
+        "surface_vase",
+        "surface_small"
+      ],
+      "model_key": "furniture:terrace_railing_box",
+      "reserved": true
+    },
+    {
+      "id": "closet_floor_soft",
+      "room": "衣帽间",
+      "floor": 2,
+      "label": "衣帽间软装位",
+      "kind": "soft",
+      "x": 0.611,
+      "y": 0.886,
+      "z_cm": 1,
+      "w_cm": 70,
+      "d_cm": 50,
+      "h_cm": 16,
+      "facing": "S",
+      "tags": [
+        "soft",
+        "floor_small"
+      ],
+      "model_key": "furniture:closet_floor_soft",
+      "reserved": true
+    },
+    {
+      "id": "closet_ottoman_top",
+      "room": "衣帽间",
+      "floor": 2,
+      "label": "软凳摆件位",
+      "kind": "surface",
+      "x": 0.556,
+      "y": 0.682,
+      "z_cm": 38,
+      "w_cm": 35,
+      "d_cm": 35,
+      "h_cm": 16,
+      "facing": "S",
+      "tags": [
+        "surface_small"
+      ],
+      "model_key": "furniture:closet_ottoman_top",
+      "reserved": true
+    },
+    {
+      "id": "stair_bench_top",
+      "room": "楼梯厅",
+      "floor": 2,
+      "label": "收纳凳摆件位",
+      "kind": "surface",
+      "x": 0.141,
+      "y": 0.233,
+      "z_cm": 44,
+      "w_cm": 60,
+      "d_cm": 30,
+      "h_cm": 20,
+      "facing": "S",
+      "tags": [
+        "surface_small",
+        "surface_table"
+      ],
+      "model_key": "furniture:stair_bench_top",
+      "reserved": true
+    },
+    {
+      "id": "living_media_tech",
+      "room": "客厅",
+      "floor": 1,
+      "label": "电视柜游戏位",
+      "kind": "surface",
+      "x": 0.907,
+      "y": 0.636,
+      "z_cm": 60,
+      "w_cm": 45,
+      "d_cm": 30,
+      "h_cm": 20,
+      "facing": "W",
+      "tags": [
+        "media_console",
+        "desk_tech",
+        "surface_small"
+      ],
+      "model_key": "furniture:living_media_tech",
+      "reserved": true
+    },
+    {
+      "id": "living_sofa_soft_2",
+      "room": "客厅",
+      "floor": 1,
+      "label": "沙发另一端软装位",
+      "kind": "soft",
+      "x": 0.15,
+      "y": 0.75,
+      "z_cm": 46,
+      "w_cm": 60,
+      "d_cm": 30,
+      "h_cm": 15,
+      "facing": "E",
+      "tags": [
+        "soft"
+      ],
+      "model_key": "furniture:living_sofa_soft_2",
+      "reserved": true
+    },
+    {
+      "id": "living_piano_top",
+      "room": "客厅",
+      "floor": 1,
+      "label": "钢琴顶摆件位",
+      "kind": "surface",
+      "x": 0.667,
+      "y": 0.209,
+      "z_cm": 120,
+      "w_cm": 40,
+      "d_cm": 25,
+      "h_cm": 30,
+      "facing": "S",
+      "tags": [
+        "display_shelf",
+        "surface_vase",
+        "surface_small"
+      ],
+      "model_key": "furniture:living_piano_top",
+      "reserved": true
+    },
+    {
+      "id": "bedroom_wardrobe_top",
+      "room": "卧室",
+      "floor": 2,
+      "label": "衣柜顶收纳位",
+      "kind": "surface",
+      "x": 0.773,
+      "y": 0.259,
+      "z_cm": 205,
+      "w_cm": 50,
+      "d_cm": 35,
+      "h_cm": 35,
+      "facing": "S",
+      "tags": [
+        "top_storage",
+        "display_shelf"
+      ],
+      "model_key": "furniture:bedroom_wardrobe_top",
+      "reserved": true
+    },
+    {
+      "id": "closet_cabinet_top_1",
+      "room": "衣帽间",
+      "floor": 2,
+      "label": "首饰柜台面左",
+      "kind": "surface",
+      "x": 0.556,
+      "y": 0.264,
+      "z_cm": 95,
+      "w_cm": 35,
+      "d_cm": 25,
+      "h_cm": 15,
+      "facing": "S",
+      "tags": [
+        "jewelry_tray",
+        "surface_small"
+      ],
+      "model_key": "furniture:closet_cabinet_top_1",
+      "reserved": true
+    },
+    {
+      "id": "closet_cabinet_top_2",
+      "room": "衣帽间",
+      "floor": 2,
+      "label": "首饰柜台面右",
+      "kind": "surface",
+      "x": 0.806,
+      "y": 0.264,
+      "z_cm": 95,
+      "w_cm": 35,
+      "d_cm": 25,
+      "h_cm": 20,
+      "facing": "S",
+      "tags": [
+        "jewelry_tray",
+        "surface_small",
+        "display_shelf"
+      ],
+      "model_key": "furniture:closet_cabinet_top_2",
+      "reserved": true
+    },
+    {
+      "id": "closet_hang_1",
+      "room": "衣帽间",
+      "floor": 2,
+      "label": "衣帽间挂衣位 1",
+      "kind": "hang",
+      "x": 0.022,
+      "y": 0.218,
+      "z_cm": 170,
+      "w_cm": 50,
+      "d_cm": 12,
+      "h_cm": 110,
+      "facing": "E",
+      "tags": [
+        "wear_rail",
+        "wear_hook"
+      ],
+      "model_key": "furniture:closet_hang_1",
+      "reserved": true
+    },
+    {
+      "id": "closet_hang_2",
+      "room": "衣帽间",
+      "floor": 2,
+      "label": "衣帽间挂衣位 2",
+      "kind": "hang",
+      "x": 0.022,
+      "y": 0.345,
+      "z_cm": 170,
+      "w_cm": 50,
+      "d_cm": 12,
+      "h_cm": 110,
+      "facing": "E",
+      "tags": [
+        "wear_rail",
+        "wear_hook"
+      ],
+      "model_key": "furniture:closet_hang_2",
+      "reserved": true
+    },
+    {
+      "id": "closet_hang_3",
+      "room": "衣帽间",
+      "floor": 2,
+      "label": "衣帽间挂衣位 3",
+      "kind": "hang",
+      "x": 0.194,
+      "y": 0.018,
+      "z_cm": 170,
+      "w_cm": 50,
+      "d_cm": 12,
+      "h_cm": 110,
+      "facing": "S",
+      "tags": [
+        "wear_rail",
+        "wear_hook"
+      ],
+      "model_key": "furniture:closet_hang_3",
+      "reserved": true
+    },
+    {
+      "id": "entry_hook_1",
+      "room": "玄关",
+      "floor": 1,
+      "label": "玄关挂钩左",
+      "kind": "hang",
+      "x": 0.029,
+      "y": 0.025,
+      "z_cm": 165,
+      "w_cm": 45,
+      "d_cm": 12,
+      "h_cm": 100,
+      "facing": "S",
+      "tags": [
+        "wear_hook"
+      ],
+      "model_key": "furniture:entry_hook_1",
+      "reserved": true
+    },
+    {
+      "id": "entry_hook_2",
+      "room": "玄关",
+      "floor": 1,
+      "label": "玄关挂钩中",
+      "kind": "hang",
+      "x": 0.049,
+      "y": 0.025,
+      "z_cm": 165,
+      "w_cm": 40,
+      "d_cm": 12,
+      "h_cm": 60,
+      "facing": "S",
+      "tags": [
+        "wear_hook"
+      ],
+      "model_key": "furniture:entry_hook_2",
+      "reserved": true
+    },
+    {
+      "id": "entry_hook_3",
+      "room": "玄关",
+      "floor": 1,
+      "label": "玄关挂钩右",
+      "kind": "hang",
+      "x": 0.068,
+      "y": 0.025,
+      "z_cm": 165,
+      "w_cm": 45,
+      "d_cm": 12,
+      "h_cm": 100,
+      "facing": "S",
+      "tags": [
+        "wear_hook"
+      ],
+      "model_key": "furniture:entry_hook_3",
+      "reserved": true
+    },
+    {
+      "id": "entry_shoes_1",
+      "room": "玄关",
+      "floor": 1,
+      "label": "鞋柜前鞋位左",
+      "kind": "floor",
+      "x": 0.128,
+      "y": 0.417,
+      "z_cm": 0,
+      "w_cm": 30,
+      "d_cm": 30,
+      "h_cm": 15,
+      "facing": "N",
+      "tags": [
+        "shoe_floor"
+      ],
+      "model_key": "furniture:entry_shoes_1",
+      "reserved": true
+    },
+    {
+      "id": "entry_shoes_2",
+      "room": "玄关",
+      "floor": 1,
+      "label": "鞋柜前鞋位右",
+      "kind": "floor",
+      "x": 0.179,
+      "y": 0.417,
+      "z_cm": 0,
+      "w_cm": 30,
+      "d_cm": 30,
+      "h_cm": 15,
+      "facing": "N",
+      "tags": [
+        "shoe_floor"
+      ],
+      "model_key": "furniture:entry_shoes_2",
+      "reserved": true
+    },
+    {
+      "id": "study_desk_left",
+      "room": "书房",
+      "floor": 2,
+      "label": "书桌左侧摆件位",
+      "kind": "surface",
+      "x": 0.481,
+      "y": 0.336,
+      "z_cm": 74,
+      "w_cm": 35,
+      "d_cm": 25,
+      "h_cm": 25,
+      "facing": "S",
+      "tags": [
+        "desk_tech",
+        "surface_desk",
+        "surface_small"
+      ],
+      "model_key": "furniture:study_desk_left",
+      "reserved": true
+    },
+    {
+      "id": "study_desk_mouse",
+      "room": "书房",
+      "floor": 2,
+      "label": "键盘右侧位",
+      "kind": "surface",
+      "x": 0.781,
+      "y": 0.509,
+      "z_cm": 74,
+      "w_cm": 20,
+      "d_cm": 20,
+      "h_cm": 8,
+      "facing": "S",
+      "tags": [
+        "desk_tech"
+      ],
+      "model_key": "furniture:study_desk_mouse",
+      "reserved": true
+    },
+    {
+      "id": "study_shelf_top",
+      "room": "书房",
+      "floor": 2,
+      "label": "书架顶摆件位",
+      "kind": "surface",
+      "x": 0.154,
+      "y": 0.236,
+      "z_cm": 190,
+      "w_cm": 45,
+      "d_cm": 25,
+      "h_cm": 30,
+      "facing": "S",
+      "tags": [
+        "display_shelf",
+        "top_storage"
+      ],
+      "model_key": "furniture:study_shelf_top",
+      "reserved": true
+    },
+    {
+      "id": "theater_sofa_soft",
+      "room": "影音室",
+      "floor": 2,
+      "label": "观影沙发软装位",
+      "kind": "soft",
+      "x": 0.333,
+      "y": 0.688,
+      "z_cm": 45,
+      "w_cm": 60,
+      "d_cm": 30,
+      "h_cm": 15,
+      "facing": "N",
+      "tags": [
+        "soft"
+      ],
+      "model_key": "furniture:theater_sofa_soft",
+      "reserved": true
+    }
+  ]
+}

@@ -1,0 +1,2235 @@
+{
+  "schema_version": 2,
+  "items": [
+    {
+      "id": "bed",
+      "room": "卧室",
+      "name": "床",
+      "actions": [
+        "睡觉",
+        "起床",
+        "赖床",
+        "靠着看书"
+      ],
+      "description": "柔软的床，适合睡觉、赖床和睡前阅读。",
+      "x": 18.0,
+      "y": 24.0,
+      "hotspot": true,
+      "floor": 2,
+      "interact_label": "我先躺会儿"
+    },
+    {
+      "id": "wardrobe",
+      "room": "卧室",
+      "name": "衣柜",
+      "actions": [
+        "换身衣服",
+        "整理衣柜",
+        "试新搭配"
+      ],
+      "description": "放常穿衣服和配饰的衣柜。",
+      "x": 31.0,
+      "y": 18.0,
+      "hotspot": true,
+      "floor": 2,
+      "interact_label": "去挑身衣服"
+    },
+    {
+      "id": "bedside_lamp",
+      "room": "卧室",
+      "name": "床头灯",
+      "actions": [
+        "开灯夜读",
+        "调暗灯光",
+        "关灯准备睡"
+      ],
+      "description": "暖色床头灯，适合夜里看书或放空。",
+      "x": 26.5,
+      "y": 17.0,
+      "hotspot": true,
+      "floor": 2,
+      "interact_label": "开床头灯"
+    },
+    {
+      "id": "aroma_diffuser",
+      "room": "卧室",
+      "name": "香薰机",
+      "actions": [
+        "开香薰",
+        "滴两滴精油",
+        "换种味道"
+      ],
+      "description": "可以加精油的小香薰机。",
+      "x": 36.0,
+      "y": 26.0,
+      "hotspot": true,
+      "floor": 2,
+      "interact_label": "开会儿香薰"
+    },
+    {
+      "id": "vanity_mirror",
+      "room": "卧室",
+      "name": "穿衣镜和护肤台",
+      "actions": [
+        "护肤",
+        "化个淡妆",
+        "试衣服"
+      ],
+      "description": "穿衣镜旁的小护肤台。",
+      "x": 38.0,
+      "y": 30.0,
+      "hotspot": true,
+      "floor": 2,
+      "interact_label": "照镜子收拾一下"
+    },
+    {
+      "id": "plush",
+      "room": "卧室",
+      "name": "毛绒玩偶和抱枕",
+      "actions": [
+        "抱着窝一会儿",
+        "靠着发呆",
+        "垫着看书"
+      ],
+      "description": "软乎乎的玩偶和几个抱枕。",
+      "x": 22.0,
+      "y": 36.0,
+      "hotspot": true,
+      "floor": 2,
+      "interact_label": "抱会儿玩偶"
+    },
+    {
+      "id": "bedtime_book",
+      "room": "卧室",
+      "name": "睡前读物",
+      "actions": [
+        "翻两页",
+        "读首诗",
+        "抄一段"
+      ],
+      "description": "床头堆着的几本书。",
+      "x": 24.0,
+      "y": 30.0,
+      "hotspot": true,
+      "floor": 2,
+      "interact_label": "睡前读两页"
+    },
+    {
+      "id": "bathtub",
+      "room": "浴室",
+      "name": "浴缸",
+      "actions": [
+        "放水泡澡",
+        "加浴盐",
+        "泡到水凉"
+      ],
+      "description": "可以放热水、浴盐和泡泡的浴缸。",
+      "x": 52.0,
+      "y": 15.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "泡个澡"
+    },
+    {
+      "id": "shower",
+      "room": "浴室",
+      "name": "淋浴",
+      "actions": [
+        "冲个澡",
+        "洗头",
+        "快速洗漱"
+      ],
+      "description": "日常淋浴区。",
+      "x": 57.0,
+      "y": 10.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "冲个澡"
+    },
+    {
+      "id": "bath_salts",
+      "room": "浴室",
+      "name": "浴盐和泡泡浴",
+      "actions": [
+        "加浴盐",
+        "泡泡浴",
+        "泡脚放松"
+      ],
+      "description": "放在浴缸边的小瓶浴盐和泡泡液。",
+      "x": 49.0,
+      "y": 22.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "加浴盐"
+    },
+    {
+      "id": "waterproof_speaker",
+      "room": "浴室",
+      "name": "防水音箱",
+      "actions": [
+        "放首歌",
+        "听播客",
+        "听雨声"
+      ],
+      "description": "可以带进浴室的防水音箱。",
+      "x": 57.0,
+      "y": 20.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "放首歌"
+    },
+    {
+      "id": "face_mask",
+      "room": "浴室",
+      "name": "面膜和护肤品",
+      "actions": [
+        "敷面膜",
+        "涂护肤品",
+        "修个眉毛"
+      ],
+      "description": "镜子旁的护肤小篮子。",
+      "x": 47.0,
+      "y": 24.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "敷张面膜"
+    },
+    {
+      "id": "bath_towel",
+      "room": "浴室",
+      "name": "浴巾",
+      "actions": [
+        "擦头发",
+        "裹浴巾",
+        "擦手"
+      ],
+      "description": "挂在墙边的干净浴巾。",
+      "x": 54.0,
+      "y": 25.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "擦擦头发"
+    },
+    {
+      "id": "desk",
+      "room": "书房",
+      "name": "书桌",
+      "actions": [
+        "摊开手账",
+        "写点东西",
+        "整理计划"
+      ],
+      "description": "窗边的大书桌。",
+      "x": 80.0,
+      "y": 24.0,
+      "hotspot": true,
+      "floor": 2,
+      "interact_label": "坐下写会儿"
+    },
+    {
+      "id": "desk_lamp",
+      "room": "书房",
+      "name": "书房台灯",
+      "actions": [
+        "打开台灯",
+        "调亮一点",
+        "关掉台灯"
+      ],
+      "description": "书桌上单独的一盏台灯，可以单独开关。",
+      "x": 72.0,
+      "y": 22.0,
+      "hotspot": true,
+      "floor": 2,
+      "interact_label": "开台灯"
+    },
+    {
+      "id": "monitor",
+      "room": "书房",
+      "name": "显示器和笔记本电脑",
+      "actions": [
+        "查点资料",
+        "写代码",
+        "看教程"
+      ],
+      "description": "书桌上的显示器和笔记本。",
+      "x": 84.0,
+      "y": 20.0,
+      "hotspot": true,
+      "floor": 2,
+      "interact_label": "开电脑"
+    },
+    {
+      "id": "keyboard",
+      "room": "书房",
+      "name": "机械键盘",
+      "actions": [
+        "敲几行字",
+        "写日记",
+        "试手感"
+      ],
+      "description": "手感很好的机械键盘。",
+      "x": 80.0,
+      "y": 22.0,
+      "hotspot": true,
+      "floor": 2,
+      "interact_label": "敲会儿键盘"
+    },
+    {
+      "id": "bookshelf",
+      "room": "书房",
+      "name": "书架",
+      "actions": [
+        "抽本书",
+        "整理书架",
+        "找资料"
+      ],
+      "description": "塞满书和资料的木书架。",
+      "x": 69.0,
+      "y": 18.0,
+      "hotspot": true,
+      "floor": 2,
+      "interact_label": "抽本书看"
+    },
+    {
+      "id": "notebook",
+      "room": "书房",
+      "name": "手账本和钢笔",
+      "actions": [
+        "写两笔",
+        "列个计划",
+        "抄一段"
+      ],
+      "description": "摊在桌上的手账本和钢笔。",
+      "x": 76.0,
+      "y": 28.0,
+      "hotspot": true,
+      "floor": 2,
+      "interact_label": "写两笔"
+    },
+    {
+      "id": "camera",
+      "room": "书房",
+      "name": "相机和拍立得",
+      "actions": [
+        "拍两张",
+        "翻看旧照片",
+        "擦镜头"
+      ],
+      "description": "放在书桌角落的相机。",
+      "x": 88.0,
+      "y": 28.0,
+      "hotspot": true,
+      "floor": 2,
+      "interact_label": "拍两张照片"
+    },
+    {
+      "id": "headphones",
+      "room": "书房",
+      "name": "耳机",
+      "actions": [
+        "听歌",
+        "听播客",
+        "放白噪音"
+      ],
+      "description": "可以隔绝噪音的头戴耳机。",
+      "x": 86.0,
+      "y": 26.0,
+      "hotspot": true,
+      "floor": 2,
+      "interact_label": "戴上耳机"
+    },
+    {
+      "id": "sofa",
+      "room": "客厅",
+      "name": "沙发",
+      "actions": [
+        "窝着看剧",
+        "歪着午睡",
+        "瘫着发呆"
+      ],
+      "description": "铺着软垫的沙发。",
+      "x": 10.0,
+      "y": 58.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "在沙发上窝会儿"
+    },
+    {
+      "id": "tv",
+      "room": "客厅",
+      "name": "电视",
+      "actions": [
+        "看剧",
+        "看电影",
+        "看纪录片"
+      ],
+      "description": "挂在客厅墙边的电视。",
+      "x": 37.0,
+      "y": 56.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "开电视看看"
+    },
+    {
+      "id": "game_console",
+      "room": "客厅",
+      "name": "游戏机",
+      "actions": [
+        "打一局",
+        "双人游戏",
+        "冲个关卡"
+      ],
+      "description": "电视下面的游戏机。",
+      "x": 37.0,
+      "y": 68.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "邀请打游戏"
+    },
+    {
+      "id": "record_player",
+      "room": "客厅",
+      "name": "黑胶唱片机",
+      "actions": [
+        "放张黑胶",
+        "翻唱片",
+        "跟着哼两句"
+      ],
+      "description": "可以放黑胶的唱片机。",
+      "x": 30.0,
+      "y": 49.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "放张黑胶"
+    },
+    {
+      "id": "coffee_table",
+      "room": "客厅",
+      "name": "茶几",
+      "actions": [
+        "喝杯茶",
+        "吃点零食",
+        "摊开杂志"
+      ],
+      "description": "放茶杯和杂物的矮茶几。",
+      "x": 23.0,
+      "y": 64.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "在茶几边喝茶"
+    },
+    {
+      "id": "board_game",
+      "room": "客厅",
+      "name": "桌游和拼图",
+      "actions": [
+        "拼拼图",
+        "开一局桌游",
+        "解个谜"
+      ],
+      "description": "茶几下层收着的桌游和拼图。",
+      "x": 27.0,
+      "y": 66.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "一起玩桌游"
+    },
+    {
+      "id": "floor_lamp",
+      "room": "客厅",
+      "name": "落地灯",
+      "actions": [
+        "开落地灯",
+        "调暖光",
+        "关灯"
+      ],
+      "description": "沙发旁的暖色落地灯。",
+      "x": 32.0,
+      "y": 54.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "开落地灯"
+    },
+    {
+      "id": "yoga_mat",
+      "room": "客厅",
+      "name": "瑜伽垫",
+      "actions": [
+        "拉伸",
+        "做组瑜伽",
+        "冥想一会儿"
+      ],
+      "description": "卷起来放在角落的瑜伽垫。",
+      "x": 24.0,
+      "y": 74.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "做组瑜伽"
+    },
+    {
+      "id": "coffee_machine",
+      "room": "厨房",
+      "name": "咖啡机",
+      "actions": [
+        "做杯咖啡",
+        "换种豆子",
+        "练拉花"
+      ],
+      "description": "厨房台面上的咖啡机。",
+      "x": 66.0,
+      "y": 48.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "来杯咖啡"
+    },
+    {
+      "id": "pour_over",
+      "room": "厨房",
+      "name": "手冲壶",
+      "actions": [
+        "手冲一杯",
+        "温杯",
+        "烧水"
+      ],
+      "description": "细嘴手冲壶和滤杯。",
+      "x": 68.0,
+      "y": 50.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "手冲一杯"
+    },
+    {
+      "id": "oven",
+      "room": "厨房",
+      "name": "烤箱",
+      "actions": [
+        "烤面包",
+        "做甜点",
+        "热个东西"
+      ],
+      "description": "可以烤面包和甜点的烤箱。",
+      "x": 57.0,
+      "y": 46.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "烤点什么"
+    },
+    {
+      "id": "toaster",
+      "room": "厨房",
+      "name": "吐司机",
+      "actions": [
+        "烤吐司",
+        "做早餐"
+      ],
+      "description": "台面上的小吐司机。",
+      "x": 61.0,
+      "y": 47.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "烤片吐司"
+    },
+    {
+      "id": "fridge",
+      "room": "厨房",
+      "name": "冰箱",
+      "actions": [
+        "翻点吃的",
+        "拿食材",
+        "整理冰箱"
+      ],
+      "description": "贴着便签的冰箱。",
+      "x": 50.0,
+      "y": 64.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "翻冰箱"
+    },
+    {
+      "id": "dining_table",
+      "room": "厨房",
+      "name": "餐桌",
+      "actions": [
+        "坐下吃饭",
+        "喝杯茶",
+        "摆盘"
+      ],
+      "description": "厨房里的木餐桌。",
+      "x": 61.0,
+      "y": 67.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "一起吃饭"
+    },
+    {
+      "id": "recipe_book",
+      "room": "厨房",
+      "name": "食谱书",
+      "actions": [
+        "翻翻食谱",
+        "找道新菜",
+        "照着做"
+      ],
+      "description": "立在台面边的食谱书。",
+      "x": 55.0,
+      "y": 62.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "翻翻食谱"
+    },
+    {
+      "id": "tea_set",
+      "room": "厨房",
+      "name": "茶具",
+      "actions": [
+        "泡壶茶",
+        "摆茶杯",
+        "请人喝茶"
+      ],
+      "description": "一套简单的茶具。",
+      "x": 63.0,
+      "y": 68.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "邀请喝茶"
+    },
+    {
+      "id": "balcony_chair",
+      "room": "阳台",
+      "name": "摇椅",
+      "actions": [
+        "晒太阳",
+        "摇着看书",
+        "闭眼发呆"
+      ],
+      "description": "阳台上的小摇椅。",
+      "x": 85.0,
+      "y": 64.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "去阳台晒太阳"
+    },
+    {
+      "id": "plants",
+      "room": "阳台",
+      "name": "绿植",
+      "actions": [
+        "浇水",
+        "剪枯叶",
+        "松松土"
+      ],
+      "description": "阳台上一排绿植。",
+      "x": 79.0,
+      "y": 52.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "给植物浇水"
+    },
+    {
+      "id": "watering_can",
+      "room": "阳台",
+      "name": "喷壶",
+      "actions": [
+        "浇花",
+        "喷叶子",
+        "接水"
+      ],
+      "description": "给植物浇水的小喷壶。",
+      "x": 81.0,
+      "y": 56.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "浇浇花"
+    },
+    {
+      "id": "wind_chime",
+      "room": "阳台",
+      "name": "风铃",
+      "actions": [
+        "听风铃",
+        "拨一下风铃",
+        "挂好风铃"
+      ],
+      "description": "挂在阳台檐下的风铃。",
+      "x": 90.0,
+      "y": 44.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "听听风铃"
+    },
+    {
+      "id": "telescope",
+      "room": "阳台",
+      "name": "望远镜",
+      "actions": [
+        "看远处",
+        "看星星",
+        "调焦"
+      ],
+      "description": "架在阳台角落的小望远镜。",
+      "x": 93.0,
+      "y": 73.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "用望远镜看看"
+    },
+    {
+      "id": "blanket",
+      "room": "阳台",
+      "name": "毛毯",
+      "actions": [
+        "裹上毛毯",
+        "搭在腿上",
+        "叠好"
+      ],
+      "description": "搭在摇椅上的薄毛毯。",
+      "x": 87.0,
+      "y": 68.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "裹条毯子"
+    },
+    {
+      "id": "washing_machine",
+      "room": "阳台",
+      "name": "洗衣机",
+      "actions": [
+        "洗衣服",
+        "晾衣服",
+        "取衣服"
+      ],
+      "description": "阳台一侧的洗衣机。",
+      "x": 75.0,
+      "y": 78.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "洗衣服"
+    },
+    {
+      "id": "iron",
+      "room": "阳台",
+      "name": "熨斗和熨衣板",
+      "actions": [
+        "熨衣服",
+        "熨衬衫",
+        "收熨衣板"
+      ],
+      "description": "折叠在阳台的熨衣板。",
+      "x": 78.0,
+      "y": 82.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "熨熨衣服"
+    },
+    {
+      "id": "shoe_cabinet",
+      "room": "玄关",
+      "name": "鞋柜",
+      "actions": [
+        "挑双鞋",
+        "整理鞋",
+        "擦鞋"
+      ],
+      "description": "玄关的鞋柜。",
+      "x": 10.0,
+      "y": 90.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "挑双鞋"
+    },
+    {
+      "id": "umbrella",
+      "room": "玄关",
+      "name": "雨伞",
+      "actions": [
+        "拿伞出门",
+        "晾伞",
+        "收伞"
+      ],
+      "description": "门口伞架里的雨伞。",
+      "x": 88.0,
+      "y": 87.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "带伞出门"
+    },
+    {
+      "id": "key_tray",
+      "room": "玄关",
+      "name": "钥匙托盘",
+      "actions": [
+        "放钥匙",
+        "找钥匙",
+        "拿钥匙"
+      ],
+      "description": "门口的小钥匙托盘。",
+      "x": 90.0,
+      "y": 90.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "拿钥匙"
+    },
+    {
+      "id": "vacuum",
+      "room": "玄关",
+      "name": "吸尘器",
+      "actions": [
+        "吸地板",
+        "清理角落",
+        "收吸尘器"
+      ],
+      "description": "收在玄关柜旁的吸尘器。",
+      "x": 24.0,
+      "y": 90.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "吸尘打扫"
+    },
+    {
+      "id": "sewing_kit",
+      "room": "玄关",
+      "name": "针线盒",
+      "actions": [
+        "缝两针",
+        "补纽扣",
+        "改衣角"
+      ],
+      "description": "装纽扣和线团的小盒子。",
+      "x": 30.0,
+      "y": 90.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "缝两针"
+    },
+    {
+      "id": "delivery_box",
+      "room": "玄关",
+      "name": "快递盒",
+      "actions": [
+        "拆快递",
+        "压扁纸箱",
+        "整理纸箱"
+      ],
+      "description": "堆在玄关的快递纸箱。",
+      "x": 42.0,
+      "y": 90.0,
+      "hotspot": true,
+      "floor": 1,
+      "interact_label": "拆快递"
+    },
+    {
+      "id": "piano",
+      "room": "客厅",
+      "name": "立式钢琴",
+      "actions": [
+        "练琴",
+        "弹首小曲",
+        "试新曲子"
+      ],
+      "description": "靠墙的木质钢琴，琴键独立可用。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "弹首小曲"
+    },
+    {
+      "id": "aquarium",
+      "room": "客厅",
+      "name": "水族箱",
+      "actions": [
+        "看会儿鱼",
+        "喂鱼",
+        "清理鱼缸"
+      ],
+      "description": "清透水族箱，能听到轻微水流声。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "看会儿鱼"
+    },
+    {
+      "id": "rice_cooker",
+      "room": "厨房",
+      "name": "电饭煲",
+      "actions": [
+        "煮米饭",
+        "预约煮粥",
+        "盛饭"
+      ],
+      "description": "放在备餐区的电饭煲。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "煮饭"
+    },
+    {
+      "id": "dishwasher",
+      "room": "厨房",
+      "name": "洗碗机",
+      "actions": [
+        "收碗碟",
+        "启动洗碗机",
+        "擦台面"
+      ],
+      "description": "嵌入式洗碗机，饭后可收拾餐具。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "收拾碗筷"
+    },
+    {
+      "id": "kitchen_sink",
+      "room": "厨房",
+      "name": "洗碗槽",
+      "actions": [
+        "洗手",
+        "洗菜",
+        "接水"
+      ],
+      "description": "厨房台面上的水槽，可以洗手、洗菜和接水。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "用一下水槽"
+    },
+    {
+      "id": "dining_room_table",
+      "room": "餐厅",
+      "name": "长餐桌",
+      "actions": [
+        "坐下用餐",
+        "摆盘",
+        "喝下午茶"
+      ],
+      "description": "一楼餐厅的独立长餐桌。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "邀请一起吃饭"
+    },
+    {
+      "id": "sideboard",
+      "room": "餐厅",
+      "name": "餐边柜",
+      "actions": [
+        "拿餐具",
+        "找杯子",
+        "整理餐布"
+      ],
+      "description": "储存杯碟和餐布的木质柜子。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "取套餐具"
+    },
+    {
+      "id": "treadmill",
+      "room": "健身室",
+      "name": "跑步机",
+      "actions": [
+        "慢跑",
+        "快走",
+        "热身"
+      ],
+      "description": "一楼的室内跑步机。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "慢跑一会儿"
+    },
+    {
+      "id": "dumbbells",
+      "room": "健身室",
+      "name": "哑铃架",
+      "actions": [
+        "练两组",
+        "举几下",
+        "练肩背"
+      ],
+      "description": "不同重量的哑铃分开放置。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "练两组"
+    },
+    {
+      "id": "fitness_mirror",
+      "room": "健身室",
+      "name": "健身镜",
+      "actions": [
+        "对镜练动作",
+        "看姿势",
+        "跟练拉伸"
+      ],
+      "description": "用于观察姿势的落地镜。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "对镜练动作"
+    },
+    {
+      "id": "art_easel",
+      "room": "画室",
+      "name": "画架",
+      "actions": [
+        "画水彩",
+        "写生",
+        "画速写"
+      ],
+      "description": "二楼画室的木画架，可观察窗外光线作画。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "画幅水彩"
+    },
+    {
+      "id": "paint_cart",
+      "room": "画室",
+      "name": "颜料推车",
+      "actions": [
+        "调色",
+        "洗画笔",
+        "整理颜料"
+      ],
+      "description": "颜料、画笔与调色盘分格收纳。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "调点颜色"
+    },
+    {
+      "id": "digital_tablet",
+      "room": "画室",
+      "name": "数位屏",
+      "actions": [
+        "画插画",
+        "勾线稿",
+        "试笔刷"
+      ],
+      "description": "可独立使用的数位绘画设备。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "画会儿画"
+    },
+    {
+      "id": "cinema_screen",
+      "room": "影音室",
+      "name": "投影幕",
+      "actions": [
+        "放电影",
+        "放纪录片",
+        "调幕布"
+      ],
+      "description": "二楼影音室的独立投影幕。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "放场电影"
+    },
+    {
+      "id": "cinema_sofa",
+      "room": "影音室",
+      "name": "观影沙发",
+      "actions": [
+        "窝着看电影",
+        "靠一会儿",
+        "盖毯子"
+      ],
+      "description": "面向投影幕的柔软沙发。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "窝着看电影"
+    },
+    {
+      "id": "popcorn_machine",
+      "room": "影音室",
+      "name": "爆米花机",
+      "actions": [
+        "爆一桶",
+        "准备零食",
+        "清理机器"
+      ],
+      "description": "观影前可以准备一小份爆米花。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "爆桶爆米花"
+    },
+    {
+      "id": "dressing_mirror",
+      "room": "衣帽间",
+      "name": "全身穿衣镜",
+      "actions": [
+        "试穿搭配",
+        "整理衣领",
+        "照全身"
+      ],
+      "description": "二楼衣帽间的独立全身镜。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "对镜整理穿搭"
+    },
+    {
+      "id": "accessory_cabinet",
+      "room": "衣帽间",
+      "name": "首饰收纳柜",
+      "actions": [
+        "挑配饰",
+        "整理首饰",
+        "找发夹"
+      ],
+      "description": "分层储存耳饰和发饰的收纳柜。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "挑件配饰"
+    },
+    {
+      "id": "clothes_rail",
+      "room": "衣帽间",
+      "name": "衣架",
+      "actions": [
+        "挑衣服",
+        "搭一套",
+        "挂好外套"
+      ],
+      "description": "衣帽间里的开放式衣架，可以挑衣服和搭配。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "去衣架挑衣服"
+    },
+    {
+      "id": "terrace_swing",
+      "room": "露台",
+      "name": "露台摇椅",
+      "actions": [
+        "晒太阳",
+        "摇着看书",
+        "闭眼发呆"
+      ],
+      "description": "二楼露台的木摇椅，傍晚可以在这里看落日。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "去露台摇一会儿"
+    },
+    {
+      "id": "flower_bed",
+      "room": "露台",
+      "name": "屋顶花坛",
+      "actions": [
+        "浇水",
+        "剪花枝",
+        "松土"
+      ],
+      "description": "开放式屋顶花坛，能感到日照、雨水与风。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "去照料花草"
+    },
+    {
+      "id": "bbq_grill",
+      "room": "露台",
+      "name": "烧烤架",
+      "actions": [
+        "准备烧烤",
+        "烤点东西",
+        "清洁烤架"
+      ],
+      "description": "晴朗微风时可在开放露台备餐，雨雪大风停用。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "准备烧烤"
+    },
+    {
+      "id": "stairs",
+      "room": "楼梯厅",
+      "name": "木楼梯",
+      "actions": [
+        "上楼",
+        "下楼",
+        "在扶手边歇会儿"
+      ],
+      "description": "连接两个楼层的固定木楼梯。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "上下楼走走"
+    },
+    {
+      "id": "storage_bench",
+      "room": "楼梯厅",
+      "name": "收纳长凳",
+      "actions": [
+        "坐会儿",
+        "整理收纳",
+        "放东西"
+      ],
+      "description": "楼梯转角的木长凳。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "坐下歇会儿"
+    },
+    {
+      "id": "vanity_counter",
+      "room": "浴室",
+      "name": "洗手台",
+      "actions": [
+        "洗脸",
+        "刷牙",
+        "照镜子"
+      ],
+      "description": "浴室里的洗手台，可以洗漱和整理自己。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "去洗漱"
+    },
+    {
+      "id": "kitchen_north",
+      "room": "厨房",
+      "name": "厨房台面",
+      "actions": [
+        "备菜",
+        "擦台面",
+        "摆盘"
+      ],
+      "description": "厨房的主操作台，可以切菜、备料和摆盘。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "在台面忙一会儿"
+    },
+    {
+      "id": "piano_bench",
+      "room": "客厅",
+      "name": "琴凳",
+      "actions": [
+        "坐下弹琴",
+        "翻琴谱",
+        "合上琴盖"
+      ],
+      "description": "钢琴前的软面琴凳。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "坐下来弹会儿"
+    },
+    {
+      "id": "weights_rack",
+      "room": "健身室",
+      "name": "哑铃架",
+      "actions": [
+        "拿哑铃",
+        "放回哑铃",
+        "擦汗"
+      ],
+      "description": "健身室角落的哑铃架。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "练两组"
+    },
+    {
+      "id": "art_workbench",
+      "room": "画室",
+      "name": "画桌",
+      "actions": [
+        "铺开画纸",
+        "调颜料",
+        "收拾桌面"
+      ],
+      "description": "画室里的工作桌，放着画纸和颜料。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "坐下来画画"
+    },
+    {
+      "id": "popcorn_console",
+      "room": "影音室",
+      "name": "爆米花吧台",
+      "actions": [
+        "做爆米花",
+        "倒饮料",
+        "收拾吧台"
+      ],
+      "description": "影音室门口的小吧台，摆着爆米花机。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "弄点观影零食"
+    },
+    {
+      "id": "hall_shelf",
+      "room": "玄关",
+      "name": "玄关台",
+      "actions": [
+        "放钥匙",
+        "拿快递",
+        "整理台面"
+      ],
+      "description": "进门处的窄台面，用来放钥匙和小物。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "在玄关停一下"
+    },
+    {
+      "id": "nightstand",
+      "room": "卧室",
+      "name": "床头柜",
+      "actions": [
+        "放手机",
+        "拿书",
+        "关小灯"
+      ],
+      "description": "床边的小柜子，放着睡前用品。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "在床边待一会儿"
+    },
+    {
+      "id": "record_console",
+      "room": "客厅",
+      "name": "唱片柜",
+      "actions": [
+        "找唱片",
+        "放一张",
+        "擦柜子"
+      ],
+      "description": "放黑胶唱片和唱机的矮柜。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "翻翻唱片"
+    },
+    {
+      "id": "aquarium_console",
+      "room": "客厅",
+      "name": "鱼缸柜",
+      "actions": [
+        "看鱼",
+        "喂鱼",
+        "换水"
+      ],
+      "description": "客厅角落的鱼缸矮柜。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "在鱼缸边看会儿"
+    },
+    {
+      "id": "media_console",
+      "room": "客厅",
+      "name": "电视柜",
+      "actions": [
+        "开电视",
+        "找遥控器",
+        "整理线"
+      ],
+      "description": "摆着电视和游戏机的电视柜。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "开会儿电视"
+    },
+    {
+      "id": "bath_ledge",
+      "room": "浴室",
+      "name": "浴缸置物台",
+      "actions": [
+        "放浴盐",
+        "拿毛巾",
+        "点香薰"
+      ],
+      "description": "浴缸边的窄置物台。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "准备泡澡"
+    },
+    {
+      "id": "kitchen_right",
+      "room": "厨房",
+      "name": "转角橱柜",
+      "actions": [
+        "找锅具",
+        "拿调料",
+        "擦柜门"
+      ],
+      "description": "厨房转角的收纳橱柜。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "翻翻橱柜"
+    },
+    {
+      "id": "kitchen_chair",
+      "room": "厨房",
+      "name": "厨房餐椅",
+      "actions": [
+        "坐下",
+        "等饭",
+        "挪开"
+      ],
+      "description": "厨房小桌旁的木餐椅。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "在厨房坐会儿"
+    },
+    {
+      "id": "dining_chair_l1",
+      "room": "餐厅",
+      "name": "餐椅",
+      "actions": [
+        "坐下",
+        "摆餐具",
+        "挪开"
+      ],
+      "description": "长餐桌左侧的餐椅。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "坐到餐桌边"
+    },
+    {
+      "id": "dining_chair_l2",
+      "room": "餐厅",
+      "name": "餐椅",
+      "actions": [
+        "坐下",
+        "摆餐具",
+        "挪开"
+      ],
+      "description": "长餐桌左侧的餐椅。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "坐到餐桌边"
+    },
+    {
+      "id": "dining_chair_r1",
+      "room": "餐厅",
+      "name": "餐椅",
+      "actions": [
+        "坐下",
+        "摆餐具",
+        "挪开"
+      ],
+      "description": "长餐桌右侧的餐椅。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "坐到餐桌边"
+    },
+    {
+      "id": "dining_chair_r2",
+      "room": "餐厅",
+      "name": "餐椅",
+      "actions": [
+        "坐下",
+        "摆餐具",
+        "挪开"
+      ],
+      "description": "长餐桌右侧的餐椅。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "坐到餐桌边"
+    },
+    {
+      "id": "desk_chair",
+      "room": "书房",
+      "name": "办公椅",
+      "actions": [
+        "坐下",
+        "转一圈",
+        "推回去"
+      ],
+      "description": "书桌前的办公椅。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "在书桌前坐下"
+    },
+    {
+      "id": "art_chair",
+      "room": "画室",
+      "name": "画凳",
+      "actions": [
+        "坐下",
+        "挪位置",
+        "收拾"
+      ],
+      "description": "画架前的小画凳。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "坐下画画"
+    },
+    {
+      "id": "slippers",
+      "room": "卧室",
+      "name": "拖鞋",
+      "actions": [
+        "穿上",
+        "摆好",
+        "踢到床边"
+      ],
+      "description": "床边的软底拖鞋。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "穿上拖鞋"
+    },
+    {
+      "id": "ottoman",
+      "room": "衣帽间",
+      "name": "软凳",
+      "actions": [
+        "坐下",
+        "挪开",
+        "放衣服"
+      ],
+      "description": "衣帽间中央的圆形软凳。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "在软凳上坐会儿"
+    },
+    {
+      "id": "wall_shelf",
+      "room": "书房",
+      "name": "壁架",
+      "actions": [
+        "看看",
+        "整理",
+        "擦灰"
+      ],
+      "description": "书桌上方的小壁架。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "整理壁架"
+    },
+    {
+      "id": "canvas_0",
+      "room": "画室",
+      "name": "画作",
+      "actions": [
+        "看看",
+        "扶正",
+        "擦灰"
+      ],
+      "description": "画室墙上的画作。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "看会儿画"
+    },
+    {
+      "id": "canvas_1",
+      "room": "画室",
+      "name": "画作",
+      "actions": [
+        "看看",
+        "扶正",
+        "擦灰"
+      ],
+      "description": "画室墙上的画作。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "看会儿画"
+    },
+    {
+      "id": "canvas_r",
+      "room": "画室",
+      "name": "画作",
+      "actions": [
+        "看看",
+        "扶正",
+        "擦灰"
+      ],
+      "description": "画室右侧墙上的画作。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "看会儿画"
+    },
+    {
+      "id": "canvas_stack_0",
+      "room": "画室",
+      "name": "画布",
+      "actions": [
+        "搬一张",
+        "整理",
+        "看看"
+      ],
+      "description": "靠在墙边的空白画布。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "整理画布"
+    },
+    {
+      "id": "canvas_stack_1",
+      "room": "画室",
+      "name": "画布",
+      "actions": [
+        "搬一张",
+        "整理",
+        "看看"
+      ],
+      "description": "靠在墙边的空白画布。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "整理画布"
+    },
+    {
+      "id": "canvas_stack_2",
+      "room": "画室",
+      "name": "画布",
+      "actions": [
+        "搬一张",
+        "整理",
+        "看看"
+      ],
+      "description": "靠在墙边的空白画布。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "整理画布"
+    },
+    {
+      "id": "acoustic_left",
+      "room": "影音室",
+      "name": "吸音板",
+      "actions": [
+        "摸摸",
+        "扶正",
+        "调位置"
+      ],
+      "description": "影音室墙面的吸音板。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "在吸音板边待一会儿"
+    },
+    {
+      "id": "acoustic_right",
+      "room": "影音室",
+      "name": "吸音板",
+      "actions": [
+        "摸摸",
+        "扶正",
+        "调位置"
+      ],
+      "description": "影音室墙面的吸音板。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "在吸音板边待一会儿"
+    },
+    {
+      "id": "sconce_left",
+      "room": "影音室",
+      "name": "壁灯",
+      "actions": [
+        "开灯",
+        "关灯",
+        "调暗"
+      ],
+      "description": "影音室侧墙的壁灯。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "调一下壁灯"
+    },
+    {
+      "id": "sconce_right",
+      "room": "影音室",
+      "name": "壁灯",
+      "actions": [
+        "开灯",
+        "关灯",
+        "调暗"
+      ],
+      "description": "影音室侧墙的壁灯。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "调一下壁灯"
+    },
+    {
+      "id": "rail_planter_right_0",
+      "room": "露台",
+      "name": "栏杆花箱",
+      "actions": [
+        "浇水",
+        "剪花",
+        "看看"
+      ],
+      "description": "露台栏杆上的花箱。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "照料花箱"
+    },
+    {
+      "id": "rail_planter_front_0",
+      "room": "露台",
+      "name": "栏杆花箱",
+      "actions": [
+        "浇水",
+        "剪花",
+        "看看"
+      ],
+      "description": "露台栏杆上的花箱。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "照料花箱"
+    },
+    {
+      "id": "tree",
+      "room": "露台",
+      "name": "盆栽树",
+      "actions": [
+        "浇水",
+        "看叶子",
+        "松土"
+      ],
+      "description": "露台角落的盆栽树。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "给盆栽树浇水"
+    },
+    {
+      "id": "pendant",
+      "room": "衣帽间",
+      "name": "吊灯",
+      "actions": [
+        "开灯",
+        "关灯",
+        "调暗"
+      ],
+      "description": "衣帽间顶上的吊灯。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "调一下衣帽间灯"
+    },
+    {
+      "id": "pendant_1",
+      "room": "厨房",
+      "name": "吊灯",
+      "actions": [
+        "开灯",
+        "关灯",
+        "调暗"
+      ],
+      "description": "厨房顶上的吊灯。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "调一下厨房灯"
+    },
+    {
+      "id": "pendant_2",
+      "room": "厨房",
+      "name": "吊灯",
+      "actions": [
+        "开灯",
+        "关灯",
+        "调暗"
+      ],
+      "description": "厨房顶上的吊灯。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "调一下厨房灯"
+    },
+    {
+      "id": "chandelier",
+      "room": "餐厅",
+      "name": "吊灯",
+      "actions": [
+        "开灯",
+        "关灯",
+        "调亮"
+      ],
+      "description": "餐桌顶上的吊灯。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "调一下餐厅灯"
+    },
+    {
+      "id": "wall_art",
+      "room": "客厅",
+      "name": "装饰画",
+      "actions": [
+        "看看",
+        "扶正",
+        "擦灰"
+      ],
+      "description": "客厅墙上的装饰画。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "看会儿画"
+    },
+    {
+      "id": "dining_art",
+      "room": "餐厅",
+      "name": "装饰画",
+      "actions": [
+        "看看",
+        "扶正",
+        "擦灰"
+      ],
+      "description": "餐厅墙上的装饰画。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "看会儿画"
+    },
+    {
+      "id": "hall_art",
+      "room": "楼梯厅",
+      "name": "装饰画",
+      "actions": [
+        "看看",
+        "扶正",
+        "擦灰"
+      ],
+      "description": "楼梯厅墙上的装饰画。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "看会儿画"
+    },
+    {
+      "id": "moon_art",
+      "room": "卧室",
+      "name": "月亮挂画",
+      "actions": [
+        "看看",
+        "扶正",
+        "擦灰"
+      ],
+      "description": "卧室墙上的月亮挂画。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "看看月亮挂画"
+    },
+    {
+      "id": "gym_ball",
+      "room": "健身室",
+      "name": "健身球",
+      "actions": [
+        "拍两下",
+        "抱着拉伸",
+        "放回去"
+      ],
+      "description": "健身室地板上的瑜伽球。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "和健身球玩一会儿"
+    },
+    {
+      "id": "clock",
+      "room": "卧室",
+      "name": "时钟",
+      "actions": [
+        "看时间",
+        "擦表盘",
+        "调准"
+      ],
+      "description": "卧室墙上的时钟。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "看一眼时间"
+    },
+    {
+      "id": "gym_clock",
+      "room": "健身室",
+      "name": "时钟",
+      "actions": [
+        "看时间",
+        "擦表盘",
+        "调准"
+      ],
+      "description": "健身室墙上的时钟。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "看一眼时间"
+    },
+    {
+      "id": "laundry_rack",
+      "room": "露台",
+      "name": "晾衣架",
+      "actions": [
+        "晾衣服",
+        "收衣服",
+        "整理"
+      ],
+      "description": "露台上的晾衣架。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "去晾会儿衣服"
+    },
+    {
+      "id": "plant2",
+      "room": "阳台",
+      "name": "绿植",
+      "actions": [
+        "浇水",
+        "剪枯叶",
+        "松土"
+      ],
+      "description": "阳台栏杆边的绿植。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "给绿植浇水"
+    },
+    {
+      "id": "lantern",
+      "room": "阳台",
+      "name": "提灯",
+      "actions": [
+        "点亮",
+        "关掉",
+        "提起来"
+      ],
+      "description": "阳台上的提灯。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "拨一下提灯"
+    },
+    {
+      "id": "spice_shelf",
+      "room": "厨房",
+      "name": "调料架",
+      "actions": [
+        "看看调料",
+        "拿调料",
+        "整理"
+      ],
+      "description": "灶台边墙上的小调料架。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "翻翻调料"
+    },
+    {
+      "id": "doormat",
+      "room": "玄关",
+      "name": "门垫",
+      "actions": [
+        "踩一踩",
+        "拍灰",
+        "整理"
+      ],
+      "description": "玄关门口的门垫。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "在门垫上停一下"
+    },
+    {
+      "id": "coat_hooks",
+      "room": "玄关",
+      "name": "挂衣钩",
+      "actions": [
+        "挂外套",
+        "取外套",
+        "整理"
+      ],
+      "description": "玄关墙上的挂衣钩。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "在挂衣钩边收拾"
+    },
+    {
+      "id": "hall_mirror",
+      "room": "玄关",
+      "name": "穿衣镜",
+      "actions": [
+        "照镜子",
+        "整理衣领",
+        "擦镜面"
+      ],
+      "description": "玄关处的穿衣镜。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "对镜整理"
+    },
+    {
+      "id": "pinboard",
+      "room": "书房",
+      "name": "软木板",
+      "actions": [
+        "看便签",
+        "钉照片",
+        "整理"
+      ],
+      "description": "书桌前墙上的软木板。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "看看软木板"
+    },
+    {
+      "id": "bath_mat",
+      "room": "浴室",
+      "name": "浴室地垫",
+      "actions": [
+        "踩一踩",
+        "晾起来",
+        "换位置"
+      ],
+      "description": "浴缸旁边的地垫。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "在浴室停一下"
+    },
+    {
+      "id": "towel_hook",
+      "room": "浴室",
+      "name": "挂钩",
+      "actions": [
+        "挂毛巾",
+        "取毛巾",
+        "整理"
+      ],
+      "description": "浴室墙上的毛巾挂钩。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "整理毛巾"
+    },
+    {
+      "id": "water_bottle",
+      "room": "健身室",
+      "name": "水壶",
+      "actions": [
+        "喝水",
+        "灌水",
+        "放下"
+      ],
+      "description": "健身室地板上的水壶。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "喝口水"
+    },
+    {
+      "id": "runner",
+      "room": "楼梯厅",
+      "name": "走廊地毯",
+      "actions": [
+        "踩一踩",
+        "整理",
+        "拍灰"
+      ],
+      "description": "楼梯厅的长条地毯。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "整理走廊"
+    },
+    {
+      "id": "round_rug",
+      "room": "衣帽间",
+      "name": "圆地毯",
+      "actions": [
+        "踩一踩",
+        "整理",
+        "拍灰"
+      ],
+      "description": "衣帽间中央的圆地毯。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "在圆毯上站一会儿"
+    },
+    {
+      "id": "string_lights",
+      "room": "露台",
+      "name": "串灯",
+      "actions": [
+        "开灯",
+        "关灯",
+        "调暗"
+      ],
+      "description": "露台上方的串灯。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "调一下串灯"
+    },
+    {
+      "id": "terrace_rug",
+      "room": "露台",
+      "name": "户外地毯",
+      "actions": [
+        "踩一踩",
+        "整理",
+        "拍灰"
+      ],
+      "description": "露台上的户外地毯。",
+      "floor": 2,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "在户外地毯边停一下"
+    },
+    {
+      "id": "gallery",
+      "room": "客厅",
+      "name": "照片墙",
+      "actions": [
+        "看照片",
+        "扶正",
+        "擦灰"
+      ],
+      "description": "客厅墙上的照片墙。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "看看照片墙"
+    },
+    {
+      "id": "facade_sconce",
+      "room": "阳台",
+      "name": "壁灯",
+      "actions": [
+        "开灯",
+        "关灯",
+        "调暗"
+      ],
+      "description": "阳台外墙上的壁灯。",
+      "floor": 1,
+      "hotspot": true,
+      "x": 50,
+      "y": 50,
+      "interact_label": "调一下外墙壁灯"
+    }
+  ],
+  "building": {
+    "name": "两层庭居",
+    "floors": 2,
+    "floor_height_m": 3.0,
+    "connection": "一楼玄关通过木楼梯连接二楼楼梯厅"
+  }
+}

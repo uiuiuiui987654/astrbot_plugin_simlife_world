@@ -1,0 +1,135 @@
+/* A warm material palette shared by the plan, room close-ups and destinations. */
+.home-card { background: linear-gradient(145deg, #1f302e, #172421 75%); }
+.home-card .card-head p { color: #acb9a8; }
+.home-stage { background: radial-gradient(ellipse at 50% 40%, #69786844, transparent 70%), #172723; }
+.floor-toolbar { display: flex; align-items: center; gap: 7px; padding: 0 17px 8px; flex-wrap: wrap; }
+.floor-tab,.floor-follow { border: 1px solid #526452; border-radius: 8px; background: #263a32; color: #d6dfcc; padding: 6px 12px; cursor: pointer; font: 11px var(--font); }
+.floor-tab.active { background: #ddc49a; border-color: #ead7b0; color: #35483c; font-weight: 700; }
+.floor-follow { margin-left: auto; background: transparent; color: #b8c8b1; }
+.floor-note { font-size: 10px; color: #adb9a4; }
+.studio-item { cursor: pointer; outline: none; }
+.studio-item:hover,.studio-item:focus-visible { filter: brightness(1.15) drop-shadow(0 0 4px #ffe4a6); }
+.studio-item:focus-visible .item-footprint { fill: #ffdb9922; stroke: #ffe5ab; stroke-width: 2; }
+.home-stage .character-marker,.home-stage .character-marker img { width: 46px; height: 46px; }
+.studio-close .room-artwork { position: absolute; inset: 0; width: 100%; height: 100%; }
+.studio-close .standee { height: 52%; max-height: 218px; right: 2%; bottom: 4%; pointer-events: none; }
+.projected-room .room-artwork { background: #d9d5bc; }
+.projected-room { background: #d9d5bc; }
+.projected-room.time-night,.projected-room.time-night .room-artwork { background: #afafa0; }
+.projected-character { filter: none; }
+.room-canvas { position: absolute; inset: 0; transform: translate(var(--room-pan-x,0px),var(--room-pan-y,0px)) scale(var(--room-zoom,1.6)); transform-origin: center; touch-action: none; cursor: grab; }
+.room-canvas.is-dragging { cursor: grabbing; }
+.projected-room .room-view-controls { position: absolute; right: 9px; bottom: 9px; z-index: 12; display: flex; align-items: center; gap: 3px; padding: 4px; border: 1px solid #cfdaad44; border-radius: 9px; background: #243c32ed; color: #f0e8d0; }
+.room-view-controls button { min-width: 25px; height: 26px; padding: 0 6px; border: 0; border-radius: 5px; color: inherit; background: #a3b69022; font: 12px system-ui; cursor: pointer; }
+.room-view-controls button:hover,.room-view-controls button:focus-visible { background: #c9d6ae44; outline: 1px solid #eee4bd; }
+.room-view-controls button:disabled { opacity: .4; cursor: default; }
+.room-zoom-value { min-width: 35px; text-align: center; font: 10px system-ui; }
+.projected-room .appearance-badge { max-width: calc(100% - 170px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.projected-room .window-weather { inset: 0; clip-path: var(--window-clip); }
+.projected-room .covered-weather { inset: 0; clip-path: polygon(0 0,100% 0,100% 38%,0 38%); }
+.studio-close .room-label { max-width: 70%; background: #263b36da; border-color: #c9d0b544; }
+.studio-close .room-label small { color: #d0d8c2; max-width: 210px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.environment-badge { position: absolute; right: 9px; top: 10px; padding: 5px 8px; font-size: 9px; letter-spacing: .06em; background: #19342bc9; color: #eee4cc; border: 1px solid #d0d5b52e; border-radius: 20px; z-index: 10; pointer-events: none; }
+.scene-stage { border-color: #a9bc9455; min-height: 240px; }
+.scene-picker .chips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 5px; scrollbar-width: thin; scrollbar-color: #6a8170 transparent; }
+.scene-picker .chip { flex: 0 0 auto; }
+.now-card { min-height: 0; }
+.destination-art { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 4; pointer-events: none; }
+.studio-outdoor > .scene-sky,.studio-outdoor > .scene-sun,.studio-outdoor > .scene-cloud,.studio-outdoor > .scene-ground,.studio-outdoor > .scene-buildings,.studio-outdoor > .scene-trees,.studio-outdoor > .scene-path,.studio-outdoor > .scene-props,.studio-outdoor > .scene-ambient,.studio-outdoor > .scene-stars,.studio-outdoor > .scene-timewash { display: none; }
+.scene.studio-outdoor .unified-art { filter: none; }
+.studio-outdoor .scene-character-wrap { bottom: 5%; right: 8%; width: 84px; height: 145px; }
+.studio-outdoor .scene-character { width: 78px; height: 134px; }
+.studio-outdoor .scene-character::after { content: ''; position: absolute; left: 15%; right: 15%; bottom: 1px; height: 7px; background: #34483b33; border-radius: 50%; z-index: -1; }
+.studio-outdoor .scene-character-wrap.walking { animation: none; }
+.scene { --scene-light: 1; }
+.scene .scene-sky { background: linear-gradient(180deg, var(--sky-top, #719eae), var(--sky-bottom, #d7debf)); }
+.scene-botanical .scene-sky,.scene-riverside .scene-sky,.scene-lakeside .scene-sky,.scene-campsite .scene-sky,.scene-park .scene-sky,.scene-mountain .scene-sky,.scene-onsen .scene-sky { height: 100%; background: linear-gradient(180deg,transparent 30%,#354c3833), url('garden-landscape.png') center / cover; }
+.scene-lakeside .scene-ground,.scene-botanical .scene-ground { opacity: .28; }
+.scene.time-night .scene-sky { filter: brightness(.36) saturate(.65) hue-rotate(13deg); }
+.scene.time-dusk .scene-sky { filter: sepia(.18) saturate(.85); }
+.scene.weather-rain .scene-sky,.scene.weather-storm .scene-sky { filter: saturate(.55) brightness(.75); }
+.scene.time-night.weather-rain .scene-sky,.scene.time-night.weather-storm .scene-sky { filter: saturate(.5) brightness(.28); }
+.scene .scene-buildings { filter: saturate(.7); }
+.scene .scene-ground { background-image: repeating-linear-gradient(174deg, #d9e0c10a 0 1px, transparent 1px 14px), linear-gradient(#66876e, #435e4c); }
+.scene .scene-props { filter: saturate(.78) brightness(var(--scene-light)); }
+.scene.time-day { --scene-light: 1.32; }
+.scene.time-dawn { --scene-light: 1.1; }
+.scene.time-dusk { --scene-light: 1.12; }
+.scene.time-night { --scene-light: .88; }
+.scene.time-night .scene-ground { filter: brightness(.56) saturate(.7); }
+.scene.time-night .destination-art { filter: brightness(.66) saturate(.8); }
+.scene.time-night .scene-timewash { opacity: .5; }
+.scene.time-dusk .scene-ground { filter: sepia(.25); }
+.scene.time-night .building i { background: #f2d49d; box-shadow: 0 0 8px #efc88c55; }
+.scene.time-day .building i { background: #9bc0c3; box-shadow: none; }
+.scene.weather-rain .scene-ground,.scene.weather-storm .scene-ground { background: repeating-linear-gradient(174deg,#b3d5d126 0 2px,transparent 2px 18px),linear-gradient(#546e6c,#334b4d); }
+.scene.weather-snow .scene-ground { background: linear-gradient(#d5e0d6,#aabdb8); }
+.scene.weather-cloudy .scene-sun,.scene.weather-rain .scene-sun,.scene.weather-storm .scene-sun,.scene.weather-snow .scene-sun,.scene.weather-fog .scene-sun { opacity: .12; box-shadow: none; }
+.scene.weather-rain .scene-stars,.scene.weather-storm .scene-stars,.scene.weather-snow .scene-stars,.scene.weather-cloudy .scene-stars,.scene.weather-fog .scene-stars { display: none; }
+.scene.weather-wind .scene-trees,.scene.weather-wind .foreground-bushes { transform-origin: center bottom; animation: studioSway 2.2s ease-in-out infinite alternate; }
+.scene.weather-storm .scene-cloud,.scene.weather-rain .scene-cloud { opacity: .65; background: #617b84; }
+.scene-weather-reflection { position: absolute; left: 0; right: 0; bottom: 10%; height: 20%; z-index: 5; pointer-events: none; opacity: .32; background: repeating-linear-gradient(176deg, transparent 0 15px, #c6dcd642 16px 17px, transparent 18px 30px); mask-image: linear-gradient(transparent,#000,transparent); }
+.weather-layer { position: absolute; inset: 0; pointer-events: none; z-index: 8; overflow: hidden; }
+.precipitation i { position: absolute; left: var(--left); top: -24px; animation: studioRain var(--speed) linear infinite; animation-delay: var(--delay); }
+.weather-rain .precipitation i,.weather-storm .precipitation i { height: 18px; width: 1px; background: linear-gradient(transparent, #daeef1b3); transform: rotate(14deg); }
+.weather-storm .precipitation i { height: 26px; }
+.weather-snow .precipitation i { width: 4px; height: 4px; border-radius: 50%; background: #f3f5df; box-shadow: 0 0 3px #edf6e5; animation-name: studioSnow; }
+.window-weather { left: 74.7%; right: 4.5%; top: 9%; bottom: 50%; z-index: 1; }
+.fog-bank { background: repeating-linear-gradient(0deg,transparent, #d3e6df44 25%,transparent 52%); filter: blur(12px); animation: studioFog 12s ease-in-out infinite alternate; }
+.lightning { background: #eef4df; opacity: 0; animation: studioLightning 11s linear infinite; }
+.studio-close .lightning { opacity: 0; background: linear-gradient(110deg, transparent 20%, #efffffaa); }
+.scene-botanical .scene-props,.scene-riverside .scene-props,.scene-lakeside .scene-props,.scene-campsite .scene-props,.scene-amusement .scene-props,.scene-flower_shop .scene-props,.scene-bakery .scene-props,.scene-library .scene-props { display: none; }
+.scene-botanical .scene-buildings,.scene-lakeside .scene-buildings,.scene-campsite .scene-buildings { display: none; }
+.scene-botanical .scene-path,.scene-riverside .scene-path,.scene-lakeside .scene-path { opacity: .35; }
+.scene .scene-label { background: #203d35db; border-color: #cbd3ad44; }
+.scene .scene-label small { color: #d2d8c6; }
+.scene .scene-character-wrap { z-index: 7; }
+.ferris-wheel { animation: studioWheel 45s linear infinite; }
+.home-stage.time-night { box-shadow: inset 0 0 100px #111d2a77; }
+.home-stage.time-night #home-svg { filter: brightness(.83) saturate(.82); }
+.home-stage.time-dusk #home-svg { filter: sepia(.12); }
+.home-stage.weather-rain #home-svg,.home-stage.weather-storm #home-svg { filter: saturate(.75) brightness(.86); }
+@keyframes studioRain { to { translate: -45px 560px; } }
+@keyframes studioSnow { to { translate: var(--drift) 560px; rotate: 100deg; } }
+@keyframes studioFog { to { transform: translateX(5%); opacity: .55; } }
+@keyframes studioLightning { 0%,90%,93%,96%,100% { opacity: 0; } 91%,94% { opacity: .24; } }
+@keyframes studioSway { from { transform: skewX(-1deg); } to { transform: skewX(2deg); } }
+@keyframes studioWheel { to { transform: rotate(360deg); } }
+.no-anim .weather-layer *,.no-anim .ferris-wheel,.no-anim .fog-bank,.no-anim .lightning { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .weather-layer *,.ferris-wheel,.fog-bank,.lightning,.scene.weather-wind .scene-trees,.scene.weather-wind .foreground-bushes { animation: none !important; } }
+@media (max-width: 1100px) { .floor-note { display: none; } .home-tools { flex-wrap: wrap; justify-content: flex-end; } }
+.scene.studio-outdoor .unified-art { filter: none; }
+.scene.studio-outdoor .scene-character-wrap { bottom: 5%; right: 8%; left: auto; width: 84px; height: 145px; }
+.scene.studio-outdoor .scene-character { width: 78px; height: 134px; }
+.appearance-badge { position: absolute; left: 11px; bottom: 10px; z-index: 10; max-width: 65%; padding: 4px 8px; border-radius: 8px; color: #e6ddcb; background: #293e35cf; font-size: 9px; pointer-events: none; }
+.no-anim .precipitation i { top: var(--top); }
+.studio-close .covered-weather { bottom: 41%; z-index: 1; }
+@media (prefers-reduced-motion: reduce) { .precipitation i { top: var(--top); } }
+/* Repeated SVG strips move at different speeds without remounting on each poll. */
+.journey { --journey-speed: 1; }
+.journey-bus,.journey-car { --journey-speed: .55; }
+.journey-rail { --journey-speed: .32; }
+.journey-cycle { --journey-speed: .7; }
+.journey-layer,.journey-lane,.journey-paving { animation: journeyScroll calc(22s * var(--journey-speed)) linear infinite; }
+.journey-distant { animation-duration: calc(65s * var(--journey-speed)); }
+.journey-streetside { animation-duration: calc(27s * var(--journey-speed)); }
+.journey-lane { animation-duration: calc(13s * var(--journey-speed)); }
+.journey-paving,.journey-foreground { animation-duration: calc(16s * var(--journey-speed)); }
+.journey-vehicle { transform: translateX(var(--traffic-rest-x)); animation: journeyTrafficEast var(--traffic-duration) linear var(--traffic-delay) infinite; }
+.journey-vehicle-west { animation-name: journeyTrafficWest; }
+.journey-wheel { transform-box: fill-box; transform-origin: center; animation: journeyWheel .85s linear infinite; }
+.scene.studio-outdoor.journey .scene-character-wrap { display: none; }
+.journey-walk .journey-person-drift,.journey-cycle .journey-person-drift { animation: journeyWalk 4s ease-in-out infinite alternate; }
+.journey-walk .journey-person-step,.journey-cycle .journey-person-step { animation: journeyStep .72s ease-in-out infinite; }
+.journey-bus .journey-person-step,.journey-car .journey-person-step,.journey-rail .journey-person-step { animation: journeyRide 1.4s ease-in-out infinite; }
+.journey-cabin { filter: drop-shadow(0 -2px 2px #465a3d33); }
+@keyframes journeyScroll { from { transform: translateX(0); } to { transform: translateX(-600px); } }
+@keyframes journeyTrafficEast { from { transform: translateX(-180px); } to { transform: translateX(780px); } }
+@keyframes journeyTrafficWest { from { transform: translateX(780px); } to { transform: translateX(-180px); } }
+@keyframes journeyWheel { to { transform: rotate(360deg); } }
+@keyframes journeyWalk { from { transform: translateX(-9px); } to { transform: translateX(9px); } }
+@keyframes journeyStep { 0%,50%,100% { transform: translateY(0) rotate(-.4deg); } 25% { transform: translateY(-1.8px) rotate(.7deg); } 75% { transform: translateY(-1px) rotate(-.6deg); } }
+@keyframes journeyRide { 0%,100% { transform: translateY(0) rotate(-.3deg); } 50% { transform: translateY(1px) rotate(.3deg); } }
+.no-anim .journey * { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .journey * { animation: none !important; } }
+

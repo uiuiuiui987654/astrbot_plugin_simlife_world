@@ -1,0 +1,104 @@
+/* Readable controls and a consistent hierarchy for the living dashboard. */
+:root { --shadow:0 7px 28px #3d52350a,0 1px 2px #3d523507; }
+body { background:radial-gradient(ellipse at 4% 0,#e4ecd9,transparent 42%),radial-gradient(ellipse at 95% 8%,#eee4ef80,transparent 35%),#f4f2eb; }
+body::before { opacity:.035; }
+.topbar { padding:8px 4px 22px; border-bottom:1px solid #cfd8c6; }
+.name-row h1 { font-size:28px; color:#365443; letter-spacing:.07em; }
+.meta { color:#687a63; font-size:12px; }
+.brand-kicker { font-size:9px; color:#6a7d61; }
+.clock { font-variant-numeric:tabular-nums; font-size:40px; }
+.now-line { font-size:12px; color:#657a61; margin-top:6px; }
+.avatar-wrap { box-shadow:0 4px 16px #6d8e5821; border:3px solid #fffef8; }
+.life-shortcuts { gap:12px; }
+.life-shortcuts button { min-height:78px; border-radius:17px; background:linear-gradient(135deg,#fffdf9,#f7f8ef); padding:14px 18px; font-weight:600; font-size:14px; box-shadow:0 3px 10px #647b4c05; }
+.life-shortcuts button:nth-child(2) { background:linear-gradient(135deg,#fffdf9,#f1f4e6); }
+.life-shortcuts button:nth-child(3) { background:linear-gradient(135deg,#fffdf9,#f1ebf2); }
+.life-shortcuts button:nth-child(4) { background:linear-gradient(135deg,#fffdf9,#f8eedc); }
+.life-shortcuts button:nth-child(5) { background:linear-gradient(135deg,#fffdf9,#eaf2ee); }
+.life-shortcuts small { font-size:11px; color:#74836a; font-weight:400; }
+.shortcut-icon { width:52px; height:46px; flex-basis:52px; }
+.card { border-radius:22px; }
+.card-head h2 { font-size:19px; color:#3b5740; }
+.section-kicker { font-size:9px; color:#748767; letter-spacing:.18em; }
+.home-card .card-head p { font-size:12px; color:#6e8065; }
+.floor-toolbar { align-items:center; padding-bottom:12px; }
+.floor-tab { min-height:36px; padding:8px 15px; font-size:12px; }
+.floor-tab.active { background:#6f8b61; box-shadow:0 3px 8px #637c4524; }
+.floor-follow { margin-left:auto; font-size:12px; min-height:36px; }
+.floor-note { color:#78876c; font-size:11px; }
+.scene-stage { border:1px solid #cbd6be; box-shadow:inset 0 0 0 4px #ffffff40; }
+.now-details { padding-top:18px; }
+.activity-row h3 { font-size:21px; letter-spacing:.02em; }
+.location-line { color:#687e60; font-size:12px; }
+.now-details .pill { font-size:11px; padding:6px 11px; }
+.next-line { font-size:11px; color:#687b61; background:#f4f6ec; border:1px solid #e0e7d6; border-radius:10px; padding:10px 12px; }
+.talk-box { background:#f0f4e7; padding:6px; border:1px solid #d8e2cb; border-radius:15px; margin-top:12px; }
+.talk-box input { border:0; background:transparent; border-radius:10px; padding:10px; font-size:13px; }
+.talk-box input::placeholder { color:#7c8c72; }
+#talk-send { width:46px; min-height:42px; background:#6f8b60; box-shadow:0 3px 8px #607c4322; }
+#talk-send:hover { background:#5a784a; }
+.talk-reply { background:#eff4e5; border:1px solid #d8e3c8; color:#4d6a42; border-radius:12px; line-height:1.8; padding:12px; }
+.scene-picker .chips { padding-bottom:6px; }
+.scene-picker .chip { color:#657b58; padding:8px 11px; font-size:11px; }
+.picker-head { font-size:11px; color:#718267; }
+.next-item { padding:13px 0; }
+.next-item .time,.next-item small { color:#6d7f64; font-size:11px; }
+.next-item .activity,.next-item .text { font-size:12px; line-height:1.75; }
+.outfit-block p { font-size:12px; color:#6e8063; }
+.timeline-card { background:linear-gradient(130deg,#fffdf7,#f8faf1); }
+.timeline-card .card-head h2 { font-size:17px; }
+.timeline-segment { box-shadow:inset 0 1px 0 #ffffff66; }
+.timeline-foot,.timeline-now,.timeline-ticks { color:#718167; }
+.home-foot { color:#6c7e62; }
+.function-menu { max-height:calc(100dvh - 130px); overflow-y:auto; box-shadow:0 18px 60px #344b3826; }
+.function-group h4 { font-size:11px; color:#718365; letter-spacing:.06em; }
+.function-grid button { min-height:46px; text-align:left; font-size:12px; background:#f6f8ef; }
+.function-grid button:hover { transform:translateY(-1px); }
+.shop-head,.inventory-head,.cook-head,.diary-head,.weekly-head,.game-head { background:linear-gradient(110deg,#eef3e5,#fbf8ef); }
+.shop-head h3,.inventory-head h3,.cook-head h3,.diary-head h3,.weekly-head h3 { font-size:21px; }
+.shop-head small,.inventory-head small,.cook-head small,.diary-head small,.weekly-head small { font-size:12px; color:#738566; }
+.shop-panel,.inventory-panel,.diary-panel,.weekly-panel,.cook-panel { max-height:calc(100dvh - 40px); }
+.shop-head button[title^="关闭"],.diary-head button[title^="关闭"],.weekly-head button[title^="关闭"],.inventory-head button[title^="关闭"] { min-width:34px; min-height:34px; border-radius:50%; }
+#shop-modal>.shop-panel { width:min(830px,calc(100vw - 32px)); }
+.shop-tools { display:grid; grid-template-columns:140px minmax(140px,1fr) 126px auto; padding:14px 22px 6px; gap:8px; align-items:center; }
+.shop-tools select { width:100%; min-width:0; min-height:38px; }
+#shop-search { width:100%; min-width:0; margin:0; min-height:38px; box-sizing:border-box; padding:9px 12px; color:#48623f; background:#f5f7ed; border:1px solid #d9e2cb; border-radius:10px; font-size:12px; }
+#shop-search::placeholder { color:#7d8c72; }
+#shop-fav-filter { min-height:38px; white-space:nowrap; }
+#shop-search:focus-visible,.shop-tools select:focus-visible { outline:2px solid #829b6c; outline-offset:2px; border-color:#829b6c; }
+.shop-fav { min-width:26px; min-height:26px; border-radius:7px; color:#879879; }
+.shop-fav.active { color:#a97d31; }
+.shop-buy:disabled { opacity:.55; cursor:not-allowed; }
+.shop-tools input { min-width:120px; flex:1; }
+#shop-body:has(.shop-item) { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:stretch; gap:14px; }
+.shop-item { display:grid; grid-template-columns:76px minmax(0,1fr); gap:10px 14px; padding:17px; background:#fcfdf7; border:1px solid #dce5d0; box-shadow:0 3px 10px #40552a06; }
+.shop-icon { width:76px; height:82px; border-radius:12px; background:radial-gradient(ellipse at center,#e4ecd5,transparent 70%); }
+.shop-copy { min-width:0; }
+.shop-name { font-size:14px; font-weight:600; line-height:1.6; }
+.shop-name small { display:block; color:#79896d; font-weight:400; margin:2px 0; font-size:10px; }
+.shop-desc { color:#738367; font-size:12px; line-height:1.7; }
+.shop-buy-box { grid-column:1/-1; display:flex; flex-direction:row; align-items:center; justify-content:space-between; border-top:1px solid #e3e9da; padding-top:12px; gap:12px; }
+.shop-price { font-size:16px; font-weight:600; color:#9c804d; align-self:center; }
+.shop-buy { min-height:36px; min-width:80px; border-radius:10px; background:#e3ecd5; color:#526f40; font-size:12px; }
+.shop-buy:hover { background:#cadcba; }
+.shop-stock,.shop-item small { color:#7a886e; }
+.inventory-item { padding:15px; gap:12px; }
+.inventory-icon { width:62px; height:54px; flex-basis:62px; background:#edf3e1; border-radius:10px; }
+.inventory-name { font-size:14px; font-weight:600; line-height:1.5; }
+.inventory-category,.inventory-book-meta { color:#718365; font-size:11px; }
+.inventory-room-tag { color:#738964; background:#e8f0dc; border-radius:6px; padding:3px 6px; }
+.inventory-use,.inventory-place { color:#617e4d; background:#e9f1dd; border:1px solid #d0dfc0; min-height:34px; border-radius:9px; }
+.item-drawer { box-shadow:0 16px 50px #334b3626; }
+.drawer-head h3,.popover-head h3 { color:#3f5d40; font-size:18px; }
+.drawer-head p,.item-desc { color:#6c7f61; font-size:12px; }
+.item-chip { font-size:12px; padding:12px 8px; border-color:#d8e3cb; }
+.item-chip:hover { box-shadow:0 3px 9px #5d78471a; transform:translateY(-1px); }
+.drawer-search input { width:100%; box-sizing:border-box; }
+.inventory-empty,.memory-empty,.fridge-empty,.integration-empty { padding:24px 16px; color:#718465; font-size:12px; line-height:1.8; text-align:center; background:#f6f8ef; border:1px dashed #d5dfc8; border-radius:12px; }
+.diary-entry { padding:17px; line-height:1.8; }
+.diary-entry-title { font-size:15px; font-weight:600; margin-bottom:7px; }
+.diary-text { font-size:13px; color:#5f7754; line-height:1.9; }
+.diary-date { font-size:11px; }
+.weekly-range-btn { min-height:32px; font-size:11px; padding:6px 10px; border-radius:9px; }
+.weekly-tools { row-gap:8px; }
+@media(prefers-reduced-motion:reduce) { .life-shortcuts button:hover,.function-grid button:hover,.item-chip:hover { transform:none; } }

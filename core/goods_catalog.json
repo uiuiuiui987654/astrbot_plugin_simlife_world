@@ -1,0 +1,1907 @@
+{
+  "schema_version": 1,
+  "currency": "元",
+  "goods": [
+    {
+      "id": "milk_tea",
+      "name": "奶茶",
+      "category": "饮品",
+      "price": 15,
+      "description": "街角那家，三分糖去冰。",
+      "icon": "🧋"
+    },
+    {
+      "id": "coffee",
+      "name": "咖啡",
+      "category": "饮品",
+      "price": 22,
+      "description": "提神用，苦一点也没关系。",
+      "icon": "☕"
+    },
+    {
+      "id": "juice",
+      "name": "鲜榨果汁",
+      "category": "饮品",
+      "price": 12,
+      "description": "今天想喝点甜的。",
+      "icon": "🧃"
+    },
+    {
+      "id": "chips",
+      "name": "薯片",
+      "category": "零食",
+      "price": 8,
+      "description": "看片子的时候拆一包。",
+      "icon": "🍟"
+    },
+    {
+      "id": "chocolate",
+      "name": "巧克力",
+      "category": "零食",
+      "price": 18,
+      "description": "心情不好的时候来一块。",
+      "icon": "🍫"
+    },
+    {
+      "id": "cake",
+      "name": "小蛋糕",
+      "category": "零食",
+      "price": 28,
+      "description": "小小的，刚好够两个人分。",
+      "icon": "🍰"
+    },
+    {
+      "id": "ramen",
+      "name": "拉面",
+      "category": "食物",
+      "price": 25,
+      "description": "热腾腾的一碗。",
+      "icon": "🍜"
+    },
+    {
+      "id": "bento",
+      "name": "便当",
+      "category": "食物",
+      "price": 20,
+      "description": "简单但管饱。",
+      "icon": "🍱"
+    },
+    {
+      "id": "hotpot",
+      "name": "火锅",
+      "category": "食物",
+      "price": 88,
+      "description": "适合叫上人一起吃。",
+      "icon": "🍲"
+    },
+    {
+      "id": "headphones",
+      "name": "耳机",
+      "category": "数码",
+      "price": 199,
+      "description": "听歌、看片都不吵别人。",
+      "icon": "🎧",
+      "installable": true,
+      "slot_tags": [
+        "desk_tech",
+        "display_shelf"
+      ],
+      "actions": [
+        "戴上听会儿",
+        "放首歌",
+        "收起来"
+      ],
+      "interact_label": "戴上听会儿"
+    },
+    {
+      "id": "camera",
+      "name": "相机",
+      "category": "数码",
+      "price": 899,
+      "description": "想认真记录点什么。",
+      "icon": "📷",
+      "installable": true,
+      "slot_tags": [
+        "display_shelf",
+        "desk_tech"
+      ],
+      "actions": [
+        "拍两张",
+        "翻看照片",
+        "收进包里"
+      ],
+      "interact_label": "拍两张"
+    },
+    {
+      "id": "keyboard",
+      "name": "机械键盘",
+      "category": "数码",
+      "price": 299,
+      "description": "打字会变得很响。",
+      "icon": "⌨️",
+      "installable": true,
+      "slot_tags": [
+        "desk_tech"
+      ],
+      "actions": [
+        "敲一会儿",
+        "擦键帽",
+        "收起来"
+      ],
+      "interact_label": "敲一会儿"
+    },
+    {
+      "id": "console",
+      "name": "游戏机",
+      "category": "数码",
+      "price": 1299,
+      "description": "一直想要的那台。",
+      "icon": "🎮",
+      "installable": true,
+      "slot_tags": [
+        "media_console"
+      ],
+      "actions": [
+        "开一局",
+        "看游戏库",
+        "收起来"
+      ],
+      "interact_label": "开一局"
+    },
+    {
+      "id": "tshirt",
+      "name": "T恤",
+      "category": "穿搭",
+      "price": 59,
+      "description": "基础款，怎么穿都行。",
+      "icon": "👕",
+      "installable": true,
+      "slot_tags": [
+        "wear_rail"
+      ],
+      "actions": [
+        "换上",
+        "搭配一下",
+        "叠好"
+      ],
+      "interact_label": "换上"
+    },
+    {
+      "id": "hoodie",
+      "name": "卫衣",
+      "category": "穿搭",
+      "price": 129,
+      "description": "天凉的时候套上。",
+      "icon": "🧥",
+      "installable": true,
+      "slot_tags": [
+        "wear_rail"
+      ],
+      "actions": [
+        "套上",
+        "整理帽子",
+        "挂起来"
+      ],
+      "interact_label": "套上"
+    },
+    {
+      "id": "skirt",
+      "name": "半身裙",
+      "category": "穿搭",
+      "price": 159,
+      "description": "试衣间里看了很久。",
+      "icon": "👗",
+      "installable": true,
+      "slot_tags": [
+        "wear_rail"
+      ],
+      "actions": [
+        "换上",
+        "转身看看",
+        "挂好"
+      ],
+      "interact_label": "换上"
+    },
+    {
+      "id": "sneakers",
+      "name": "帆布鞋",
+      "category": "穿搭",
+      "price": 99,
+      "description": "走路舒服最重要。",
+      "icon": "👟",
+      "installable": true,
+      "slot_tags": [
+        "shoe_floor"
+      ],
+      "actions": [
+        "穿上",
+        "走两步",
+        "摆好"
+      ],
+      "interact_label": "穿上"
+    },
+    {
+      "id": "pillow",
+      "name": "抱枕",
+      "category": "居家",
+      "price": 39,
+      "description": "沙发上看片子时抱着。",
+      "icon": "🛋️",
+      "installable": true,
+      "slot_tags": [
+        "soft"
+      ],
+      "actions": [
+        "抱着靠一会儿",
+        "拍松",
+        "摆好"
+      ],
+      "interact_label": "抱着靠一会儿"
+    },
+    {
+      "id": "diffuser",
+      "name": "香薰",
+      "category": "居家",
+      "price": 49,
+      "description": "让房间有点自己的味道。",
+      "icon": "🕯️",
+      "installable": true,
+      "slot_tags": [
+        "surface_small",
+        "floor_small"
+      ],
+      "actions": [
+        "打开",
+        "添精油",
+        "关掉"
+      ],
+      "interact_label": "打开"
+    },
+    {
+      "id": "lamp",
+      "name": "小台灯",
+      "category": "居家",
+      "price": 89,
+      "description": "夜里看书不刺眼。",
+      "icon": "💡",
+      "installable": true,
+      "slot_tags": [
+        "floor_lamp"
+      ],
+      "actions": [
+        "打开",
+        "调亮",
+        "关掉"
+      ],
+      "interact_label": "打开"
+    },
+    {
+      "id": "towel",
+      "name": "浴巾",
+      "category": "居家",
+      "price": 29,
+      "description": "泡完澡要用。",
+      "icon": "🧺",
+      "installable": true,
+      "slot_tags": [
+        "bath_floor"
+      ],
+      "actions": [
+        "擦擦手",
+        "挂好",
+        "叠起来"
+      ],
+      "interact_label": "擦擦手"
+    },
+    {
+      "id": "paint_set",
+      "name": "画笔套装",
+      "category": "兴趣",
+      "price": 35,
+      "description": "想画点什么的时候。",
+      "icon": "🎨",
+      "installable": true,
+      "slot_tags": [
+        "surface_desk"
+      ],
+      "actions": [
+        "摆开画笔",
+        "画两笔",
+        "收好"
+      ],
+      "interact_label": "摆开画笔"
+    },
+    {
+      "id": "puzzle",
+      "name": "拼图",
+      "category": "兴趣",
+      "price": 45,
+      "description": "一千片，够安静一个下午。",
+      "icon": "🧩",
+      "installable": true,
+      "slot_tags": [
+        "surface_table"
+      ],
+      "actions": [
+        "拼几块",
+        "看看进度",
+        "收起来"
+      ],
+      "interact_label": "拼几块"
+    },
+    {
+      "id": "flowers",
+      "name": "花束",
+      "category": "兴趣",
+      "price": 66,
+      "description": "放在桌上会让人心情好。",
+      "icon": "💐",
+      "installable": true,
+      "slot_tags": [
+        "surface_vase"
+      ],
+      "actions": [
+        "闻一下",
+        "换个位置",
+        "整理花枝"
+      ],
+      "interact_label": "闻一下"
+    },
+    {
+      "id": "plant",
+      "name": "小盆栽",
+      "category": "兴趣",
+      "price": 39,
+      "description": "养在窗边，记得浇水。",
+      "icon": "🪴",
+      "installable": true,
+      "slot_tags": [
+        "floor_plant"
+      ],
+      "actions": [
+        "浇水",
+        "看叶子",
+        "松土"
+      ],
+      "interact_label": "浇水"
+    },
+    {
+      "id": "bracelet",
+      "name": "手链",
+      "category": "礼物",
+      "price": 120,
+      "description": "细巧的一根，想送人。",
+      "icon": "📿",
+      "installable": true,
+      "slot_tags": [
+        "jewelry_tray"
+      ],
+      "actions": [
+        "戴上",
+        "照镜子",
+        "收好"
+      ],
+      "interact_label": "戴上"
+    },
+    {
+      "id": "scarf",
+      "name": "围巾",
+      "category": "礼物",
+      "price": 80,
+      "description": "冬天围着会暖一点。",
+      "icon": "🧣",
+      "installable": true,
+      "slot_tags": [
+        "wear_hook"
+      ],
+      "actions": [
+        "围上",
+        "搭配一下",
+        "叠好"
+      ],
+      "interact_label": "围上"
+    },
+    {
+      "id": "book_cloud",
+      "name": "云层以下",
+      "category": "书籍",
+      "price": 38,
+      "description": "一个在城市里换过很多份工作的年轻人，慢慢学会在下班后抬头看天。故事不急着给答案，只写普通人的犹豫、房租和一点点不肯熄灭的",
+      "icon": "📖",
+      "book_id": "book_cloud"
+    },
+    {
+      "id": "book_signal",
+      "name": "第七个信号",
+      "category": "书籍",
+      "price": 42,
+      "description": "深空监听站收到一段重复了七次的信号。值班员发现，每次重复都比上一次少一个字。她必须在信号归零前，决定要不要把这件事告诉地",
+      "icon": "📖",
+      "book_id": "book_signal"
+    },
+    {
+      "id": "book_rain",
+      "name": "雨夜列车",
+      "category": "书籍",
+      "price": 36,
+      "description": "一趟开往海边的末班列车上，七名乘客各自带着秘密。列车因暴雨停在中途，而车厢里少了一个人。",
+      "icon": "📖",
+      "book_id": "book_rain"
+    },
+    {
+      "id": "book_slow",
+      "name": "慢一点也没关系",
+      "category": "书籍",
+      "price": 32,
+      "description": "一本写给急着赶路的人的小书。作者记录了自己辞职后的一年：学做饭、养植物、重新认识楼下的街道，也重新认识自己。",
+      "icon": "📖",
+      "book_id": "book_slow"
+    },
+    {
+      "id": "book_light",
+      "name": "光的形状",
+      "category": "书籍",
+      "price": 58,
+      "description": "一位街头摄影师关于光的笔记。书里没有参数表，只有他追着晨雾、公交玻璃和雨后积水拍下的理由。",
+      "icon": "📖",
+      "book_id": "book_light"
+    },
+    {
+      "id": "book_sea",
+      "name": "海边的房间",
+      "category": "书籍",
+      "price": 40,
+      "description": "每年夏天，她都会回到海边那间旧房子住几天。今年，房间里多了一封没有署名的信，和一个她以为早就忘了的人。",
+      "icon": "📖",
+      "book_id": "book_sea"
+    },
+    {
+      "id": "book_code",
+      "name": "写给普通人的代码课",
+      "category": "书籍",
+      "price": 68,
+      "description": "不教人速成，只讲普通人怎么把一个问题拆小、写清楚、再交给机器。适合完全没基础、但想亲手做点东西的人。",
+      "icon": "📖",
+      "book_id": "book_code"
+    },
+    {
+      "id": "book_kitchen",
+      "name": "深夜厨房笔记",
+      "category": "书籍",
+      "price": 35,
+      "description": "一个夜班厨师写给深夜回家的人。书里是简单的菜、疲惫的胃，以及把日子慢慢煮开的方法。",
+      "icon": "📖",
+      "book_id": "book_kitchen"
+    },
+    {
+      "id": "book_stars",
+      "name": "星图与旧信",
+      "category": "书籍",
+      "price": 45,
+      "description": "一个负责绘制星图的女孩，在旧天文台里发现了一叠写给未来的信。信上的日期还没有到，字迹却和她自己一模一样。",
+      "icon": "📖",
+      "book_id": "book_stars"
+    },
+    {
+      "id": "book_history",
+      "name": "一条街的百年",
+      "category": "书籍",
+      "price": 52,
+      "description": "从一间米铺写到今天的便利店，一条普通街道的百年变化。作者用旧照片、账本和居民口述，拼出一座城市被忽略的日常。",
+      "icon": "📖",
+      "book_id": "book_history"
+    },
+    {
+      "id": "book_tide",
+      "name": "潮汐来信",
+      "category": "书籍",
+      "price": 45,
+      "description": "海边邮局代收一封迟到十年的信，收信人却住在早已搬空的旧房子里。",
+      "icon": "📖",
+      "book_id": "book_tide"
+    },
+    {
+      "id": "book_garden",
+      "name": "零点花园",
+      "category": "书籍",
+      "price": 48,
+      "description": "午夜十二点，城市天台会长出一座只开一小时的花园。",
+      "icon": "📖",
+      "book_id": "book_garden"
+    },
+    {
+      "id": "book_mech",
+      "name": "机械心跳",
+      "category": "书籍",
+      "price": 52,
+      "description": "维修师发现一台旧机器人会在夜里偷偷听歌。",
+      "icon": "📖",
+      "book_id": "book_mech"
+    },
+    {
+      "id": "book_monday",
+      "name": "周一逃逸计划",
+      "category": "书籍",
+      "price": 39,
+      "description": "一个普通上班族决定每周一给自己放半天假。",
+      "icon": "📖",
+      "book_id": "book_monday"
+    },
+    {
+      "id": "book_mountain",
+      "name": "山中四季",
+      "category": "书籍",
+      "price": 42,
+      "description": "一个人在山里住满一年，记录四季变化和慢慢变轻的日子。",
+      "icon": "📖",
+      "book_id": "book_mountain"
+    },
+    {
+      "id": "book_food",
+      "name": "旧城食单",
+      "category": "书籍",
+      "price": 46,
+      "description": "一间藏在旧城巷子里的小馆子，菜单每天都不一样。",
+      "icon": "📖",
+      "book_id": "book_food"
+    },
+    {
+      "id": "book_repair",
+      "name": "银河修理铺",
+      "category": "书籍",
+      "price": 44,
+      "description": "在星际航线尽头，有一家什么都修的修理铺。",
+      "icon": "📖",
+      "book_id": "book_repair"
+    },
+    {
+      "id": "book_far",
+      "name": "纸上的远方",
+      "category": "书籍",
+      "price": 36,
+      "description": "一本关于出发和回来的小书，写给总想离开又舍不得的人。",
+      "icon": "📖",
+      "book_id": "book_far"
+    },
+    {
+      "id": "book_cat",
+      "name": "猫的哲学课",
+      "category": "书籍",
+      "price": 35,
+      "description": "一只猫和一个写不出稿子的人，谁也没教会谁生活。",
+      "icon": "📖",
+      "book_id": "book_cat"
+    },
+    {
+      "id": "book_ferry",
+      "name": "最后一班轮渡",
+      "category": "书籍",
+      "price": 40,
+      "description": "小镇轮渡最后一班，船上多了一个不该出现的乘客。",
+      "icon": "📖",
+      "book_id": "book_ferry"
+    },
+    {
+      "id": "soy_milk",
+      "name": "热豆浆",
+      "category": "饮品",
+      "price": 6,
+      "description": "早晨路边摊的热豆浆，捧在手里很暖。",
+      "icon": "🥛"
+    },
+    {
+      "id": "sparkling",
+      "name": "气泡水",
+      "category": "饮品",
+      "price": 9,
+      "description": "冰镇的一瓶，气泡往上冒。",
+      "icon": "🥤"
+    },
+    {
+      "id": "fruit_tea",
+      "name": "果茶",
+      "category": "饮品",
+      "price": 16,
+      "description": "少糖，果肉很多。",
+      "icon": "🧋"
+    },
+    {
+      "id": "milk",
+      "name": "牛奶",
+      "category": "饮品",
+      "price": 7,
+      "description": "睡前热一杯。",
+      "icon": "🥛"
+    },
+    {
+      "id": "nuts",
+      "name": "每日坚果",
+      "category": "零食",
+      "price": 15,
+      "description": "一小包，适合下午垫肚子。",
+      "icon": "🥜"
+    },
+    {
+      "id": "cookies",
+      "name": "黄油饼干",
+      "category": "零食",
+      "price": 12,
+      "description": "酥酥的，掉渣。",
+      "icon": "🍪"
+    },
+    {
+      "id": "icecream",
+      "name": "冰淇淋",
+      "category": "零食",
+      "price": 14,
+      "description": "天热的时候来一支。",
+      "icon": "🍦"
+    },
+    {
+      "id": "dumplings",
+      "name": "手工饺子",
+      "category": "食物",
+      "price": 26,
+      "description": "薄皮大馅，蘸醋。",
+      "icon": "🥟"
+    },
+    {
+      "id": "rice_bowl",
+      "name": "盖饭",
+      "category": "食物",
+      "price": 24,
+      "description": "有肉有菜，管饱。",
+      "icon": "🍚"
+    },
+    {
+      "id": "sushi",
+      "name": "寿司拼盘",
+      "category": "食物",
+      "price": 38,
+      "description": "偶尔想吃点不一样。",
+      "icon": "🍣"
+    },
+    {
+      "id": "bbq",
+      "name": "烧烤",
+      "category": "食物",
+      "price": 60,
+      "description": "适合晚上和朋友一起吃。",
+      "icon": "🍢"
+    },
+    {
+      "id": "powerbank",
+      "name": "充电宝",
+      "category": "数码",
+      "price": 129,
+      "description": "出门总怕手机没电。",
+      "icon": "🔋",
+      "installable": true,
+      "slot_tags": [
+        "desk_tech",
+        "surface_small"
+      ],
+      "actions": [
+        "给手机充会儿",
+        "看电量",
+        "收起来"
+      ],
+      "interact_label": "给手机充会儿"
+    },
+    {
+      "id": "speaker",
+      "name": "蓝牙音箱",
+      "category": "数码",
+      "price": 249,
+      "description": "洗澡和做饭的时候放歌。",
+      "icon": "🔊",
+      "installable": true,
+      "slot_tags": [
+        "media_console",
+        "desk_tech",
+        "surface_small"
+      ],
+      "actions": [
+        "放首歌",
+        "调音量",
+        "关掉"
+      ],
+      "interact_label": "放首歌"
+    },
+    {
+      "id": "tablet",
+      "name": "平板电脑",
+      "category": "数码",
+      "price": 1799,
+      "description": "躺着看片、看书都方便。",
+      "icon": "📱",
+      "installable": true,
+      "slot_tags": [
+        "desk_tech"
+      ],
+      "actions": [
+        "打开看看",
+        "划两下",
+        "放回去"
+      ],
+      "interact_label": "打开看看"
+    },
+    {
+      "id": "pajamas",
+      "name": "睡衣",
+      "category": "穿搭",
+      "price": 89,
+      "description": "软软的，周末穿。",
+      "icon": "🩳",
+      "installable": true,
+      "slot_tags": [
+        "wear_rail"
+      ],
+      "actions": [
+        "换上",
+        "叠好",
+        "挂起来"
+      ],
+      "interact_label": "换上"
+    },
+    {
+      "id": "coat",
+      "name": "薄外套",
+      "category": "穿搭",
+      "price": 199,
+      "description": "早晚温差大的时候穿。",
+      "icon": "🧥",
+      "installable": true,
+      "slot_tags": [
+        "wear_rail",
+        "wear_hook"
+      ],
+      "actions": [
+        "披上",
+        "整理领口",
+        "挂好"
+      ],
+      "interact_label": "披上"
+    },
+    {
+      "id": "cap",
+      "name": "鸭舌帽",
+      "category": "穿搭",
+      "price": 49,
+      "description": "不想打理头发时戴上。",
+      "icon": "🧢",
+      "installable": true,
+      "slot_tags": [
+        "wear_hook"
+      ],
+      "actions": [
+        "戴上",
+        "照镜子",
+        "挂好"
+      ],
+      "interact_label": "戴上"
+    },
+    {
+      "id": "rug",
+      "name": "小地毯",
+      "category": "居家",
+      "price": 159,
+      "description": "光脚踩上去很舒服。",
+      "icon": "🟫",
+      "installable": true,
+      "slot_tags": [
+        "floor_rug"
+      ],
+      "actions": [
+        "踩一踩",
+        "整理边角",
+        "拍灰"
+      ],
+      "interact_label": "踩一踩"
+    },
+    {
+      "id": "storage_box",
+      "name": "收纳箱",
+      "category": "居家",
+      "price": 69,
+      "description": "把乱七八糟的东西收进去。",
+      "icon": "📦",
+      "installable": true,
+      "slot_tags": [
+        "floor_storage",
+        "top_storage"
+      ],
+      "actions": [
+        "打开看看",
+        "放东西",
+        "盖好"
+      ],
+      "interact_label": "打开看看"
+    },
+    {
+      "id": "humidifier",
+      "name": "加湿器",
+      "category": "居家",
+      "price": 149,
+      "description": "干燥的房间里放一台。",
+      "icon": "💨",
+      "installable": true,
+      "slot_tags": [
+        "floor_small"
+      ],
+      "actions": [
+        "打开",
+        "加水",
+        "关掉"
+      ],
+      "interact_label": "打开"
+    },
+    {
+      "id": "curtain",
+      "name": "窗帘",
+      "category": "居家",
+      "price": 129,
+      "description": "遮光，周末能睡久一点。",
+      "icon": "🪟",
+      "installable": true,
+      "slot_tags": [
+        "wall_curtain"
+      ],
+      "actions": [
+        "拉开",
+        "拉上",
+        "整理褶皱"
+      ],
+      "interact_label": "拉开"
+    },
+    {
+      "id": "guitar",
+      "name": "民谣吉他",
+      "category": "兴趣",
+      "price": 499,
+      "description": "一直想学，但还没开始。",
+      "icon": "🎸",
+      "installable": true,
+      "slot_tags": [
+        "floor_instrument"
+      ],
+      "actions": [
+        "弹一会儿",
+        "调弦",
+        "放回去"
+      ],
+      "interact_label": "弹一会儿"
+    },
+    {
+      "id": "model_kit",
+      "name": "拼装模型",
+      "category": "兴趣",
+      "price": 128,
+      "description": "适合安静地消磨一个下午。",
+      "icon": "🧩",
+      "installable": true,
+      "slot_tags": [
+        "surface_desk",
+        "display_shelf"
+      ],
+      "actions": [
+        "拼一会儿",
+        "看说明书",
+        "收好"
+      ],
+      "interact_label": "拼一会儿"
+    },
+    {
+      "id": "journal",
+      "name": "手账本",
+      "category": "兴趣",
+      "price": 32,
+      "description": "记录一点小事。",
+      "icon": "📓",
+      "installable": true,
+      "slot_tags": [
+        "surface_desk"
+      ],
+      "actions": [
+        "翻开写两页",
+        "贴点东西",
+        "合上"
+      ],
+      "interact_label": "翻开写两页"
+    },
+    {
+      "id": "paint",
+      "name": "水彩颜料",
+      "category": "兴趣",
+      "price": 45,
+      "description": "想画的时候随手涂两笔。",
+      "icon": "🎨",
+      "installable": true,
+      "slot_tags": [
+        "surface_desk"
+      ],
+      "actions": [
+        "调色",
+        "画两笔",
+        "盖好"
+      ],
+      "interact_label": "调色"
+    },
+    {
+      "id": "music_box",
+      "name": "音乐盒",
+      "category": "礼物",
+      "price": 99,
+      "description": "打开会响起很轻的旋律。",
+      "icon": "🎵",
+      "installable": true,
+      "slot_tags": [
+        "surface_small",
+        "display_shelf"
+      ],
+      "actions": [
+        "上发条",
+        "听一会儿",
+        "合上"
+      ],
+      "interact_label": "上发条"
+    },
+    {
+      "id": "candle",
+      "name": "香薰蜡烛",
+      "category": "礼物",
+      "price": 58,
+      "description": "点起来有淡淡的木香。",
+      "icon": "🕯️",
+      "installable": true,
+      "slot_tags": [
+        "surface_small"
+      ],
+      "actions": [
+        "点上",
+        "看会儿火苗",
+        "吹灭"
+      ],
+      "interact_label": "点上"
+    },
+    {
+      "id": "book_tide_light",
+      "name": "潮汐来信·轻小说版",
+      "category": "书籍",
+      "price": 58,
+      "description": "带目录、20章正文和后记的轻小说版，约9.5万字。",
+      "icon": "📖",
+      "book_id": "book_tide_light"
+    },
+    {
+      "id": "coconut_milk",
+      "name": "椰奶",
+      "category": "饮品",
+      "price": 18,
+      "description": "冰镇过的椰奶，喝着很顺口。",
+      "icon": "🥥"
+    },
+    {
+      "id": "lemonade",
+      "name": "柠檬水",
+      "category": "饮品",
+      "price": 14,
+      "description": "加了两片柠檬，酸得刚好。",
+      "icon": "🍋"
+    },
+    {
+      "id": "cold_brew",
+      "name": "冷萃咖啡",
+      "category": "饮品",
+      "price": 26,
+      "description": "慢慢萃出来的冷萃，不苦。",
+      "icon": "🧊"
+    },
+    {
+      "id": "hot_cocoa",
+      "name": "热可可",
+      "category": "饮品",
+      "price": 22,
+      "description": "捧在手里暖一会儿。",
+      "icon": "🍫"
+    },
+    {
+      "id": "yogurt_drink",
+      "name": "酸奶",
+      "category": "饮品",
+      "price": 16,
+      "description": "浓稠的原味酸奶。",
+      "icon": "🥛"
+    },
+    {
+      "id": "plum_tea",
+      "name": "梅子茶",
+      "category": "饮品",
+      "price": 15,
+      "description": "微酸带一点咸，很解腻。",
+      "icon": "🍵"
+    },
+    {
+      "id": "rice_milk",
+      "name": "米浆",
+      "category": "饮品",
+      "price": 12,
+      "description": "早餐摊上那种温热的米浆。",
+      "icon": "🥣"
+    },
+    {
+      "id": "grape_soda",
+      "name": "葡萄汽水",
+      "category": "饮品",
+      "price": 10,
+      "description": "开盖会冒一串葡萄味的气泡。",
+      "icon": "🍇"
+    },
+    {
+      "id": "dried_mango",
+      "name": "芒果干",
+      "category": "零食",
+      "price": 12,
+      "description": "酸酸甜甜，越嚼越有味道。",
+      "icon": "🥭"
+    },
+    {
+      "id": "seaweed",
+      "name": "海苔",
+      "category": "零食",
+      "price": 9,
+      "description": "薄薄一片，咸香脆。",
+      "icon": "🌿"
+    },
+    {
+      "id": "popcorn",
+      "name": "爆米花",
+      "category": "零食",
+      "price": 10,
+      "description": "看电影时最适合抱着的一桶。",
+      "icon": "🍿"
+    },
+    {
+      "id": "pudding",
+      "name": "布丁",
+      "category": "零食",
+      "price": 13,
+      "description": "勺子一挖就晃。",
+      "icon": "🍮"
+    },
+    {
+      "id": "jerky",
+      "name": "肉脯",
+      "category": "零食",
+      "price": 22,
+      "description": "有点嚼劲，越吃越香。",
+      "icon": "🥩"
+    },
+    {
+      "id": "mochi",
+      "name": "麻薯",
+      "category": "零食",
+      "price": 16,
+      "description": "软软糯糯，里面包着奶油。",
+      "icon": "🍡"
+    },
+    {
+      "id": "butter_cookie",
+      "name": "黄油饼干",
+      "category": "零食",
+      "price": 14,
+      "description": "一打开就闻到黄油香。",
+      "icon": "🍪"
+    },
+    {
+      "id": "sour_plum",
+      "name": "话梅",
+      "category": "零食",
+      "price": 8,
+      "description": "酸得眯眼睛，又忍不住再拿一颗。",
+      "icon": "🫐"
+    },
+    {
+      "id": "fried_dumplings",
+      "name": "煎饺",
+      "category": "食物",
+      "price": 22,
+      "description": "底部煎得焦脆，配醋刚好。",
+      "icon": "🥟"
+    },
+    {
+      "id": "fried_rice",
+      "name": "炒饭",
+      "category": "食物",
+      "price": 24,
+      "description": "粒粒分明，锅气很足。",
+      "icon": "🍚"
+    },
+    {
+      "id": "curry_rice",
+      "name": "咖喱饭",
+      "category": "食物",
+      "price": 32,
+      "description": "热咖喱浇在米饭上，很扎实。",
+      "icon": "🍛"
+    },
+    {
+      "id": "sandwich",
+      "name": "三明治",
+      "category": "食物",
+      "price": 18,
+      "description": "夹了生菜、蛋和火腿。",
+      "icon": "🥪"
+    },
+    {
+      "id": "burger",
+      "name": "汉堡",
+      "category": "食物",
+      "price": 28,
+      "description": "面包压得很扁，肉饼还流汁。",
+      "icon": "🍔"
+    },
+    {
+      "id": "grilled_fish",
+      "name": "烤鱼",
+      "category": "食物",
+      "price": 48,
+      "description": "外皮微焦，鱼肉还嫩。",
+      "icon": "🐟"
+    },
+    {
+      "id": "salad",
+      "name": "沙拉",
+      "category": "食物",
+      "price": 20,
+      "description": "清爽的一碗，酱汁另放。",
+      "icon": "🥗"
+    },
+    {
+      "id": "congee",
+      "name": "粥",
+      "category": "食物",
+      "price": 12,
+      "description": "熬得很稠，配一点小菜。",
+      "icon": "🥣"
+    },
+    {
+      "id": "pizza",
+      "name": "披萨",
+      "category": "食物",
+      "price": 58,
+      "description": "芝士拉得很长，边缘微脆。",
+      "icon": "🍕"
+    },
+    {
+      "id": "oden",
+      "name": "关东煮",
+      "category": "食物",
+      "price": 18,
+      "description": "萝卜煮得很入味。",
+      "icon": "🍢"
+    },
+    {
+      "id": "wireless_mouse",
+      "name": "无线鼠标",
+      "category": "数码",
+      "price": 89,
+      "description": "握感轻，点击声很小。",
+      "icon": "🖱️",
+      "installable": true,
+      "slot_tags": [
+        "desk_tech"
+      ],
+      "actions": [
+        "滑两下",
+        "擦一擦",
+        "收起来"
+      ],
+      "interact_label": "滑两下"
+    },
+    {
+      "id": "smart_watch",
+      "name": "智能手表",
+      "category": "数码",
+      "price": 399,
+      "description": "能看时间，也能记步。",
+      "icon": "⌚",
+      "installable": true,
+      "slot_tags": [
+        "jewelry_tray",
+        "surface_small"
+      ],
+      "actions": [
+        "戴上",
+        "看步数",
+        "充电"
+      ],
+      "interact_label": "戴上"
+    },
+    {
+      "id": "game_pad",
+      "name": "游戏手柄",
+      "category": "数码",
+      "price": 199,
+      "description": "按键回弹干脆。",
+      "icon": "🎮",
+      "installable": true,
+      "slot_tags": [
+        "media_console"
+      ],
+      "actions": [
+        "开一局",
+        "搓两下",
+        "收起来"
+      ],
+      "interact_label": "开一局"
+    },
+    {
+      "id": "hard_drive",
+      "name": "移动硬盘",
+      "category": "数码",
+      "price": 299,
+      "description": "容量够装下很多旧文件。",
+      "icon": "💾",
+      "installable": true,
+      "slot_tags": [
+        "desk_tech"
+      ],
+      "actions": [
+        "插上看看",
+        "整理文件",
+        "拔下来"
+      ],
+      "interact_label": "插上看看"
+    },
+    {
+      "id": "monitor_arm",
+      "name": "显示器支架",
+      "category": "数码",
+      "price": 159,
+      "description": "桌面能空出一大块。",
+      "icon": "🖥️",
+      "installable": true,
+      "slot_tags": [
+        "desk_tech"
+      ],
+      "actions": [
+        "调角度",
+        "推回原位",
+        "擦一擦"
+      ],
+      "interact_label": "调角度"
+    },
+    {
+      "id": "charging_pad",
+      "name": "无线充电板",
+      "category": "数码",
+      "price": 99,
+      "description": "手机放上去就开始充电。",
+      "icon": "🔌",
+      "installable": true,
+      "slot_tags": [
+        "desk_tech",
+        "surface_small"
+      ],
+      "actions": [
+        "放上手机",
+        "看充电灯",
+        "收起来"
+      ],
+      "interact_label": "放上手机"
+    },
+    {
+      "id": "webcam",
+      "name": "摄像头",
+      "category": "数码",
+      "price": 129,
+      "description": "画面比笔记本自带的清楚。",
+      "icon": "📷",
+      "installable": true,
+      "slot_tags": [
+        "desk_tech"
+      ],
+      "actions": [
+        "打开画面",
+        "调角度",
+        "关掉"
+      ],
+      "interact_label": "打开画面"
+    },
+    {
+      "id": "earbuds",
+      "name": "无线耳机",
+      "category": "数码",
+      "price": 249,
+      "description": "塞进耳朵里，世界安静一半。",
+      "icon": "🎧",
+      "installable": true,
+      "slot_tags": [
+        "desk_tech",
+        "surface_small",
+        "jewelry_tray"
+      ],
+      "actions": [
+        "戴上",
+        "放首歌",
+        "收进盒里"
+      ],
+      "interact_label": "戴上"
+    },
+    {
+      "id": "cardigan",
+      "name": "针织开衫",
+      "category": "穿搭",
+      "price": 129,
+      "description": "软软的雾色开衫，秋天很好搭。",
+      "icon": "🧥",
+      "installable": true,
+      "slot_tags": [
+        "wear_rail",
+        "wear_hook"
+      ],
+      "actions": [
+        "披上",
+        "搭配一下",
+        "挂好"
+      ],
+      "interact_label": "披上"
+    },
+    {
+      "id": "long_skirt",
+      "name": "长裙",
+      "category": "穿搭",
+      "price": 159,
+      "description": "裙摆到小腿，走路会轻轻晃。",
+      "icon": "👗",
+      "installable": true,
+      "slot_tags": [
+        "wear_rail"
+      ],
+      "actions": [
+        "换上",
+        "转一圈",
+        "挂好"
+      ],
+      "interact_label": "换上"
+    },
+    {
+      "id": "cotton_socks",
+      "name": "棉袜",
+      "category": "穿搭",
+      "price": 19,
+      "description": "一包三双，颜色都很素。",
+      "icon": "🧦"
+    },
+    {
+      "id": "canvas_shoes",
+      "name": "帆布鞋",
+      "category": "穿搭",
+      "price": 119,
+      "description": "鞋底软，走久了也不磨脚。",
+      "icon": "👟",
+      "installable": true,
+      "slot_tags": [
+        "shoe_floor"
+      ],
+      "actions": [
+        "穿上",
+        "走两步",
+        "摆好"
+      ],
+      "interact_label": "穿上"
+    },
+    {
+      "id": "beret",
+      "name": "贝雷帽",
+      "category": "穿搭",
+      "price": 69,
+      "description": "戴上之后整个人都软了一点。",
+      "icon": "🎩",
+      "installable": true,
+      "slot_tags": [
+        "wear_hook"
+      ],
+      "actions": [
+        "戴上",
+        "斜一点",
+        "挂好"
+      ],
+      "interact_label": "戴上"
+    },
+    {
+      "id": "earrings",
+      "name": "耳饰",
+      "category": "穿搭",
+      "price": 49,
+      "description": "小小一对，颜色很衬皮肤。",
+      "icon": "💎",
+      "installable": true,
+      "slot_tags": [
+        "jewelry_tray"
+      ],
+      "actions": [
+        "戴上",
+        "照镜子",
+        "收进盒子"
+      ],
+      "interact_label": "戴上"
+    },
+    {
+      "id": "necklace",
+      "name": "项链",
+      "category": "穿搭",
+      "price": 89,
+      "description": "细链子，坠子很小。",
+      "icon": "📿",
+      "installable": true,
+      "slot_tags": [
+        "jewelry_tray"
+      ],
+      "actions": [
+        "戴上",
+        "理一下链子",
+        "收好"
+      ],
+      "interact_label": "戴上"
+    },
+    {
+      "id": "trench_coat",
+      "name": "风衣",
+      "category": "穿搭",
+      "price": 259,
+      "description": "有点宽松，腰带可以系起来。",
+      "icon": "🧥",
+      "installable": true,
+      "slot_tags": [
+        "wear_rail",
+        "wear_hook"
+      ],
+      "actions": [
+        "披上",
+        "系腰带",
+        "挂好"
+      ],
+      "interact_label": "披上"
+    },
+    {
+      "id": "indoor_slippers",
+      "name": "室内拖鞋",
+      "category": "穿搭",
+      "price": 39,
+      "description": "鞋底软，踩上去很安静。",
+      "icon": "🩴",
+      "installable": true,
+      "slot_tags": [
+        "shoe_floor"
+      ],
+      "actions": [
+        "穿上",
+        "走两步",
+        "摆好"
+      ],
+      "interact_label": "穿上"
+    },
+    {
+      "id": "jeans",
+      "name": "牛仔裤",
+      "category": "穿搭",
+      "price": 149,
+      "description": "直筒版型，口袋里能塞手机。",
+      "icon": "👖",
+      "installable": true,
+      "slot_tags": [
+        "wear_rail"
+      ],
+      "actions": [
+        "换上",
+        "整理裤脚",
+        "叠好"
+      ],
+      "interact_label": "换上"
+    },
+    {
+      "id": "scented_candle",
+      "name": "香薰蜡烛",
+      "category": "居家",
+      "price": 59,
+      "description": "点一会儿，屋里会有淡淡的木质香。",
+      "icon": "🕯️",
+      "installable": true,
+      "slot_tags": [
+        "surface_small"
+      ],
+      "actions": [
+        "点上",
+        "闻一会儿",
+        "吹灭"
+      ],
+      "interact_label": "点上"
+    },
+    {
+      "id": "cushion_cover",
+      "name": "抱枕套",
+      "category": "居家",
+      "price": 39,
+      "description": "换上之后沙发看起来柔和很多。",
+      "icon": "🛋️",
+      "installable": true,
+      "slot_tags": [
+        "soft"
+      ],
+      "actions": [
+        "套上",
+        "拍松",
+        "整理"
+      ],
+      "interact_label": "套上"
+    },
+    {
+      "id": "tablecloth",
+      "name": "桌布",
+      "category": "居家",
+      "price": 49,
+      "description": "浅色棉麻，铺上就像换了个心情。",
+      "icon": "🪑",
+      "installable": true,
+      "slot_tags": [
+        "surface_table"
+      ],
+      "actions": [
+        "铺上",
+        "抚平",
+        "收起来"
+      ],
+      "interact_label": "铺上"
+    },
+    {
+      "id": "storage_basket",
+      "name": "收纳篮",
+      "category": "居家",
+      "price": 45,
+      "description": "把散着的小东西都收进去。",
+      "icon": "🧺",
+      "installable": true,
+      "slot_tags": [
+        "floor_storage",
+        "top_storage"
+      ],
+      "actions": [
+        "放东西",
+        "整理",
+        "挪位置"
+      ],
+      "interact_label": "放东西"
+    },
+    {
+      "id": "vase",
+      "name": "花瓶",
+      "category": "居家",
+      "price": 55,
+      "description": "插一枝花就很好看。",
+      "icon": "🏺",
+      "installable": true,
+      "slot_tags": [
+        "surface_vase",
+        "display_shelf"
+      ],
+      "actions": [
+        "插一枝花",
+        "换水",
+        "擦一擦"
+      ],
+      "interact_label": "插一枝花"
+    },
+    {
+      "id": "night_light",
+      "name": "小夜灯",
+      "category": "居家",
+      "price": 49,
+      "description": "暖黄的，不刺眼。",
+      "icon": "💡",
+      "installable": true,
+      "slot_tags": [
+        "surface_small",
+        "desk_tech"
+      ],
+      "actions": [
+        "打开",
+        "调暗",
+        "关掉"
+      ],
+      "interact_label": "打开"
+    },
+    {
+      "id": "bath_mat",
+      "name": "浴室地垫",
+      "category": "居家",
+      "price": 35,
+      "description": "踩上去软，吸水也快。",
+      "icon": "🛁",
+      "installable": true,
+      "slot_tags": [
+        "bath_floor"
+      ],
+      "actions": [
+        "踩一踩",
+        "晾起来",
+        "拍灰"
+      ],
+      "interact_label": "踩一踩"
+    },
+    {
+      "id": "thin_blanket",
+      "name": "薄毯",
+      "category": "居家",
+      "price": 79,
+      "description": "午睡或窝在沙发上时用。",
+      "icon": "🛏️",
+      "installable": true,
+      "slot_tags": [
+        "soft"
+      ],
+      "actions": [
+        "披上",
+        "叠好",
+        "搭在沙发上"
+      ],
+      "interact_label": "披上"
+    },
+    {
+      "id": "yarn",
+      "name": "毛线",
+      "category": "兴趣",
+      "price": 29,
+      "description": "一团柔软的线，颜色像雾。",
+      "icon": "🧶",
+      "installable": true,
+      "slot_tags": [
+        "surface_table"
+      ],
+      "actions": [
+        "绕一团",
+        "织两针",
+        "收起来"
+      ],
+      "interact_label": "绕一团"
+    },
+    {
+      "id": "washi_tape",
+      "name": "手账胶带",
+      "category": "兴趣",
+      "price": 19,
+      "description": "一盒花色，贴手账刚好。",
+      "icon": "🎀",
+      "installable": true,
+      "slot_tags": [
+        "surface_desk"
+      ],
+      "actions": [
+        "挑一卷",
+        "贴一页",
+        "收好"
+      ],
+      "interact_label": "挑一卷"
+    },
+    {
+      "id": "instant_film",
+      "name": "拍立得相纸",
+      "category": "兴趣",
+      "price": 39,
+      "description": "一盒十张，够拍一阵子。",
+      "icon": "📸",
+      "installable": true,
+      "slot_tags": [
+        "surface_desk"
+      ],
+      "actions": [
+        "装上",
+        "拍一张",
+        "收好"
+      ],
+      "interact_label": "装上"
+    },
+    {
+      "id": "sketchbook",
+      "name": "速写本",
+      "category": "兴趣",
+      "price": 25,
+      "description": "纸面有点粗，铅笔上去很稳。",
+      "icon": "📓",
+      "installable": true,
+      "slot_tags": [
+        "surface_desk"
+      ],
+      "actions": [
+        "翻开",
+        "画两笔",
+        "合上"
+      ],
+      "interact_label": "翻开"
+    },
+    {
+      "id": "puzzle_500",
+      "name": "500 片拼图",
+      "category": "兴趣",
+      "price": 49,
+      "description": "拼完刚好能铺满半张桌子。",
+      "icon": "🧩",
+      "installable": true,
+      "slot_tags": [
+        "surface_table"
+      ],
+      "actions": [
+        "拼几块",
+        "看看进度",
+        "收起来"
+      ],
+      "interact_label": "拼几块"
+    },
+    {
+      "id": "plant_pot",
+      "name": "陶瓷花盆",
+      "category": "兴趣",
+      "price": 35,
+      "description": "浅色釉面，种小植物正好。",
+      "icon": "🪴",
+      "installable": true,
+      "slot_tags": [
+        "floor_plant"
+      ],
+      "actions": [
+        "装土",
+        "种点东西",
+        "摆好"
+      ],
+      "interact_label": "装土"
+    },
+    {
+      "id": "guitar_strings",
+      "name": "吉他弦",
+      "category": "兴趣",
+      "price": 39,
+      "description": "备用一套，断了也不慌。",
+      "icon": "🎸",
+      "installable": true,
+      "slot_tags": [
+        "surface_desk"
+      ],
+      "actions": [
+        "换一套",
+        "调音",
+        "收好"
+      ],
+      "interact_label": "换一套"
+    },
+    {
+      "id": "board_game",
+      "name": "桌游",
+      "category": "兴趣",
+      "price": 89,
+      "description": "规则不复杂，适合两个人玩。",
+      "icon": "🎲",
+      "installable": true,
+      "slot_tags": [
+        "surface_table"
+      ],
+      "actions": [
+        "开一局",
+        "摆棋子",
+        "收好"
+      ],
+      "interact_label": "开一局"
+    },
+    {
+      "id": "perfume",
+      "name": "香水",
+      "category": "礼物",
+      "price": 159,
+      "description": "前调是柑橘，后调偏木香。",
+      "icon": "🧴",
+      "installable": true,
+      "slot_tags": [
+        "surface_small"
+      ],
+      "actions": [
+        "喷一点",
+        "闻一下",
+        "摆好"
+      ],
+      "interact_label": "喷一点"
+    },
+    {
+      "id": "handwritten_card",
+      "name": "手写卡片",
+      "category": "礼物",
+      "price": 15,
+      "description": "认真写几句，比礼物本身更重要。",
+      "icon": "💌",
+      "installable": true,
+      "slot_tags": [
+        "display_shelf",
+        "surface_small"
+      ],
+      "actions": [
+        "翻开看看",
+        "写两句",
+        "收好"
+      ],
+      "interact_label": "翻开看看"
+    },
+    {
+      "id": "plush_bear",
+      "name": "毛绒熊",
+      "category": "礼物",
+      "price": 89,
+      "description": "抱着很软，耳朵有点歪。",
+      "icon": "🧸",
+      "installable": true,
+      "slot_tags": [
+        "soft",
+        "display_shelf"
+      ],
+      "actions": [
+        "抱一会儿",
+        "摆好",
+        "拍一拍"
+      ],
+      "interact_label": "抱一会儿"
+    },
+    {
+      "id": "music_box_gift",
+      "name": "音乐盒",
+      "category": "礼物",
+      "price": 129,
+      "description": "拧上发条会响一段很短的音乐。",
+      "icon": "🎵",
+      "installable": true,
+      "slot_tags": [
+        "surface_small",
+        "display_shelf"
+      ],
+      "actions": [
+        "上发条",
+        "听一会儿",
+        "合上"
+      ],
+      "interact_label": "上发条"
+    },
+    {
+      "id": "bracelet_gift",
+      "name": "手链",
+      "category": "礼物",
+      "price": 99,
+      "description": "细细一条，扣子有点小。",
+      "icon": "📿",
+      "installable": true,
+      "slot_tags": [
+        "jewelry_tray"
+      ],
+      "actions": [
+        "戴上",
+        "照镜子",
+        "收好"
+      ],
+      "interact_label": "戴上"
+    },
+    {
+      "id": "bouquet",
+      "name": "花束",
+      "category": "礼物",
+      "price": 129,
+      "description": "包得不算精致，但花很新鲜。",
+      "icon": "💐",
+      "installable": true,
+      "slot_tags": [
+        "surface_vase"
+      ],
+      "actions": [
+        "闻一下",
+        "换水",
+        "摆好"
+      ],
+      "interact_label": "闻一下"
+    }
+  ]
+}

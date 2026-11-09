@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>模拟人生_世界 · 日常之间</title>
+  <link rel="stylesheet" href="./style.css?v=20261109-stairicon1">
+  <link rel="stylesheet" href="assets/scene-studio.css?v=20261105-1">
+<script src="/api/plugin/page/bridge-sdk.js"></script>
+  <script src="./transport.js?v=20261107-char32"></script>
+  <link rel="stylesheet" href="assets/life-polish.css?v=20261105-fridge2">
+  <link rel="stylesheet" href="assets/vehicle-art.css?v=20261108-garageroom">
+  <link rel="stylesheet" href="assets/ui-refinement.css?v=20261105-ui2">
+  <link rel="stylesheet" href="assets/bedroom-3d.css?v=20261107-garage1">
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="topbar">
+      <div class="identity">
+        <div class="avatar-wrap">
+          <img id="avatar" src="assets/character_daily.png" onerror="this.onerror=null;this.src='assets/character_daily.png'" alt="角色头像">
+        </div>
+        <div>
+          <div class="name-row">
+            <span class="brand-kicker">VIRTUAL LIFE · 日常之间</span><h1 id="persona">模拟人生_世界</h1>
+            <button type="button" id="persona-cycle" class="mini-btn hidden">切换</button>
+          </div>
+          <div class="meta" id="meta">正在读取模拟人生_世界数据...</div>
+        </div>
+      </div>
+      <div class="clock-block">
+        <div class="clock" id="clock">--:--:--</div>
+        <div class="now-line clickable" id="now-line" role="button" tabindex="0" title="查看今日日程" aria-label="查看今日日程">正在连接...</div>
+        <div class="badge hidden" id="plan-badge"></div>
+      </div>
+      <div class="status-block">
+        <button type="button" class="status-brief-btn" id="status-open" aria-label="查看完整状态">
+          <span class="status-dot" id="status-dot"></span>
+          <span id="status-brief">正在读取状态...</span>
+        </button>
+        <button type="button" class="ghost-btn menu-toggle" id="menu-toggle">☰ 功能</button>
+        <div class="legacy-actions hidden" id="legacy-actions">
+          <div class="pill" id="kind-pill">连接中</div>
+          <div class="pill" id="avail-pill">可打扰度 · --</div>
+          <div class="pill amber hidden" id="sleep-pill">主人在睡</div>
+          <div class="pill" id="money-pill">💰 --</div>
+          <div class="pill affection" id="affection-pill">💗 --</div>
+          <div class="need-pills" id="need-pills"></div>
+          <button type="button" class="ghost-btn" id="anim-toggle">动画：开</button>
+          <button type="button" class="ghost-btn" id="camera-toggle">📷 拍照</button>
+          <button type="button" class="ghost-btn" id="inventory-toggle">🎒 物品</button>
+          <button type="button" class="ghost-btn" id="shop-toggle">🛍️ 商店</button>
+          <button type="button" class="ghost-btn" id="wallet-toggle">💰 钱包</button>
+          <button type="button" class="ghost-btn" id="garage-toggle">🚗 车库</button>
+          <button type="button" class="ghost-btn" id="diary-toggle">📔 日记</button>
+          <button type="button" class="ghost-btn" id="memory-toggle">🧠 记忆</button>
+          <button type="button" class="ghost-btn" id="weekly-toggle">📊 周报</button>
+          <button type="button" class="ghost-btn" id="system-toggle">⚙️ 系统</button>
+        </div>
+        <div class="pending-actions hidden" id="pending-actions"></div>
+      </div>
+    </header>
+
+    <div class="shop-modal hidden" id="status-modal" role="dialog" aria-modal="true" aria-labelledby="status-title">
+      <div class="shop-panel status-panel">
+        <div class="shop-head">
+          <div>
+            <h3 id="status-title">完整状态</h3>
+            <small id="status-sub">她现在的精力、心情、钱和关系</small>
+          </div>
+          <button type="button" class="mini-btn" id="status-close" aria-label="关闭状态面板" title="关闭状态面板">×</button>
+        </div>
+        <div class="status-modal-body" id="status-modal-body"></div>
+      </div>
+    </div>
+
+    <div class="shop-modal hidden" id="schedule-modal" role="dialog" aria-modal="true" aria-labelledby="schedule-title">
+      <div class="shop-panel schedule-panel">
+        <div class="shop-head">
+          <div>
+            <h3 id="schedule-title">日程详情</h3>
+            <small id="schedule-sub">这一段时间她在做什么</small>
+          </div>
+          <button type="button" class="mini-btn" id="schedule-close" aria-label="关闭日程详情" title="关闭日程详情">×</button>
+        </div>
+        <div class="schedule-body" id="schedule-body"></div>
+      </div>
+    </div>
+
+    <div class="shop-modal hidden" id="trips-modal" role="dialog" aria-modal="true" aria-labelledby="trips-title">
+      <div class="shop-panel trips-panel">
+        <div class="shop-head">
+          <div>
+            <h3 id="trips-title">旅行计划</h3>
+            <small id="trips-sub">她最近在盘算的出行</small>
+          </div>
+          <button type="button" class="mini-btn" id="trips-refresh">刷新</button>
+          <button type="button" class="mini-btn" id="trips-export">导出</button>
+          <button type="button" class="mini-btn" id="trips-close" aria-label="关闭旅行计划" title="关闭旅行计划">×</button>
+        </div>
+        <div class="trips-body" id="trips-body"></div>
+      </div>
+    </div>
+
+    <div class="shop-modal hidden" id="outfit-modal" role="dialog" aria-modal="true" aria-labelledby="outfit-title">
+      <div class="shop-panel outfit-panel">
+        <div class="shop-head">
+          <div>
+            <h3 id="outfit-title">今日穿搭</h3>
+            <small id="outfit-sub">她今天穿什么</small>
+          </div>
+          <button type="button" class="mini-btn" id="outfit-export">导出</button>
+          <button type="button" class="mini-btn" id="outfit-close" aria-label="关闭穿搭详情" title="关闭穿搭详情">×</button>
+        </div>
+        <div class="outfit-body" id="outfit-body"></div>
+      </div>
+    </div>
+
+    <div class="shop-modal hidden" id="health-modal" role="dialog" aria-modal="true" aria-labelledby="health-title">
+      <div class="shop-panel health-panel">
+        <div class="shop-head">
+          <div>
+            <h3 id="health-title">健康记录</h3>
+            <small id="health-sub">她最近的身体状况</small>
+          </div>
+          <button type="button" class="mini-btn" id="health-export">导出</button>
+          <button type="button" class="mini-btn" id="health-close" aria-label="关闭健康记录" title="关闭健康记录">×</button>
+        </div>
+        <div class="health-body" id="health-body"></div>
+      </div>
+    </div>
+
+    <div class="shop-modal hidden" id="activity-modal" role="dialog" aria-modal="true" aria-labelledby="activity-title">
+      <div class="shop-panel activity-panel">
+        <div class="shop-head">
+          <div>
+            <h3 id="activity-title">生活动态</h3>
+            <small id="activity-sub">最近发生的小事</small>
+          </div>
+          <button type="button" class="mini-btn" id="activity-refresh">刷新</button>
+          <button type="button" class="mini-btn" id="activity-export">导出</button>
+          <button type="button" class="mini-btn" id="activity-close" aria-label="关闭生活动态" title="关闭生活动态">×</button>
+        </div>
+        <input type="search" id="activity-search" class="activity-search" placeholder="搜索标题或内容" autocomplete="off">
+        <div class="activity-body" id="activity-body"></div>
+      </div>
+    </div>
+
+    <div class="function-menu hidden" id="function-menu" role="dialog" aria-modal="true" aria-labelledby="function-title">
+      <div class="function-menu-head">
+        <h3 id="function-title">功能</h3>
+        <button type="button" class="mini-btn" id="function-close" aria-label="关闭功能菜单" title="关闭功能菜单">×</button>
+      </div>
+      <div class="function-group">
+        <h4>日常</h4>
+        <div class="function-grid">
+          <button type="button" data-menu-target="camera-toggle">📷 拍照</button>
+          <button type="button" data-menu-target="inventory-toggle">🎒 物品</button>
+          <button type="button" data-menu-target="shop-toggle">🛍️ 商店</button>
+          <button type="button" data-menu-target="wallet-toggle">💰 钱包</button>
+          <button type="button" data-menu-target="garage-toggle">🚗 车库</button>
+          <button type="button" data-menu-target="items-toggle">🛋️ 家具</button>
+          <button type="button" data-menu-target="fridge-toggle">🧊 冰箱</button>
+        </div>
+      </div>
+      <div class="function-group">
+        <h4>记录</h4>
+        <div class="function-grid">
+          <button type="button" data-menu-target="diary-toggle">📔 日记</button>
+          <button type="button" data-menu-target="memory-toggle">🧠 记忆</button>
+          <button type="button" data-menu-target="weekly-toggle">📊 周报</button>
+          <button type="button" id="trips-open">✈️ 旅行</button>
+          <button type="button" id="outfit-open">👗 穿搭</button>
+          <button type="button" id="health-open">❤️ 健康</button>
+          <button type="button" id="activity-open">🌱 动态</button>
+          <button type="button" data-menu-target="system-toggle">⚙️ 系统</button>
+        </div>
+      </div>
+      <div class="function-group">
+        <h4>互动</h4>
+        <div class="function-grid">
+          <button type="button" data-menu-target="affection-pill">💗 关系</button>
+          <button type="button" id="day-schedule-toggle">🗓️ 今日日程</button>
+          <button type="button" data-menu-target="anim-toggle">🎞️ 动画</button>
+        </div>
+      </div>
+      <div class="function-group">
+        <h4>联动</h4>
+        <div class="function-grid">
+          <button type="button" id="integrations-open">🔗 插件联动</button>
+        </div>
+      </div>
+    </div>
+
+<nav class="life-shortcuts" aria-label="日常快捷功能">
+<button type="button" data-menu-target="items-toggle"><span class="shortcut-icon" data-life-icon="sofa"></span><span>家具<small>布置与互动</small></span></button>
+<button type="button" data-menu-target="fridge-toggle"><span class="shortcut-icon" data-life-icon="fridge"></span><span>厨房<small>今天吃什么</small></span></button>
+<button type="button" data-menu-target="inventory-toggle"><span class="shortcut-icon" data-life-icon="book"></span><span>我的物品<small>收藏日常</small></span></button>
+<button type="button" data-menu-target="shop-toggle"><span class="shortcut-icon" data-life-icon="plants"></span><span>生活商店<small>发现新喜欢</small></span></button>
+<button type="button" data-menu-target="diary-toggle"><span class="shortcut-icon" data-life-icon="camera"></span><span>生活记录<small>留住小瞬间</small></span></button>
+</nav>
+    <main class="layout">
+      <section class="card home-card">
+        <div class="card-head">
+          <div>
+            <span class="section-kicker">MY LITTLE HOME</span><h2>我的两层小屋</h2>
+            <p>一屋光影，一点生活。点击家具，与她一起度过日常。</p>
+          </div>
+          <div class="home-tools">
+            <div class="pill" id="home-badge">当前 · --</div>
+            <button type="button" class="mini-btn hidden" id="fridge-toggle">冰箱库存</button>
+            <button type="button" class="mini-btn" id="decor-toggle">装潢</button>
+            <button type="button" class="mini-btn hidden" id="items-toggle">物品 0</button>
+          </div>
+        </div>
+        <nav class="floor-toolbar" aria-label="住宅楼层"><button type="button" class="floor-tab" data-floor="1">1F 起居层</button><button type="button" class="floor-tab" data-floor="2">2F 生活层</button><span class="floor-note" id="floor-note"></span><button type="button" class="floor-follow" id="floor-follow">跟随角色</button></nav>
+        <div class="home-stage" id="home-stage">
+          <svg id="home-svg" viewBox="0 0 840 620" role="img" aria-label="家的平面图"></svg>
+          <div class="character-marker" id="character-marker">
+            <img src="assets/character_daily.png" onerror="this.onerror=null;this.src='assets/character_daily.png'" alt="">
+            <span class="marker-name" id="marker-name">模拟人生_世界</span>
+            <span class="marker-pointer"></span>
+          </div>
+          <div class="effect-layer" id="home-effects"></div>
+          <div class="home-dim hidden" id="home-dim">
+            <span>外出中</span>
+            <small>家里暂时没人</small>
+          </div>
+          <div class="item-popover hidden" id="item-popover">
+            <div class="popover-head">
+              <div class="popover-title">
+                <span class="popover-icon" id="item-icon"></span>
+                <div>
+                  <span class="item-room" id="item-room"></span>
+                  <h3 id="item-name"></h3>
+                </div>
+              </div>
+              <button type="button" class="mini-btn" id="item-close" aria-label="关闭家具详情" title="关闭家具详情">×</button>
+            </div>
+            <p class="item-desc" id="item-desc"></p>
+            <div class="item-state hidden" id="item-state"></div>
+            <div class="cook-box hidden" id="cook-box">
+              <div class="cook-box-head">
+                <span>今天你下厨</span>
+                <small>用冰箱现有食材做一道菜</small>
+              </div>
+              <button type="button" class="cook-open-btn" id="cook-open">由我下厨</button>
+            </div>
+            <div class="game-box hidden" id="game-box">
+              <div class="game-box-head">
+                <span>街机对战</span>
+                <small>跟月月打一局</small>
+              </div>
+              <button type="button" class="game-open-btn" id="game-open">和月月打游戏</button>
+            </div>
+            <div class="fridge-box hidden" id="fridge-box">
+              <div class="fridge-head">
+                <span id="fridge-title">冰箱现有食材</span>
+                <div class="fridge-head-actions">
+                  <button type="button" class="mini-btn" id="fridge-export">导出</button>
+                  <button type="button" class="mini-btn" id="fridge-refresh">刷新</button>
+                  <button type="button" class="mini-btn" id="fridge-random">随机搭配</button>
+                </div>
+              </div>
+              <div class="fridge-tools">
+                <input id="fridge-search" type="search" placeholder="搜索食材...">
+              </div>
+              <div class="fridge-menu hidden" id="fridge-menu"></div>
+              <div class="fridge-list" id="fridge-list"></div>
+              <div class="fridge-recipe hidden" id="fridge-recipe"></div>
+            </div>
+            <div class="pop-actions" id="item-actions"></div>
+            <div class="interact-box" id="interact-box">
+              <div class="interact-head">
+                <span>即时互动</span>
+                <small>点一下，她会立刻回应</small>
+              </div>
+              <button type="button" class="interact-btn" id="interact-action">和她说句话</button>
+              <div class="interact-reply hidden" id="interact-reply"></div>
+            </div>
+            <div class="pop-hint">点动作会记入今日灵感，重新生成今日计划时会参考。</div>
+          </div>
+          <div class="item-drawer hidden" id="item-drawer">
+            <div class="drawer-head">
+              <div>
+                <h3>可互动物品</h3>
+                <p id="item-count">正在加载...</p>
+              </div>
+              <button type="button" class="mini-btn" id="drawer-close" aria-label="关闭物品抽屉" title="关闭物品抽屉">×</button>
+            </div>
+            <div class="drawer-body">
+              <div class="drawer-search">
+                <input id="item-search" type="search" placeholder="搜索家具...">
+              </div>
+              <div id="item-groups"></div>
+            </div>
+            <div class="drawer-foot">
+              <span id="wish-count" role="button" tabindex="0" title="查看今日灵感">今日灵感 0</span>
+              <span>点物品查看可做的事</span>
+            </div>
+          </div>
+        </div>
+        <div class="garage-room" id="garage-room" role="button" tabindex="0" aria-label="1 楼车库，点击查看">
+          <div class="garage-room-head">
+            <span class="garage-room-title">1F · 车库</span>
+            <span class="garage-room-status" id="garage-room-status">白色小车已停好</span>
+            <span class="garage-room-open">查看车库 ›</span>
+          </div>
+          <svg class="garage-room-art" viewBox="0 0 840 150" role="img" aria-label="车库里的白色小车">
+            <defs>
+              <linearGradient id="garage-floor" x1="0" y1="0" x2="0" y2="1">
+                <stop stop-color="#41484b"/><stop offset="1" stop-color="#242a2d"/>
+              </linearGradient>
+              <linearGradient id="garage-car-paint" x1="0" y1="0" x2="0" y2="1">
+                <stop stop-color="#eef2ef"/><stop offset="1" stop-color="#a9b5b2"/>
+              </linearGradient>
+              <linearGradient id="garage-glass" x1="0" y1="0" x2="1" y2="1">
+                <stop stop-color="#9ec7d6"/><stop offset="1" stop-color="#4d7185"/>
+              </linearGradient>
+            </defs>
+            <rect x="0" y="0" width="840" height="150" rx="12" fill="url(#garage-floor)"/>
+            <path d="M0 26H840" stroke="#5b6265" stroke-width="2"/>
+            <path d="M0 26v124M840 26v124" stroke="#596164" stroke-width="3"/>
+            <path d="M40 28v98M168 28v98M296 28v98M424 28v98M552 28v98M680 28v98M800 28v98" stroke="#4b5356" stroke-width="1" opacity=".65"/>
+            <path d="M20 118H820" stroke="#d8b56a" stroke-width="3" stroke-dasharray="24 18" opacity=".65"/>
+            <rect x="356" y="22" width="128" height="9" rx="4" fill="#7c8587"/>
+            <path d="M414 26l-8 12h16z" fill="#ffe1a0" opacity=".85"/>
+            <g id="garage-car-model">
+              <ellipse cx="420" cy="124" rx="185" ry="12" fill="#11171a" opacity=".7"/>
+              <path d="M255 96q8-26 34-30l142-3q46 0 74 20l26 13q10 6 10 15v8q0 7-8 7H263q-9 0-9-9z" fill="url(#garage-car-paint)" stroke="#7c8986" stroke-width="2"/>
+              <path d="M310 68l30-25q5-4 12-4h104q9 0 15 5l38 24z" fill="url(#garage-glass)" stroke="#6f7f80" stroke-width="2"/>
+              <path d="M418 40v28M348 68l16-24M480 44l26 24" stroke="#7b9297" stroke-width="2" opacity=".7"/>
+              <path d="M270 92h10M540 92h10" stroke="#f6dca0" stroke-width="4" stroke-linecap="round"/>
+              <rect x="258" y="88" width="13" height="10" rx="3" fill="#f0b86e"/>
+              <rect x="545" y="88" width="13" height="10" rx="3" fill="#d96f6f"/>
+              <circle cx="325" cy="116" r="20" fill="#1b2023" stroke="#7e8b87" stroke-width="4"/>
+              <circle cx="325" cy="116" r="8" fill="#9aa7a3"/>
+              <circle cx="515" cy="116" r="20" fill="#1b2023" stroke="#7e8b87" stroke-width="4"/>
+              <circle cx="515" cy="116" r="8" fill="#9aa7a3"/>
+              <rect x="500" y="85" width="48" height="18" rx="4" fill="#e7ece7" stroke="#7c8986" stroke-width="1.5"/>
+              <text x="524" y="98" text-anchor="middle" font-size="10" fill="#3a4446" font-family="sans-serif">沪A·M320</text>
+              <path d="M292 84h20M500 84h18" stroke="#7c8986" stroke-width="2" opacity=".7"/>
+            </g>
+          </svg>
+        </div>
+        <div class="home-foot">
+          <div class="legend">
+            <span><i class="dot home"></i>在家</span>
+            <span><i class="dot outside"></i>外出</span>
+            <span><i class="dot transit"></i>路上</span>
+            <span><i class="dot sleep"></i>睡眠</span>
+          </div>
+          <div class="scale"><span class="scale-line"></span>1 m</div>
+        </div>
+      </section>
+
+      <aside class="right-col">
+        <section class="card now-card">
+          <div class="card-head">
+            <div><span class="section-kicker">LIVING MOMENT</span><h2>此刻，与她</h2></div>
+            <span class="status-dot" id="now-dot"></span>
+          </div>
+          <div class="scene-stage" id="scene-stage"></div>
+          <div class="now-details">
+            <div class="activity-row">
+              <h3 id="activity">--</h3>
+              <span class="preview-badge hidden" id="preview-badge">预览</span>
+              <button type="button" class="mini-btn hidden" id="preview-return">回到当前</button>
+            </div>
+            <div class="location-line"><span class="pin-icon"></span><span id="location">--</span></div>
+            <div class="pills">
+              <span class="pill" id="state-pill">状态 · --</span>
+              <span class="pill" id="avail-pill2">可打扰 · --</span>
+            </div>
+            <div class="next-line" id="next-line"></div>
+          </div>
+          <div class="talk-box" id="talk-box">
+            <input id="talk-input" type="text" maxlength="90" autocomplete="off" placeholder="跟她说句话，回车发送…">
+            <button class="mini-btn" id="talk-send" type="button">说</button>
+          </div>
+          <div class="talk-reply hidden" id="talk-reply"></div>
+          <div class="scene-picker hidden" id="scene-picker">
+            <div class="picker-head">
+              <span>外部场景</span>
+              <button type="button" class="mini-btn" id="follow-btn">跟随日程</button>
+            </div>
+            <div class="chips" id="scene-chips"></div>
+          </div>
+        </section>
+
+        <section class="card next-card">
+          <div class="card-head">
+            <h2>稍后的时光</h2>
+          </div>
+          <div class="next-list" id="next-list"></div>
+          <div class="outfit-block">
+            <span>当前穿着</span>
+            <p id="outfit-text"></p>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <section class="card timeline-card">
+      <div class="card-head">
+        <h2>一天的足迹</h2>
+        <span class="timeline-now" id="timeline-now">现在 --:--</span>
+      </div>
+      <div class="timeline" id="timeline"></div>
+      <div class="timeline-foot">
+        <div class="legend" id="timeline-legend"></div>
+        <span class="hint">数据来自模拟人生_世界插件 · 自动刷新</span>
+      </div>
+    </section>
+
+    <div class="toast hidden" id="toast"></div>
+    <div class="speech-bubble hidden" id="speech-bubble" role="status" aria-live="polite">
+      <span class="speech-text" id="speech-text"></span>
+      <span class="speech-tail"></span>
+    </div>
+
+    <div class="cook-modal hidden" id="cook-modal" role="dialog" aria-modal="true" aria-labelledby="cook-title">
+      <div class="cook-panel">
+        <div class="cook-head">
+          <div>
+            <h3 id="cook-title">由我下厨</h3>
+            <small id="cook-sub">冰箱里能做这些菜</small>
+          </div>
+          <button type="button" class="mini-btn" id="cook-close" aria-label="关闭做饭面板" title="关闭做饭面板">×</button>
+        </div>
+        <div class="cook-body">
+          <div class="cook-step" id="cook-dish-step">
+            <div class="cook-filters">
+              <button type="button" data-cook-filter="all" class="active">全部</button>
+              <button type="button" data-cook-filter="早餐">早餐</button>
+              <button type="button" data-cook-filter="午餐">午餐</button>
+              <button type="button" data-cook-filter="晚餐">晚餐</button>
+              <button type="button" data-cook-filter="加餐">加餐</button>
+            </div>
+            <div class="cook-dishes" id="cook-dishes"></div>
+            <div class="cook-history" id="cook-history"></div>
+          </div>
+          <div class="cook-step hidden" id="cook-game-step">
+            <div class="cook-round" id="cook-round">第 1 / 3 关 · 切菜</div>
+            <div class="cook-game-stage" id="cook-game-stage"></div>
+            <p class="cook-hint" id="cook-hint">按顺序切好食材</p>
+            <button type="button" class="cook-main-btn hidden" id="cook-stop">下锅！</button>
+          </div>
+          <div class="cook-step hidden" id="cook-result-step">
+            <div class="cook-result-dish" id="cook-result-dish"></div>
+            <div class="cook-taste" id="cook-taste"></div>
+            <button type="button" class="cook-serve" id="cook-serve" disabled>点这道菜，叫月月来吃饭</button>
+            <div class="cook-reply hidden" id="cook-reply"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="camera-overlay hidden" id="camera-overlay">
+      <div class="camera-frame"></div>
+      <div class="camera-hint-box">
+        <b>📷 拍照模式</b>
+        <span>点击画面里的月月 / 家具 / 房间来取景</span>
+      </div>
+      <div class="camera-target" id="camera-target">取景：点击画面选择目标</div>
+      <div class="camera-quick">
+        <button type="button" class="camera-quick-btn" id="camera-character">拍月月</button>
+        <button type="button" class="camera-quick-btn" id="camera-room">拍当前房间</button>
+      </div>
+      <button type="button" class="camera-cancel" id="camera-cancel">取消</button>
+    </div>
+
+    <div class="photo-modal hidden" id="photo-modal" role="dialog" aria-modal="true">
+      <div class="photo-panel">
+        <div class="photo-head">
+          <h3>拍立得</h3>
+          <div class="photo-actions">
+            <button type="button" class="mini-btn" id="photo-save">保存照片</button>
+            <button type="button" class="mini-btn" id="photo-close" aria-label="关闭照片" title="关闭照片">×</button>
+          </div>
+        </div>
+        <div class="photo-body">
+          <div class="photo-loading" id="photo-loading">显影中...</div>
+          <img class="photo-image hidden" id="photo-image" alt="拍到的照片">
+          <div class="photo-caption" id="photo-caption"></div>
+          <div class="photo-gallery" id="photo-gallery"></div>
+        </div>
+        <button type="button" class="cook-main-btn" id="photo-again">再拍一张</button>
+      </div>
+    </div>
+
+    <div class="shop-modal hidden" id="wish-modal" role="dialog" aria-modal="true" aria-labelledby="wish-title">
+      <div class="shop-panel">
+        <div class="shop-head">
+          <div>
+            <h3 id="wish-title">今日灵感</h3>
+            <small>她想在家里做的小事</small>
+          </div>
+          <button type="button" class="mini-btn" id="wish-close" aria-label="关闭今日灵感" title="关闭今日灵感">×</button>
+        </div>
+        <div class="wish-body" id="wish-body"></div>
+      </div>
+    </div>
+
+    <div class="inventory-modal hidden" id="inventory-modal" role="dialog" aria-modal="true" aria-labelledby="inventory-title">
+      <div class="inventory-panel">
+        <div class="inventory-head">
+          <div>
+            <h3 id="inventory-title">月月的物品</h3>
+            <small id="inventory-sub">她真正拥有和正在读的东西</small>
+          </div>
+          <button type="button" class="mini-btn" id="inventory-export">导出</button>
+          <button type="button" class="mini-btn" id="inventory-close" aria-label="关闭物品面板" title="关闭物品面板">×</button>
+        </div>
+        <div class="inventory-tools">
+          <input id="inventory-search" type="search" placeholder="搜索物品或书...">
+        </div>
+        <div class="inventory-body" id="inventory-body"></div>
+      </div>
+    </div>
+
+    <div class="shop-modal hidden" id="shop-modal" role="dialog" aria-modal="true" aria-labelledby="shop-title">
+      <div class="shop-panel">
+        <div class="shop-head">
+          <div>
+            <h3 id="shop-title">商店</h3>
+            <small id="shop-balance">钱包余额 --</small>
+          </div>
+          <button type="button" class="mini-btn" id="shop-close" aria-label="关闭商店" title="关闭商店">×</button>
+        </div>
+        <div class="shop-tools">
+          <select id="shop-category" class="shop-category">
+            <option value="">全部分类</option>
+          </select>
+          <input id="shop-search" type="search" placeholder="搜索商品...">
+          <select id="shop-sort" class="shop-category">
+            <option value="default">默认排序</option>
+            <option value="price_asc">价格从低到高</option>
+            <option value="price_desc">价格从高到低</option>
+            <option value="name">按名称</option>
+          </select>
+          <button type="button" class="mini-btn" id="shop-fav-filter">⭐ 收藏</button>
+        </div>
+        <div class="shop-body" id="shop-body"></div>
+      </div>
+    </div>
+
+    <div class="shop-modal hidden" id="wallet-modal" role="dialog" aria-modal="true" aria-labelledby="wallet-title">
+      <div class="shop-panel">
+        <div class="shop-head">
+          <div>
+            <h3 id="wallet-title">月月的钱包</h3>
+            <small id="wallet-sub">她的收入、开销和存款目标</small>
+          </div>
+          <button type="button" class="mini-btn" id="wallet-export">导出</button>
+          <button type="button" class="mini-btn" id="wallet-close" aria-label="关闭钱包" title="关闭钱包">×</button>
+        </div>
+        <div class="wallet-body" id="wallet-body"></div>
+      </div>
+    </div>
+
+    <div class="shop-modal hidden" id="garage-modal" role="dialog" aria-modal="true" aria-labelledby="garage-title">
+      <div class="shop-panel">
+        <div class="shop-head">
+          <div>
+            <h3 id="garage-title">车库</h3>
+            <small id="garage-sub">把车停好，带她出门，或者让她载你出去</small>
+          </div>
+          <button type="button" class="mini-btn" id="garage-export">导出</button>
+          <button type="button" class="mini-btn" id="garage-close" aria-label="关闭车库" title="关闭车库">×</button>
+        </div>
+        <div class="garage-body" id="garage-body"></div>
+      </div>
+    </div>
+
+    <div class="shop-modal hidden" id="vehicle-modal" role="dialog" aria-modal="true" aria-labelledby="vehicle-title">
+      <div class="shop-panel vehicle-panel">
+        <div class="shop-head">
+          <div>
+            <h3 id="vehicle-title">车辆档案</h3>
+            <small id="vehicle-sub">A1–A3 · 点车查看这一辆</small>
+          </div>
+          <button type="button" class="mini-btn" id="vehicle-close" aria-label="关闭车辆档案" title="关闭车辆档案">×</button>
+        </div>
+        <div class="vehicle-body" id="vehicle-body"></div>
+      </div>
+    </div>
+
+    <div class="shop-modal hidden" id="system-modal" role="dialog" aria-modal="true" aria-labelledby="system-title">
+      <div class="shop-panel system-panel">
+        <div class="shop-head">
+          <div>
+            <h3 id="system-title">系统状态</h3>
+            <small id="system-sub">书籍、商店、车库、钱包和观察窗版本</small>
+          </div>
+          <div class="system-actions">
+            <button type="button" class="mini-btn" id="system-refresh">重新检查</button>
+            <button type="button" class="mini-btn" id="system-backup">备份数据</button>
+            <button type="button" class="mini-btn" id="system-restore">恢复数据</button>
+            <button type="button" class="mini-btn" id="system-export">导出诊断</button>
+            <button type="button" class="mini-btn" id="system-reset-prefs">重置偏好</button>
+            <button type="button" class="mini-btn" id="system-close" aria-label="关闭系统状态" title="关闭系统状态">×</button>
+          </div>
+          <input type="file" id="backup-file" class="hidden" accept=".json,application/json">
+        </div>
+        <div class="system-body" id="system-body"></div>
+      </div>
+    </div>
+
+    <div class="relations-modal hidden" id="relations-modal" role="dialog" aria-modal="true" aria-labelledby="relations-title">
+      <div class="relations-panel">
+        <div class="relations-head">
+          <div>
+            <h3 id="relations-title">你们的关系</h3>
+            <small id="relations-sub">好感越低，越需要慢慢来</small>
+          </div>
+          <button type="button" class="mini-btn" id="relations-close" aria-label="关闭关系面板" title="关闭关系面板">×</button>
+        </div>
+        <div class="relations-body" id="relations-body"></div>
+      </div>
+    </div>
+
+    <div class="diary-modal hidden" id="diary-modal" role="dialog" aria-modal="true" aria-labelledby="diary-title">
+      <div class="diary-panel">
+        <div class="diary-head">
+          <div>
+            <h3 id="diary-title">月月的日记</h3>
+            <small id="diary-sub">她记住的日子</small>
+          </div>
+          <button type="button" class="mini-btn" id="diary-export">导出</button>
+          <button type="button" class="mini-btn" id="diary-close" aria-label="关闭日记" title="关闭日记">×</button>
+        </div>
+        <div class="diary-tools">
+          <input type="search" id="diary-search" placeholder="搜索日期、标题或内容">
+          <div class="diary-filters">
+            <button type="button" data-diary-filter="all" class="active">全部</button>
+            <button type="button" data-diary-filter="ai">她写的</button>
+            <button type="button" data-diary-filter="weekly">周记/月记</button>
+            <button type="button" data-diary-filter="special">纪念/兜风</button>
+          </div>
+        </div>
+        <div class="diary-body" id="diary-body"></div>
+      </div>
+    </div>
+
+    <div class="shop-modal hidden" id="memory-modal" role="dialog" aria-modal="true" aria-labelledby="memory-title">
+      <div class="shop-panel memory-panel">
+        <div class="shop-head">
+          <div>
+            <h3 id="memory-title">月月的记忆</h3>
+            <small id="memory-sub">长期记忆、最近的日子和关系年表</small>
+          </div>
+          <button type="button" class="mini-btn" id="memory-close" aria-label="关闭记忆" title="关闭记忆">×</button>
+        </div>
+        <div class="memory-body" id="memory-body"></div>
+      </div>
+    </div>
+
+    <div class="weekly-modal hidden" id="weekly-modal" role="dialog" aria-modal="true" aria-labelledby="weekly-title">
+      <div class="weekly-panel">
+        <div class="weekly-head">
+          <div>
+            <h3 id="weekly-title">生活周报</h3>
+            <small id="weekly-sub">最近七天</small>
+          </div>
+          <button type="button" class="mini-btn" id="weekly-close" aria-label="关闭周报" title="关闭周报">×</button>
+        </div>
+        <div class="weekly-tools">
+          <button type="button" class="weekly-range-btn" data-weekly-days="7">近 7 天</button>
+          <button type="button" class="weekly-range-btn" data-weekly-days="30">近 30 天</button>
+          <button type="button" class="weekly-range-btn" data-weekly-days="365">近 365 天</button>
+          <button type="button" class="weekly-range-btn weekly-export" id="weekly-export">导出 CSV</button>
+          <button type="button" class="weekly-range-btn weekly-export" id="weekly-export-chart">导出图表</button>
+        </div>
+        <div class="weekly-tools weekly-metrics">
+          <button type="button" class="weekly-range-btn" data-weekly-metric="mood">心情</button>
+          <button type="button" class="weekly-range-btn" data-weekly-metric="energy">精力</button>
+          <button type="button" class="weekly-range-btn" data-weekly-metric="satiety">饱腹</button>
+        </div>
+        <div class="weekly-tools weekly-chart-themes">
+          <span class="weekly-tools-label">图表主题</span>
+          <button type="button" class="weekly-range-btn" data-chart-theme="dark">暗色</button>
+          <button type="button" class="weekly-range-btn" data-chart-theme="warm">暖色</button>
+          <button type="button" class="weekly-range-btn" data-chart-theme="light">浅色</button>
+        </div>
+        <div class="weekly-body" id="weekly-body"></div>
+      </div>
+    </div>
+
+    <div class="book-modal hidden" id="book-modal" role="dialog" aria-modal="true" aria-labelledby="book-title">
+      <div class="book-panel">
+        <div class="book-head">
+          <div>
+            <h3 id="book-title">书</h3>
+            <small id="book-sub"></small>
+          </div>
+          <div class="book-actions">
+            <button type="button" class="mini-btn" id="book-font-down">A-</button>
+            <button type="button" class="mini-btn" id="book-font-up">A+</button>
+            <button type="button" class="mini-btn" id="book-theme">主题</button>
+            <button type="button" class="mini-btn" id="book-prev">上一章</button>
+            <select id="book-chapter-select" class="book-chapter-select" aria-label="选择章节"></select>
+            <button type="button" class="mini-btn" id="book-next">下一章</button>
+            <button type="button" class="mini-btn" id="book-close" aria-label="关闭阅读器" title="关闭阅读器">×</button>
+          </div>
+        </div>
+        <div class="book-progress"><span id="book-progress-fill"></span></div>
+        <div class="book-bookmark-bar">
+          <button type="button" class="mini-btn" id="book-bookmark-save">保存书签</button>
+          <button type="button" class="mini-btn" id="book-bookmark-restore">续读</button>
+          <span id="book-bookmark-info"></span>
+        </div>
+        <div class="book-bookmark-list" id="book-bookmark-list"></div>
+        <div class="book-note-row">
+          <input type="text" id="book-note-input" maxlength="300" placeholder="写一句读书笔记...">
+          <button type="button" class="mini-btn" id="book-note-save">记下</button>
+          <button type="button" class="mini-btn" id="book-note-export">导出</button>
+          <span id="book-note-status"></span>
+        </div>
+        <div class="book-note-search">
+          <input id="book-note-search" type="search" placeholder="搜索笔记...">
+        </div>
+        <div class="book-note-list" id="book-note-list"></div>
+        <div class="book-content" id="book-content"></div>
+      </div>
+    </div>
+
+    <div class="game-modal hidden" id="game-modal" role="dialog" aria-modal="true">
+      <div class="game-panel">
+        <div class="game-head">
+          <div>
+            <h3 id="game-head-title">游戏机</h3>
+            <small id="game-sub">选一个小游戏，和月月打</small>
+          </div>
+          <button type="button" class="mini-btn" id="game-close" aria-label="关闭小游戏" title="关闭小游戏">×</button>
+        </div>
+
+        <div id="game-select-step">
+          <div class="game-select-grid">
+            <button type="button" class="game-pick" data-game="battle">
+              <b>街机对战</b>
+              <small>血条对打，三招定胜负</small>
+              <span>攻击 · 防御 · 必杀</span>
+            </button>
+            <button type="button" class="game-pick" data-game="rps">
+              <b>猜拳</b>
+              <small>石头剪刀布，三局两胜</small>
+              <span>看谁先拿两分</span>
+            </button>
+            <button type="button" class="game-pick" data-game="mole">
+              <b>打地鼠</b>
+              <small>8 秒反应挑战</small>
+              <span>和月月比手速</span>
+            </button>
+            <button type="button" class="game-pick" data-game="ttt" data-board="1">
+              <b>井字棋</b>
+              <small>3×3 轮流落子</small>
+              <span>先连成一线者赢</span>
+            </button>
+            <button type="button" class="game-pick" data-game="memory">
+              <b>翻牌记忆</b>
+              <small>找出 6 对相同图案</small>
+              <span>和月月比步数</span>
+            </button>
+            <button type="button" class="game-pick" data-game="guess">
+              <b>猜数字</b>
+              <small>1–100，7 次机会</small>
+              <span>猜中月月想的数字</span>
+            </button>
+            <button type="button" class="game-pick" data-game="dice">
+              <b>比大小</b>
+              <small>三局两胜掷骰子</small>
+              <span>运气也是实力</span>
+            </button>
+            <button type="button" class="game-pick" data-game="gomoku" data-board="1">
+              <b>五子棋</b>
+              <small>15×15 连成五子</small>
+              <span>和月月轮流落子</span>
+            </button>
+            <button type="button" class="game-pick" data-game="connect4" data-board="1">
+              <b>四子棋</b>
+              <small>7×6 竖着连成四个</small>
+              <span>先连成四子者赢</span>
+            </button>
+            <button type="button" class="game-pick" data-game="reversi" data-board="1">
+              <b>黑白棋</b>
+              <small>8×8 夹住对方棋子</small>
+              <span>终局子多者赢</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="game-play-step" class="hidden">
+          <div class="game-play-head">
+            <button type="button" class="mini-btn" id="game-back">← 换游戏</button>
+            <span id="game-title"></span>
+          </div>
+
+          <div id="game-battle-step" class="hidden">
+            <div class="game-hud">
+              <div class="game-side">
+                <span>你</span>
+                <div class="game-hp-track"><div class="game-hp-fill player" id="game-hp-player"></div></div>
+                <small id="game-hp-player-text">60 / 60</small>
+              </div>
+              <div class="game-vs">VS</div>
+              <div class="game-side right">
+                <span>月月</span>
+                <div class="game-hp-track"><div class="game-hp-fill ai" id="game-hp-ai"></div></div>
+                <small id="game-hp-ai-text">60 / 60</small>
+              </div>
+            </div>
+            <div class="game-round" id="game-round">第 1 回合</div>
+            <div class="game-log" id="game-log">选一个招式，开打。</div>
+            <div class="game-actions">
+              <button type="button" class="game-move" data-move="attack">攻击<small>稳定伤害</small></button>
+              <button type="button" class="game-move" data-move="defend">防御<small>大幅减伤</small></button>
+              <button type="button" class="game-move" data-move="special">必杀<small>冷却 2 回合</small></button>
+            </div>
+          </div>
+
+          <div id="game-rps-step" class="hidden">
+            <div class="game-rps-scores">
+              <span>你 <b id="game-rps-player">0</b></span>
+              <span>月月 <b id="game-rps-ai">0</b></span>
+            </div>
+            <div class="game-round" id="game-rps-round">第 1 局</div>
+            <div class="game-rps-log" id="game-rps-log">选石头、剪刀或布。</div>
+            <div class="game-rps-actions">
+              <button type="button" class="game-move" data-rps="rock">石头</button>
+              <button type="button" class="game-move" data-rps="scissors">剪刀</button>
+              <button type="button" class="game-move" data-rps="paper">布</button>
+            </div>
+          </div>
+
+          <div id="game-mole-step" class="hidden">
+            <div class="game-mole-scores">
+              <span>你 <b id="game-mole-player">0</b></span>
+              <span>月月 <b id="game-mole-ai">0</b></span>
+              <span id="game-mole-time">8.0s</span>
+            </div>
+            <div class="game-mole-grid" id="game-mole-grid"></div>
+            <button type="button" class="game-move" id="game-mole-start">开始挑战</button>
+            <div class="game-rps-log" id="game-mole-status">准备打地鼠。</div>
+          </div>
+
+          <div id="game-ttt-step" class="hidden">
+            <div class="game-ttt-board" id="game-ttt-board"></div>
+            <div class="game-rps-log" id="game-ttt-status">你执 X，月月执 O，你先手。</div>
+          </div>
+
+          <div id="game-memory-step" class="hidden">
+            <div class="game-rps-scores">
+              <span>你的步数 <b id="game-memory-moves">0</b></span>
+              <span>月月目标 <b id="game-memory-ai">0</b> 步</span>
+            </div>
+            <div class="game-memory-grid" id="game-memory-grid"></div>
+            <div class="game-rps-log" id="game-memory-status">点开两张牌，找出相同图案。</div>
+          </div>
+
+          <div id="game-guess-step" class="hidden">
+            <div class="game-round" id="game-guess-range">范围 1 – 100</div>
+            <div class="game-guess-row">
+              <input id="game-guess-input" type="number" min="1" max="100" placeholder="输入 1–100">
+              <button type="button" class="game-move" id="game-guess-submit">猜！</button>
+            </div>
+            <div class="game-rps-log" id="game-guess-status">已猜 0 / 7 次。</div>
+          </div>
+
+          <div id="game-dice-step" class="hidden">
+            <div class="game-rps-scores">
+              <span>你 <b id="game-dice-player">0</b></span>
+              <span>月月 <b id="game-dice-ai">0</b></span>
+            </div>
+            <div class="game-dice-row">
+              <div class="game-die" id="game-dice-player-face">?</div>
+              <span>VS</span>
+              <div class="game-die" id="game-dice-ai-face">?</div>
+            </div>
+            <div class="game-round" id="game-dice-round">第 1 局</div>
+            <div class="game-rps-log" id="game-dice-status">掷骰子比大小，三局两胜。</div>
+            <div class="game-rps-actions">
+              <button type="button" class="game-move" id="game-dice-roll">掷骰子</button>
+            </div>
+          </div>
+
+          <div id="game-gomoku-step" class="hidden">
+            <div class="game-rps-scores">
+              <span>你 <b>X</b></span>
+              <span>月月 <b>O</b></span>
+            </div>
+            <div class="game-gomoku-board" id="game-gomoku-board"></div>
+            <div class="game-rps-log" id="game-gomoku-status">你执 X，月月执 O，你先手。</div>
+          </div>
+
+          <div id="game-connect4-step" class="hidden">
+            <div class="game-rps-scores">
+              <span>你 <b>红</b></span>
+              <span>月月 <b>黄</b></span>
+            </div>
+            <div class="game-connect4-board" id="game-connect4-board"></div>
+            <div class="game-rps-log" id="game-connect4-status">你执红，月月执黄，点一列落子。</div>
+          </div>
+
+          <div id="game-reversi-step" class="hidden">
+            <div class="game-rps-scores">
+              <span>你 <b id="game-reversi-player">2</b></span>
+              <span>月月 <b id="game-reversi-ai">2</b></span>
+            </div>
+            <div class="game-reversi-board" id="game-reversi-board"></div>
+            <div class="game-rps-log" id="game-reversi-status">你执黑先手，点一个能夹住白棋的位置。</div>
+          </div>
+
+          <div class="game-ai-reply hidden" id="game-ai-reply"></div>
+          <button type="button" class="cook-main-btn hidden" id="game-restart">再来一局</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="integration-modal hidden" id="integration-modal" role="dialog" aria-modal="true" aria-labelledby="integration-title">
+    <div class="integration-panel">
+      <div class="integration-head">
+        <div>
+          <h3 id="integration-title">🔗 插件联动</h3>
+          <small id="integration-sub">正在读取插件状态…</small>
+        </div>
+        <div class="integration-head-actions">
+          <button type="button" class="mini-btn" id="integration-refresh" title="刷新插件状态">刷新</button>
+          <button type="button" class="mini-btn" id="integration-close" aria-label="关闭插件联动" title="关闭">×</button>
+        </div>
+      </div>
+      <div class="integration-list" id="integration-list"></div>
+      <div class="integration-foot">
+        <span>这里集中展示 AstrBot 插件与虚拟人生的接入状态；具体插件页可在 AstrBot 插件管理中打开。</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/vehicle-art.js?v=20261108-garageroom"></script>
+  <script src="assets/furniture-art.js?v=20261106-appliance1"></script>
+  <script src="assets/room-model.js?v=20261109-garagechar9"></script>
+  <script src="assets/interior-layout.js?v=20261109-stairicon1"></script>
+  <script src="assets/destination-art.js?v=20261105-1"></script>
+  <script src="assets/house-interior.js?v=20261108-garageroom"></script>
+  <script src="assets/object-shapes.js?v=20261105-shapes1"></script>
+  <script src="assets/furniture-finish.js?v=20261106-home2"></script>
+  <script src="assets/goods-size.js?v=20261108-size3"></script>
+  <script src="assets/room-perspective.js?v=20261109-noseout1"></script>
+  <script src="assets/scene-studio.js?v=20261109-stairdown1"></script>
+  <script src="assets/room-controls.js?v=20261105-1"></script>
+  <script src="assets/destination-interiors.js?v=20261106-places3"></script>
+  <script src="assets/garage-destinations.js?v=20261106-places1"></script>
+  <script src="assets/product-art.js?v=20261105-products1"></script>
+  <script src="assets/product-art-extra.js?v=20261107-goods2"></script>
+  <script src="assets/furniture-icons.js?v=20261107-icons1"></script>
+  <script src="assets/item-artwork.js?v=20261109-stairicon2"></script>
+  <script src="assets/room-3d-models.js?v=20261109-garagedoor2"></script>
+  <script src="assets/room-3d-atmosphere.js?v=20261107-3d13"></script>
+  <script src="assets/room-3d-outdoor.js?v=20261109-garagedoor1"></script>
+  <script src="assets/destination-3d.js?v=20261109-cafependant1"></script>
+  <script src="assets/bedroom-3d.js?v=20261109-stairs1"></script>
+  <script src="./app.js?v=20261109-stairsame1"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+

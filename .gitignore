@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+
+# Runtime data and secrets
+data/
+*.log
+cmd_config.json
+astrbot_plugin_virtual_life_config.json
+*.bak
+*.bak-*
+
+# Local environments
+.venv/
+venv/
+env/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Release artifacts
+dist/
+*.zip

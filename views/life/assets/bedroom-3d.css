@@ -1,0 +1,50 @@
+.bedroom-3d{position:relative;width:100%;height:100%;min-height:360px;overflow:hidden;border-radius:inherit;background:#e5e4db;isolation:isolate}
+.bedroom-3d-viewport{position:absolute;inset:0;touch-action:none;outline:none;cursor:grab}
+.bedroom-3d-viewport:active{cursor:grabbing}
+.bedroom-3d-viewport:focus-visible{box-shadow:inset 0 0 0 3px #aebf9c}
+.bedroom-3d-viewport canvas{display:block;width:100%;height:100%}
+.bedroom-3d .room-label,.bedroom-3d .environment-badge{pointer-events:none}
+.bedroom-3d-toolbar{position:absolute;bottom:12px;right:12px;z-index:4;display:flex;align-items:center;gap:4px;padding:5px;background:#faf8eced;border:1px solid #d5dcc5;border-radius:12px;box-shadow:0 4px 20px #44534416}
+.bedroom-3d-toolbar button{border:0;border-radius:7px;background:transparent;color:#536d53;padding:6px 9px;font:inherit;font-size:12px;cursor:pointer}
+.bedroom-3d-toolbar button:hover,.bedroom-3d-toolbar button:focus-visible{background:#e1e8d4}
+.bedroom-3d-hint{position:absolute;left:13px;bottom:47px;z-index:3;color:#63735b;background:#faf8e9de;border-radius:7px;padding:5px 8px;font-size:10px;pointer-events:none}
+.bedroom-3d-status{position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);z-index:4;padding:10px 16px;border-radius:12px;background:#fff9e9ed;color:#5c6e58;font-size:13px;white-space:nowrap}
+.bedroom-3d[data-ready=true]>.bedroom-3d-fallback{display:none}
+.bedroom-3d[data-ready=true]>.bedroom-3d-status{display:none}
+.bedroom-3d:not([data-ready=true])>.bedroom-3d-viewport{visibility:hidden}
+.bedroom-3d-fallback{position:absolute;inset:0}
+.bedroom-3d.show-plan>.bedroom-3d-fallback{display:block}
+.bedroom-3d.show-plan>.bedroom-3d-viewport,.bedroom-3d.show-plan>.room-label,.bedroom-3d.show-plan>.bedroom-3d-hint,.bedroom-3d.show-plan>.appearance-badge,.bedroom-3d.show-plan>.environment-badge{visibility:hidden}
+.bedroom-3d.show-plan>.bedroom-3d-toolbar{bottom:54px}
+.bedroom-3d-items{position:absolute;left:12px;top:72px;z-index:5;max-width:210px;max-height:230px;overflow:auto;background:#fffbeeef;border:1px solid #d3ddc7;border-radius:10px;padding:6px;box-shadow:0 6px 22px #42534020}
+.bedroom-3d-items[hidden]{display:none}
+.bedroom-3d-items button{display:block;width:100%;text-align:left;border:0;background:transparent;color:#52664f;padding:8px 12px;border-radius:6px;cursor:pointer;font:inherit;font-size:12px}
+.bedroom-3d-items button:hover,.bedroom-3d-items button:focus-visible{background:#e4ead9}
+.bedroom-3d-tooltip{position:absolute;z-index:5;pointer-events:none;border-radius:6px;background:#3e584ce8;color:#fff8e9;padding:5px 8px;font-size:11px;display:none}
+
+.bedroom-3d:fullscreen,.bedroom-3d.expanded{width:100vw;height:100vh;border-radius:0;background:#e5e4da}
+.bedroom-3d.expanded{position:fixed;inset:0;z-index:9000}
+
+.bedroom-3d-toolbar[hidden]{display:none}
+
+/* Room3D: time / weather preview panel (local preview only) */
+.room-3d-env{position:absolute;right:12px;bottom:58px;z-index:5;display:flex;flex-direction:column;gap:8px;min-width:210px;padding:10px 12px;background:#fffbeef2;border:1px solid #d3ddc7;border-radius:12px;box-shadow:0 6px 22px #42534020;color:#52664f;font-size:12px}
+.room-3d-env[hidden]{display:none}
+.room-3d-env label{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.room-3d-env output{font-variant-numeric:tabular-nums;min-width:3.2em;color:#3f5a45}
+.room-3d-env input[type=range]{flex:1;accent-color:#8da37a}
+.room-3d-env select{flex:1;border:1px solid #d3ddc7;border-radius:7px;background:#fff;color:#52664f;padding:4px 6px;font:inherit}
+.room-3d-env button{border:0;border-radius:7px;background:#e1e8d4;color:#536d53;padding:6px 9px;font:inherit;cursor:pointer}
+.room-3d-env button:hover,.room-3d-env button:focus-visible{background:#d4dec4}
+.bedroom-3d[data-weather=storm] .environment-badge,.bedroom-3d[data-weather=rain] .environment-badge{background:#e5ecefe6}
+
+/* Outing destinations (3D) fill the scene stage */
+.scene-stage > .dest-3d{position:absolute;inset:0;width:auto;height:auto;min-height:0;border-radius:inherit}
+.dest-3d .scene-label{z-index:6}
+.dest-3d .bedroom-3d-hint{bottom:12px;left:12px}
+/* 3D garage inside the garage panel */
+.garage-3d{position:relative;height:300px;margin:0 0 12px;border-radius:12px;overflow:hidden;border:1px solid #dbe0d1;background:#e5e4db}
+.garage-3d > .dest-3d{position:absolute;inset:0;width:auto;height:auto;min-height:0;border-radius:inherit}
+.garage-3d .scene-label{position:absolute;top:10px;left:10px;z-index:6}
+.garage-3d-fallback svg{display:block;width:100%;height:auto}
+@media (max-width:600px){.garage-3d{height:230px}}
