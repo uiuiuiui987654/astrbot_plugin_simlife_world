@@ -1586,12 +1586,6 @@
         "type": "int",
         "default": 240,
         "hint": "建议 60-600 秒。"
-      },
-      "fallback_to_omnidraw": {
-        "description": "失败时回退万象画卷",
-        "type": "bool",
-        "default": false,
-        "hint": "关闭后拍照完全由本插件的绘图接口生成，不再依赖万象画卷。"
       }
     }
   },

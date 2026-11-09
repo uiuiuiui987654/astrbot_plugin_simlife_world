@@ -27,7 +27,7 @@ INTEGRATION_CATALOG: dict[str, dict[str, Any]] = {
         "emoji": "🎨",
         "category": "创作",
         "capabilities": ["绘图", "自拍", "视频"],
-        "note": "虚拟人生自拍联动已启用，画面会读取当前活动与场景",
+        "note": "独立生图插件；虚拟人生相机已不再依赖它",
     },
     "astrbot_plugin_livingmemory": {
         "title": "LivingMemory",

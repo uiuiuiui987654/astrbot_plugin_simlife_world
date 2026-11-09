@@ -10,7 +10,6 @@ from typing import Any
 
 import aiohttp
 
-OMNIDRAW_PLUGIN_ID = "astrbot_plugin_omnidraw"
 COMFY_PROXY_URL = "http://127.0.0.1:8189/v1/images/generations"
 
 DEFAULT_STYLE_PROMPT = (
@@ -1454,39 +1453,6 @@ async def generate(
                 "target": target,
                 "mode": "moss-scene",
             }
-    if bool(settings.get("fallback_to_omnidraw", False)):
-        try:
-            meta = plugin.context.get_registered_star(OMNIDRAW_PLUGIN_ID)
-        except Exception:
-            meta = None
-        star = getattr(meta, "star_cls", None) if meta is not None else None
-        generator = getattr(star, "generate_images_for_plugin", None)
-        if callable(generator):
-            try:
-                result = await generator(
-                    prompt=prompt,
-                    count=1,
-                    aspect_ratio="3:4" if target == TARGET_CHARACTER else "4:3",
-                    mode=mode,
-                    event=None,
-                )
-            except Exception as exc:
-                return {
-                    "ok": False,
-                    "error": f"显影失败：{type(exc).__name__}",
-                }
-            if isinstance(result, dict) and result.get("success"):
-                image = extract_image(result)
-                display_image = await _materialize_image(image)
-                if display_image:
-                    return {
-                        "ok": True,
-                        "image": display_image,
-                        "caption": caption,
-                        "prompt": prompt,
-                        "target": target,
-                        "mode": result.get("mode") or mode or "text2img",
-                    }
     return {
         "ok": False,
         "error": "相机显影失败，请检查插件相机设置里的绘图接口、模型和提示词",
