@@ -330,11 +330,64 @@ AI 在聊天里想发自拍时会调用 `take_selfie` 工具，生成后直接�
 | 3D 视图 | 需要浏览器支持 WebGL；不支持时自动降级 |
 | 移动端 / 桌面端 | 使用同一套面板，小屏幕建议使用平面视图 |
 
+## ❓ 常见问题与已知问题
+
+<details>
+<summary><b>能和其他陪伴 / 日程类插件一起用吗？</b></summary>
+
+<br>
+
+不建议。请不要与 **private_companion**，或上游 **虚拟人生**（`astrbot_plugin_virtual_life`）同时启用：它们同样会在每次聊天请求里注入角色状态、按日程主动发消息，同时启用会出现重复注入、重复主动消息；与上游虚拟人生还会争用同名指令（如 `/虚拟日程`）。从上游迁移时，停用旧插件即可，本插件会兼容读取旧数据。
+
+</details>
+
+<details>
+<summary><b>绘图接口密钥安全吗？</b></summary>
+
+<br>
+
+「📷 相机与绘图模型」里的 **绘图接口密钥** 和 AstrBot 其他插件配置一样，以**明文**保存在 AstrBot 的 `data/config/astrbot_plugin_simlife_world_config.json` 中，没有额外加密。它只在插件向绘图接口发请求时使用，不会发给生活面板，也不会出现在面板的数据备份里。建议：
+
+- 使用单独申请、设置了额度上限的密钥；
+- 不要分享这个配置文件或带有配置页的截图；
+- 接口不需要鉴权时留空。
+
+</details>
+
+<details>
+<summary><b>图片、按钮在我的平台上显示不对？</b></summary>
+
+<br>
+
+`metadata.yaml` 里列出的平台（aiocqhttp、telegram、wecom、lark、dingtalk、kook）都能收发文字，但图片消息（日程图、自拍、拍照）和消息里的互动方式依赖各平台适配器，**目前没有在每个平台上逐一验证**。如果某个平台图片发不出来或排版异常，请附上平台名称和日志提交 issue。
+
+</details>
+
+<details>
+<summary><b>3D 很卡 / 面板打开很慢？</b></summary>
+
+<br>
+
+点顶栏「画面」按钮切到 **2D**。远程访问和低配设备默认已经是 2D，详见 [3D 视图](#-3d-视图)。
+
+</details>
+
+<details>
+<summary><b>某个功能没反应，怎么排查？</b></summary>
+
+<br>
+
+插件内部出错时都会写日志，前缀为 `[虚拟人生]`。预期内的回退只记为 DEBUG，需要在 AstrBot 里把日志等级调到 **DEBUG** 才能看到，然后按前缀搜索。提交 issue 时请附上相关日志。
+
+</details>
+
 ## 📜 来源与许可证
 
 本项目基于 [FloranceYeh/astrbot_plugin_virtual_life](https://github.com/FloranceYeh/astrbot_plugin_virtual_life) v1.12.2（GPL-3.0）继续修改，保留原始项目的版权与许可声明。相对上游的修改见 [NOTICE.md](NOTICE.md)，完整更新历史（含上游原有记录）见 [CHANGELOG.md](CHANGELOG.md)。
 
 本项目以 **GNU General Public License v3.0（GPL-3.0）** 发布，完整文本见 [LICENSE](LICENSE)。
+
+“模拟人生_世界”是本插件的名称，与 Electronic Arts 的《模拟人生》（The Sims）系列游戏没有任何关联。
 
 <div align="center">
 <sub>Made with 💜 for AstrBot</sub>

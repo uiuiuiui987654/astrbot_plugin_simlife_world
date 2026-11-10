@@ -17,6 +17,7 @@
 
 - 代码结构整理（行为不变）：`main.py` 只保留带装饰器的处理器，其余方法按功能拆入 `core/mixins/`；`life_state` 拆为包；`app.js`、`style.css`、`destination-3d.js`、`room-3d-models.js` 改由 `views/life/src/` 下的片段经 `tools/build_frontend.py` 生成。详见 [ARCHITECTURE.md](ARCHITECTURE.md)。
 - `requirements.txt` 补充 `aiohttp`（相机模块直接使用）。
+- README 新增“常见问题与已知问题”：不要与 private_companion / 上游虚拟人生同时启用、绘图密钥明文保存的说明、各平台图片未逐一验证、日志排查方法。
 
 ### 修复
 
