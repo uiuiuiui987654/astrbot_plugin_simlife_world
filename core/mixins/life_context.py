@@ -260,7 +260,7 @@ class LifeContextMixin:
             logger.debug("[模拟人生] 读取对话回顾失败 umo=%s: %s", umo, exc)
             return ""
 
-    async def get_virtual_life_snapshot(self, umo: str) -> dict[str, Any]:
+    async def get_simlife_snapshot(self, umo: str) -> dict[str, Any]:
         """供其他插件读取她当前的生活状态（只读，不触发日程生成）。
 
         This is a stable, read-only interface for other plugins (for example the
@@ -308,7 +308,7 @@ class LifeContextMixin:
             if pose_hint:
                 snapshot["pose_hint"] = pose_hint
         except Exception:
-            logger.debug("[模拟人生] get_virtual_life_snapshot 出错，已忽略", exc_info=True)
+            logger.debug("[模拟人生] get_simlife_snapshot 出错，已忽略", exc_info=True)
         snapshot.update(
             {
                 "ok": True,

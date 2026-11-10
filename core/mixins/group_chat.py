@@ -97,7 +97,7 @@ class GroupChatMixin:
             tool_set = getattr(req, "func_tool", None)
             if tool_set is not None:
                 for name in (
-                    "get_virtual_daily_schedule",
+                    "get_daily_schedule",
                     "get_long_term_timeline",
                     "add_schedule_requirement",
                     "request_money",

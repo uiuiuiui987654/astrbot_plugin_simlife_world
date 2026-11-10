@@ -3,11 +3,9 @@
 from __future__ import annotations
 
 import re
-import shutil
 from pathlib import Path
 
 from astrbot.api import logger
-from astrbot.api.star import StarTools
 
 GROUP_PRIVACY_TERMS = (
     "日程",
@@ -346,26 +344,6 @@ def _plugin_version() -> str:
 
 
 PLUGIN_ID = "astrbot_plugin_simlife_world"
-LEGACY_PLUGIN_ID = "astrbot_plugin_virtual_life"
-
-
-def _migrate_legacy_data(data_dir: Path) -> None:
-    """Copy data from the pre-rename plugin id when the new data dir is empty."""
-    try:
-        legacy_dir = StarTools.get_data_dir(LEGACY_PLUGIN_ID)
-        if legacy_dir == data_dir or not legacy_dir.is_dir():
-            return
-        if any(data_dir.iterdir()):
-            return
-        shutil.copytree(legacy_dir, data_dir, dirs_exist_ok=True)
-        logger.info(
-            "[模拟人生] 已从旧插件标识迁移数据目录 %s -> %s",
-            legacy_dir,
-            data_dir,
-        )
-    except Exception as exc:
-        logger.warning("[模拟人生] 旧插件数据迁移失败: %s", exc)
-
 
 def _frontend_ui_version() -> str:
     try:

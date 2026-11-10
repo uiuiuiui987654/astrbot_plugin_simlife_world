@@ -92,7 +92,7 @@ class ChatInjection(unittest.TestCase):
 
     def test_full_queries_point_at_tools(self):
         self.check(ask("给我完整大时间表"), present=("get_long_term_timeline",))
-        self.check(ask("给我完整日程"), present=("get_virtual_daily_schedule",), absent=("get_long_term_timeline",))
+        self.check(ask("给我完整日程"), present=("get_daily_schedule",), absent=("get_long_term_timeline",))
 
     def test_module_report(self):
         text, modules, limit = injector().build_details(STUDY_DAY, NOW, store(), "在干嘛，上课吗？")

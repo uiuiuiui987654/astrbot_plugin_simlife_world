@@ -74,7 +74,6 @@ from .core.utils import (
 from .core.view_api import LifeViewAPI
 from .core.mixins.common import (
     _plugin_version,
-    _migrate_legacy_data,
     _frontend_ui_version,
 )
 from .core.mixins.runtime_state import RuntimeStateMixin
@@ -115,7 +114,6 @@ class SimLifeWorldPlugin(
         self.context = context
         self.config = config
         self.data_dir = StarTools.get_data_dir("astrbot_plugin_simlife_world")
-        _migrate_legacy_data(self.data_dir)
         self.storage = PluginStorage(self.data_dir)
         self.personas = PersonaResolver(context)
         self.plan_generator = DailyPlanGenerator(context, config, self.data_dir)
@@ -886,8 +884,8 @@ class SimLifeWorldPlugin(
             self.reply_delay_policy.active_conversation_seconds,
         )
 
-    @filter.llm_tool(name="get_virtual_daily_schedule")
-    async def get_virtual_daily_schedule(self, event: AstrMessageEvent) -> str:
+    @filter.llm_tool(name="get_daily_schedule")
+    async def get_daily_schedule(self, event: AstrMessageEvent) -> str:
         """取出她今天完整的日程、穿搭和此刻在做的事。"""
         if not self._schedule_available_for_umo(event.unified_msg_origin):
             return "日程功能只在私聊里用，群聊中不提供日程查询。"

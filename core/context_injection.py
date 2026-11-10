@@ -299,7 +299,7 @@ class SmartContextInjector:
         if base_on and current:
             add("base", *([] if asked["schedule"] else [self._base_section(plan, now, current, **context)]))
         if asked["full_schedule"] and plan.has_schedule:
-            add("full_schedule_query", FULL_QUERY_HINT.format(tool="get_virtual_daily_schedule"))
+            add("full_schedule_query", FULL_QUERY_HINT.format(tool="get_daily_schedule"))
         if asked["full_long_term"]:
             add("full_long_term_query", FULL_QUERY_HINT.format(tool="get_long_term_timeline"))
         if asked["schedule"] and current:

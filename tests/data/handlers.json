@@ -97,10 +97,10 @@
   [
    [
     "name",
-    "'get_virtual_daily_schedule'"
+    "'get_daily_schedule'"
    ]
   ],
-  "get_virtual_daily_schedule"
+  "get_daily_schedule"
  ],
  [
   "llm_tool",
