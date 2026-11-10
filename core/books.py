@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import json
 import re
-import threading
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from .jsonio import STATE_LOCK, atomic_write_json
 
 CORE_DIR = Path(__file__).resolve().parent
 BOOKS_PATH = CORE_DIR / "books_catalog.json"
@@ -13,7 +13,6 @@ BOOKS_TXT_DIR = CORE_DIR / "books_txt"
 CHAPTER_HEADING = re.compile(
     r"^第[一二三四五六七八九十百零〇两0-9]+章[\s　].*$"
 )
-STATE_LOCK = threading.RLock()
 
 
 def _state_path(data_dir: Path) -> Path:
@@ -37,11 +36,7 @@ def _load_state(data_dir: Path) -> dict[str, Any]:
 def _save_state(data_dir: Path, content: dict[str, Any]) -> None:
     path = _state_path(data_dir)
     path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_text(
-        json.dumps(content, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-    temporary.replace(path)
+    atomic_write_json(path, content)
 
 
 def _persona_state(content: dict[str, Any], persona: str) -> dict[str, Any]:

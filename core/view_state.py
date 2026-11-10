@@ -26,6 +26,7 @@ from . import (
     mood_history,
     world_events,
 )
+from .jsonio import atomic_write_json, synchronized
 
 CORE_DIR = Path(__file__).resolve().parent
 
@@ -447,16 +448,12 @@ def load_wishes(plans_path: Path) -> list[dict]:
     return [wish for wish in wishes if isinstance(wish, dict)]
 
 
+@synchronized
 def save_wishes(plans_path: Path, wishes: list[dict]) -> None:
     path = wishes_path(plans_path)
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = {"schema_version": 1, "wishes": wishes[-200:]}
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
-    temporary.replace(path)
+    atomic_write_json(path, payload)
 
 
 PENDING_ACTION_STALE_SECONDS = 7200
@@ -481,12 +478,7 @@ def _save_pending_actions_raw(plans_path: Path, actions: list[dict]) -> None:
     path = pending_actions_path(plans_path)
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = {"schema_version": 1, "actions": actions[-10:]}
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
-    temporary.replace(path)
+    atomic_write_json(path, payload)
 
 
 def load_pending_actions(
@@ -511,6 +503,7 @@ def load_pending_actions(
     return actions[-10:]
 
 
+@synchronized
 def queue_pending_action(
     plans_path: Path,
     *,
@@ -552,6 +545,7 @@ def queue_pending_action(
     return action
 
 
+@synchronized
 def pop_pending_action(plans_path: Path, action_id: str) -> dict | None:
     safe = re.sub(r"[^A-Za-z0-9_.-]", "", str(action_id or ""))
     if not safe:
@@ -573,6 +567,7 @@ def pop_pending_action(plans_path: Path, action_id: str) -> dict | None:
     return found
 
 
+@synchronized
 def clear_pending_actions(
     plans_path: Path, persona: str | None = None
 ) -> int:
@@ -672,6 +667,7 @@ def build_interaction_request(
     }
 
 
+@synchronized
 def write_interaction_request(plans_path: Path, request: dict) -> None:
     directory = interaction_requests_dir(plans_path)
     directory.mkdir(parents=True, exist_ok=True)
@@ -683,11 +679,7 @@ def write_interaction_request(plans_path: Path, request: dict) -> None:
         except OSError:
             continue
     target = directory / f"{request['id']}.json"
-    temporary = target.with_suffix(".json.tmp")
-    temporary.write_text(
-        json.dumps(request, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-    temporary.replace(target)
+    atomic_write_json(target, request)
 
 
 def load_interaction_response(plans_path: Path, request_id: str) -> dict | None:

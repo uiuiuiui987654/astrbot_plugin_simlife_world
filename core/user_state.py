@@ -11,6 +11,7 @@ import json
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
+from .jsonio import atomic_write_json
 
 SLEEP_TTL_HOURS = 12
 
@@ -34,9 +35,7 @@ class UserStateStore:
             return
         try:
             self.path.parent.mkdir(parents=True, exist_ok=True)
-            self.path.write_text(
-                json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8"
-            )
+            atomic_write_json(self.path, state)
         except OSError:
             pass
 

@@ -11,6 +11,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from .jsonio import atomic_write_json, synchronized
 
 COOK_HISTORY_FILE = "cooking_history.json"
 MAX_HISTORY = 50
@@ -26,11 +27,7 @@ def _read_json(path: Path, fallback: Any) -> Any:
 
 def _write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-    temporary.replace(path)
+    atomic_write_json(path, payload)
 
 
 def _normalize(name: Any) -> str:
@@ -210,6 +207,7 @@ def consume_ingredients(plugin: Any, dish: dict[str, Any]) -> dict[str, Any]:
         return {"used": [], "missing": list(dish.get("ingredients") or [])}
 
 
+@synchronized
 def record_cook(
     plugin: Any,
     dish: dict[str, Any],
@@ -243,6 +241,7 @@ def record_cook(
     return record
 
 
+@synchronized
 def mark_served(plugin: Any, dish_name: str, *, now: datetime | None = None) -> None:
     """标记最近一次同菜名记录已被端给角色（供后续查询/调试）。"""
     data_dir = getattr(plugin, "data_dir", None)

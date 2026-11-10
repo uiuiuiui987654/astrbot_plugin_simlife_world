@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import json
-import threading
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 from . import transport as transport_modes
+from .jsonio import STATE_LOCK, atomic_write_json
 
 DEFAULT_HOURLY_RATE = 20.0
 MAX_TRANSACTIONS = 60
@@ -53,7 +53,7 @@ TRANSPORT_WORDS = (
     "回家",
 )
 
-_LOCK = threading.RLock()
+_LOCK = STATE_LOCK  # shared re-entrant lock for all state files (see jsonio)
 
 
 def _money_path(data_dir: Path) -> Path:
@@ -78,11 +78,7 @@ def _load(data_dir: Path) -> dict[str, Any]:
 def _save(data_dir: Path, content: dict[str, Any]) -> None:
     path = _money_path(data_dir)
     path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_text(
-        json.dumps(content, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-    temporary.replace(path)
+    atomic_write_json(path, content)
 
 
 def _wallet(content: dict[str, Any], persona: str) -> dict[str, Any]:

@@ -9,13 +9,14 @@ character that the camera was used, without storing or re-sending image bytes.
 from __future__ import annotations
 
 import json
-import threading
 import uuid
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-LOCK = threading.RLock()
+from .jsonio import STATE_LOCK, atomic_write_json
+
+LOCK = STATE_LOCK  # shared re-entrant lock for all state files (see jsonio)
 EVENTS_FILE = "camera_events.json"
 MAX_AGE_HOURS = 12
 MAX_EVENTS_PER_PERSONA = 12
@@ -42,11 +43,7 @@ def _load(data_dir: Path) -> dict[str, Any]:
 def _save(data_dir: Path, payload: dict[str, Any]) -> None:
     path = _path(data_dir)
     path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-    temporary.replace(path)
+    atomic_write_json(path, payload)
 
 
 def _parse_time(value: Any) -> datetime | None:

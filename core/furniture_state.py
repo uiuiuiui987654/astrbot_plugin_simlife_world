@@ -17,6 +17,7 @@ import json
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
+from .jsonio import atomic_write_json, synchronized
 
 SCHEMA_VERSION = 1
 MAX_ITEMS = 200
@@ -219,6 +220,7 @@ def load_states(plans_path: Path) -> dict[str, dict[str, Any]]:
     }
 
 
+@synchronized
 def save_states(plans_path: Path, states: dict[str, dict[str, Any]]) -> None:
     path = states_path(plans_path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -231,18 +233,14 @@ def save_states(plans_path: Path, states: dict[str, dict[str, Any]]) -> None:
         "schema_version": SCHEMA_VERSION,
         "items": dict(reversed(ordered)),
     }
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
-    temporary.replace(path)
+    atomic_write_json(path, payload)
 
 
 def _now(now: datetime | None = None) -> datetime:
     return now or datetime.now().astimezone()
 
 
+@synchronized
 def live_states(
     plans_path: Path,
     *,
@@ -407,6 +405,7 @@ def action_message(item: dict[str, Any], action: str, *, now: datetime | None = 
     return f"已记录：{name} · {action}"
 
 
+@synchronized
 def record_action(
     plans_path: Path,
     item: dict[str, Any],
@@ -447,10 +446,12 @@ def record_action(
     return decorate_item(item, state, now=current)
 
 
+@synchronized
 def item_state(plans_path: Path, item_id: str) -> dict[str, Any]:
     return dict(live_states(plans_path).get(str(item_id or "")) or {})
 
 
+@synchronized
 def furniture_context(
     plans_path: Path,
     item_id: str,

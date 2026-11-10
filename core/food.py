@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import json
-import os
 import random
 import threading
 from dataclasses import dataclass
 from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
+from .jsonio import atomic_write_json
 
 
 MEAL_ORDER = ("早餐", "午餐", "晚餐", "加餐")
@@ -156,12 +156,7 @@ def _read_json(path: Path, fallback: Any) -> Any:
 
 def _write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
-    os.replace(temporary, path)
+    atomic_write_json(path, payload)
 
 
 def _round_quantity(value: float) -> float:

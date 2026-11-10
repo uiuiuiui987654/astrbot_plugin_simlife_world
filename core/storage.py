@@ -7,6 +7,7 @@ from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
 
+from .jsonio import atomic_write_json
 from .models import DailyPlan, ScheduleRequirement, SessionState
 
 
@@ -34,10 +35,7 @@ class JsonRepository:
     async def save(self, value: dict[str, Any]) -> None:
         async with self.lock:
             self.path.parent.mkdir(parents=True, exist_ok=True)
-            temporary = self.path.with_suffix(self.path.suffix + ".tmp")
-            content = json.dumps(value, ensure_ascii=False, indent=2)
-            await asyncio.to_thread(temporary.write_text, content, encoding="utf-8")
-            await asyncio.to_thread(temporary.replace, self.path)
+            await asyncio.to_thread(atomic_write_json, self.path, value)
 
 
 class PluginStorage:

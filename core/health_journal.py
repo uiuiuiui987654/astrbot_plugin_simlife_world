@@ -12,6 +12,7 @@ import json
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any
+from .jsonio import atomic_write_json, synchronized
 
 SCHEMA_VERSION = 1
 
@@ -36,12 +37,7 @@ def _load(data_dir: Path) -> dict[str, Any]:
 def _save(data_dir: Path, payload: dict[str, Any]) -> None:
     path = journal_path(data_dir)
     path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
-    temporary.replace(path)
+    atomic_write_json(path, payload)
 
 
 def _parse_day(value: Any) -> date | None:
@@ -189,6 +185,7 @@ def persona_state(
     return result
 
 
+@synchronized
 def update(
     data_dir: Path,
     persona: str,

@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import json
 import random
-import threading
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any
+from .jsonio import STATE_LOCK, atomic_write_json
 
-LOCK = threading.RLock()
+LOCK = STATE_LOCK  # shared re-entrant lock for all state files (see jsonio)
 
 EVENTS = (
     (
@@ -529,11 +529,7 @@ def _load(data_dir: Path) -> dict[str, Any]:
 def _save(data_dir: Path, content: dict[str, Any]) -> None:
     path = _path(data_dir)
     path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_text(
-        json.dumps(content, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-    temporary.replace(path)
+    atomic_write_json(path, content)
 
 
 RECENT_AVOID_DAYS = 14

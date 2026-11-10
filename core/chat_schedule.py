@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any
 
 from .utils import extract_json_object
+from .jsonio import atomic_write_json
 
 DEFAULT_KEYWORDS = [
     "瑜伽",
@@ -533,9 +534,7 @@ class ChatScheduleState:
         self._data = data
         try:
             self.path.parent.mkdir(parents=True, exist_ok=True)
-            self.path.write_text(
-                json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
-            )
+            atomic_write_json(self.path, data)
         except Exception:
             pass
 

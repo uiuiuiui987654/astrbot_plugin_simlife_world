@@ -26,6 +26,7 @@ from typing import Any
 from astrbot.api import logger
 
 from .human_style import DIALOGUE_FLOW_RULE, HUMAN_CHAT_RULE
+from .jsonio import atomic_write_json
 
 MAX_CHAT_CHARS = 200
 MAX_SPEECH_CHARS = 160
@@ -136,11 +137,7 @@ def _read_json(path: Path, fallback: Any) -> Any:
 
 def _write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-    temporary.replace(path)
+    atomic_write_json(path, payload)
 
 
 def _clean(value: Any, limit: int) -> str:

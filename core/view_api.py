@@ -35,6 +35,7 @@ from . import (
     weekly,
     world_events,
 )
+from .jsonio import atomic_write_json
 
 
 class VirtualLifeViewAPI:
@@ -821,12 +822,7 @@ class VirtualLifeViewAPI:
                             target.with_name(
                                 target.name + ".before_restore"
                             ).write_bytes(target.read_bytes())
-                        temporary = target.with_name(target.name + ".restore_tmp")
-                        temporary.write_text(
-                            json.dumps(content, ensure_ascii=False, indent=2),
-                            encoding="utf-8",
-                        )
-                        temporary.replace(target)
+                        atomic_write_json(target, content)
                     except OSError:
                         skipped.append(clean)
                         continue
