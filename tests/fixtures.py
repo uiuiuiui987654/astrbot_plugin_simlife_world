@@ -69,3 +69,25 @@ def simple_day(**overrides) -> dict:
     }
     payload.update(overrides)
     return payload
+
+
+def nap_day():
+    """Morning / blocked noon nap / afternoon, with one window in the morning (as a DailyPlan)."""
+    from astrbot_plugin_simlife_world.core.models import DailyPlan
+
+    return DailyPlan.from_dict(
+        {
+            "date": "2026-07-14",
+            "persona_id": "alice",
+            "theme": "日常",
+            "mood": "平静",
+            "outfit": outfit_payload(),
+            "timeline": [
+                {"id": "morning", "start": "00:00", "end": "12:00", "activity": "上午日程"},
+                {"id": "rest", "start": "12:00", "end": "14:00", "activity": "午休", "state": "sleep", "availability": "blocked"},
+                {"id": "afternoon", "start": "14:00", "end": "24:00", "activity": "下午日程", "availability": "high"},
+            ],
+            "proactive_windows": [{"id": "w1", "at": "10:00", "intent": "上午打个招呼", "audience": "both", "source_item_id": "morning"}],
+            "budget_bonus": {"private": 1, "group": 0},
+        }
+    )
