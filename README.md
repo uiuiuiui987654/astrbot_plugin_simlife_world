@@ -8,7 +8,7 @@
 
 角色拥有自己的日程、房间、穿搭和日常互动。<br>主人可以通过面板进入她的家，陪她吃饭、看电视、健身、画画、出门兜风，也可以直接和她聊天。
 
-[![version](https://img.shields.io/badge/version-v2.0.3-8e7bb3?style=flat-square)](metadata.yaml)
+[![version](https://img.shields.io/badge/version-v2.1.0-8e7bb3?style=flat-square)](metadata.yaml)
 [![AstrBot](https://img.shields.io/badge/AstrBot-%E2%89%A5%204.29.3-6f9f86?style=flat-square)](https://github.com/AstrBotDevs/AstrBot)
 [![license](https://img.shields.io/badge/license-GPL--3.0-c98a5a?style=flat-square)](LICENSE)
 [![3D](https://img.shields.io/badge/WebGL-2D%20%2F%203D-5f8fb0?style=flat-square)](#-3d-视图)

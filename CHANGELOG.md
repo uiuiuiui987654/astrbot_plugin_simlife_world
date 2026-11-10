@@ -4,7 +4,7 @@
 
 本插件派生自 [FloranceYeh/astrbot_plugin_virtual_life](https://github.com/FloranceYeh/astrbot_plugin_virtual_life) v1.12.2（GPL-3.0）。v2.0.0 起的版本由本仓库维护；**v1.12.2 及更早的条目原样保留自上游项目**，见文末“上游更新日志”。相对上游的修改概要见 [NOTICE.md](NOTICE.md)。
 
-## [v2.1.0] - 未发布
+## [v2.1.0] - 2026-11-10
 
 ### 新增
 
