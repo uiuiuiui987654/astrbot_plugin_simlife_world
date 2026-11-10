@@ -88,7 +88,7 @@ class ModelTests(unittest.TestCase):
     def test_string_outfit_is_rejected(self):
         payload = valid_payload()
         payload["outfit"] = "白衬衫和长裙"
-        with self.assertRaisesRegex(ValueError, "structured object"):
+        with self.assertRaisesRegex(ValueError, "JSON object"):
             DailyPlan.from_dict(payload)
 
     def test_schedule_can_exist_without_outfit(self):
@@ -117,7 +117,7 @@ class ModelTests(unittest.TestCase):
         payload = valid_payload()
         payload["timeline"] = []
 
-        with self.assertRaisesRegex(ValueError, "require a schedule"):
+        with self.assertRaisesRegex(ValueError, "need a schedule"):
             DailyPlan.from_dict(payload)
 
     def test_incomplete_outfit_is_rejected(self):

@@ -1,49 +1,26 @@
+"""Plan data: timeline segments, proactive windows, outfit, weather and the daily plan.
+
+Every class validates itself on construction, so a ``DailyPlan`` that exists is
+always usable. ``from_dict`` / ``to_dict`` define the on-disk JSON format of
+``plans.json`` and ``sessions.json`` — field names and order must not change.
+"""
+
 from __future__ import annotations
 
+import re
 from dataclasses import asdict, dataclass, fields
-from datetime import date, datetime, time
+from datetime import date, time
 from typing import Any, Literal
 
 State = Literal["sleep", "busy", "focus", "transit", "available", "social"]
 Availability = Literal["blocked", "low", "normal", "high"]
 Audience = Literal["private", "group", "both"]
 
-STATES = {"sleep", "busy", "focus", "transit", "available", "social"}
-AVAILABILITIES = {"blocked", "low", "normal", "high"}
-AUDIENCES = {"private", "group", "both"}
-OUTFIT_CATEGORIES = {
-    "hairstyle",
-    "headwear",
-    "underwear",
-    "underpants",
-    "top",
-    "bottom",
-    "dress",
-    "legwear",
-    "outerwear",
-    "shoes",
-    "accessory",
-    "bag",
-    "makeup",
-    "fragrance",
-    "other",
-}
-OUTFIT_CATEGORY_ALIASES = {
-    "hair_accessory": "headwear",
-    "hair-accessory": "headwear",
-    "hair accessories": "headwear",
-    "hair_accessories": "headwear",
-    "hairpin": "headwear",
-    "hair_pin": "headwear",
-    "hair_bow": "headwear",
-    "hairclip": "headwear",
-    "hair_clip": "headwear",
-    "earring": "accessory",
-    "earrings": "accessory",
-    "jewellery": "accessory",
-    "jewelry": "accessory",
-    "necklace": "accessory",
-}
+STATES = frozenset(State.__args__)
+AVAILABILITIES = frozenset(Availability.__args__)
+AUDIENCES = frozenset(Audience.__args__)
+
+# category -> Chinese label (also the set of valid categories)
 OUTFIT_CATEGORY_LABELS = {
     "hairstyle": "发型",
     "headwear": "帽子与发饰",
@@ -61,27 +38,43 @@ OUTFIT_CATEGORY_LABELS = {
     "fragrance": "香氛",
     "other": "其他",
 }
+OUTFIT_CATEGORIES = frozenset(OUTFIT_CATEGORY_LABELS)
+# names models tend to invent, mapped onto a real category
+OUTFIT_CATEGORY_ALIASES = {
+    **dict.fromkeys(
+        ("hair_accessory", "hair-accessory", "hair accessories", "hair_accessories", "hairpin", "hair_pin",
+         "hair_bow", "hairclip", "hair_clip"),
+        "headwear",
+    ),
+    **dict.fromkeys(("earring", "earrings", "jewellery", "jewelry", "necklace"), "accessory"),
+}
+REQUIRED_OUTFIT_PARTS = ("hairstyle", "underwear", "underpants", "shoes")
+
+
+def _clean(value: Any) -> str:
+    return str(value).strip()
+
+
+_HHMM = re.compile(r"([01]\d|2[0-3]):([0-5]\d)")
 
 
 def parse_hhmm(value: str, *, allow_2400: bool = False) -> time:
+    """Strict zero-padded ``HH:MM``; ``24:00`` (end of day) only when allowed."""
     if allow_2400 and value == "24:00":
         return time.max
     if not isinstance(value, str) or not value:
-        raise ValueError("time must be a non-empty HH:MM string")
-    try:
-        parsed = datetime.strptime(value, "%H:%M").time()
-    except ValueError as exc:
-        raise ValueError(f"invalid HH:MM value: {value!r}") from exc
-    if parsed.strftime("%H:%M") != value:
-        raise ValueError(f"invalid HH:MM value: {value}")
-    return parsed
+        raise ValueError("expected a non-empty HH:MM time")
+    match = _HHMM.fullmatch(value)
+    if match is None:
+        raise ValueError(f"not a valid HH:MM time: {value!r}")
+    return time(int(match[1]), int(match[2]))
 
 
 def minute_of_day(value: str) -> int:
     if value == "24:00":
-        return 1440
-    parsed = parse_hhmm(value)
-    return parsed.hour * 60 + parsed.minute
+        return 24 * 60
+    moment = parse_hhmm(value)
+    return moment.hour * 60 + moment.minute
 
 
 @dataclass(slots=True, frozen=True)
@@ -96,35 +89,28 @@ class TimelineItem:
     participant_ids: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
-        if not self.id or not self.activity:
-            raise ValueError("timeline id and activity are required")
+        if not (self.id and self.activity):
+            raise ValueError("every timeline segment needs an id and an activity")
         if self.state not in STATES:
-            raise ValueError(f"invalid state: {self.state}")
+            raise ValueError(f"unknown state {self.state!r}")
         if self.availability not in AVAILABILITIES:
-            raise ValueError(f"invalid availability: {self.availability}")
+            raise ValueError(f"unknown availability {self.availability!r}")
         if minute_of_day(self.start) >= minute_of_day(self.end):
-            raise ValueError("timeline start must be earlier than end")
+            raise ValueError("a timeline segment must end after it starts")
 
     @classmethod
     def from_dict(cls, value: dict[str, Any]) -> TimelineItem:
-        participant_ids = value.get("participant_ids", [])
-        if not isinstance(participant_ids, list):
-            participant_ids = []
+        raw_people = value.get("participant_ids", [])
+        people = (_clean(person) for person in (raw_people if isinstance(raw_people, list) else [])[:20])
         return cls(
-            id=str(value.get("id", "")).strip(),
-            start=str(value.get("start", "")).strip(),
-            end=str(value.get("end", "")).strip(),
-            activity=str(value.get("activity", "")).strip(),
-            location=str(value.get("location", "")).strip(),
+            id=_clean(value.get("id", "")),
+            start=_clean(value.get("start", "")),
+            end=_clean(value.get("end", "")),
+            activity=_clean(value.get("activity", "")),
+            location=_clean(value.get("location", "")),
             state=str(value.get("state", "available")),
             availability=str(value.get("availability", "normal")),
-            participant_ids=tuple(
-                dict.fromkeys(
-                    str(item).strip()
-                    for item in participant_ids[:20]
-                    if str(item).strip()
-                )
-            ),
+            participant_ids=tuple(dict.fromkeys(person for person in people if person)),
         )
 
 
@@ -137,22 +123,22 @@ class ProactiveWindow:
     source_item_id: str = ""
 
     def __post_init__(self) -> None:
-        if not self.id or not self.intent:
-            raise ValueError("window id and intent are required")
+        if not (self.id and self.intent):
+            raise ValueError("every proactive window needs an id and an intent")
         parse_hhmm(self.at)
         if self.audience not in AUDIENCES:
-            raise ValueError(f"invalid audience: {self.audience}")
+            raise ValueError(f"unknown audience {self.audience!r}")
         if not self.source_item_id:
-            raise ValueError("window source_item_id is required")
+            raise ValueError("a proactive window must name its source_item_id")
 
     @classmethod
     def from_dict(cls, value: dict[str, Any]) -> ProactiveWindow:
         return cls(
-            id=str(value.get("id", "")).strip(),
-            at=str(value.get("at", "")).strip(),
-            intent=str(value.get("intent", "")).strip(),
+            id=_clean(value.get("id", "")),
+            at=_clean(value.get("at", "")),
+            intent=_clean(value.get("intent", "")),
             audience=str(value.get("audience", "both")),
-            source_item_id=str(value.get("source_item_id", "")).strip(),
+            source_item_id=_clean(value.get("source_item_id", "")),
         )
 
 
@@ -163,22 +149,20 @@ class OutfitItem:
     details: str = ""
 
     def __post_init__(self) -> None:
-        category = (
-            OUTFIT_CATEGORY_ALIASES.get(self.category.strip().lower())
-            or self.category.strip().lower()
-        )
+        key = self.category.strip().lower()
+        category = OUTFIT_CATEGORY_ALIASES.get(key) or key
         if category not in OUTFIT_CATEGORIES:
-            raise ValueError(f"invalid outfit category: {self.category}")
+            raise ValueError(f"unknown outfit category {self.category!r}")
         if not self.name:
-            raise ValueError("outfit item name is required")
+            raise ValueError("every outfit item needs a name")
         object.__setattr__(self, "category", category)
 
     @classmethod
     def from_dict(cls, value: dict[str, Any]) -> OutfitItem:
         return cls(
-            category=str(value.get("category", "")).strip(),
-            name=str(value.get("name", "")).strip(),
-            details=str(value.get("details", "")).strip(),
+            category=_clean(value.get("category", "")),
+            name=_clean(value.get("name", "")),
+            details=_clean(value.get("details", "")),
         )
 
 
@@ -190,72 +174,62 @@ class Outfit:
 
     def __post_init__(self) -> None:
         if not self.summary:
-            raise ValueError("outfit summary is required")
+            raise ValueError("the outfit needs a summary")
 
     def validate_complete(self) -> None:
-        categories = {item.category for item in self.items}
-        for required in ("hairstyle", "underwear", "underpants", "shoes"):
-            if required not in categories:
-                raise ValueError(f"outfit must contain category: {required}")
-        if not categories.intersection({"top", "dress", "other"}):
-            raise ValueError(
-                "outfit must contain top, dress, or other as the main clothing"
-            )
-        if "dress" not in categories and "bottom" not in categories:
-            raise ValueError("outfit without dress must contain bottom")
+        """A wearable outfit: the basics, a main garment, and a bottom unless it is a dress."""
+        present = {item.category for item in self.items}
+        missing = next((part for part in REQUIRED_OUTFIT_PARTS if part not in present), None)
+        if missing:
+            raise ValueError(f"the outfit is missing the {missing} category")
+        if present.isdisjoint({"top", "dress", "other"}):
+            raise ValueError("the outfit needs a main garment: top, dress or other")
+        if "dress" not in present and "bottom" not in present:
+            raise ValueError("an outfit without a dress needs a bottom")
 
     @classmethod
     def from_dict(cls, value: object) -> Outfit:
         if not isinstance(value, dict):
-            raise ValueError("outfit must be a structured object")
-        raw_items = value.get("items")
-        if not isinstance(raw_items, list):
-            raise ValueError("outfit items must be an array")
-        if any(not isinstance(item, dict) for item in raw_items):
-            raise ValueError("every outfit item must be an object")
+            raise ValueError("the outfit must be a JSON object")
+        pieces = value.get("items")
+        if not isinstance(pieces, list):
+            raise ValueError("outfit items must be a list")
+        if not all(isinstance(piece, dict) for piece in pieces):
+            raise ValueError("each outfit item must be a JSON object")
         return cls(
-            summary=str(value.get("summary", "")).strip(),
-            items=tuple(OutfitItem.from_dict(item) for item in raw_items),
-            style=str(value.get("style", "")).strip() or "未记录",
+            summary=_clean(value.get("summary", "")),
+            items=tuple(OutfitItem.from_dict(piece) for piece in pieces),
+            style=_clean(value.get("style", "")) or "未记录",
         )
 
 
-SEASON_WEATHER_POOLS: dict[str, tuple[str, ...]] = {
-    "春": ("晴朗", "多云", "微风", "小雨", "阴天"),
-    "夏": ("晴朗", "闷热", "雷阵雨", "多云", "微风"),
-    "秋": ("晴朗", "凉爽", "多云", "微风", "小雨"),
-    "冬": ("晴朗", "阴天", "大风", "寒冷", "小雨"),
+# --------------------------------------------------------------------- weather
+
+# condition -> (low adjustment, high adjustment, note)
+WEATHER_KINDS: dict[str, tuple[int, int, str]] = {
+    "晴朗": (1, 2, "阳光充足，适合外出"),
+    "多云": (0, 0, "云量较多，光线柔和"),
+    "阴天": (-1, 0, "天色偏灰，体感偏凉"),
+    "小雨": (-2, -1, "有间歇小雨，出门记得带伞"),
+    "雷阵雨": (-2, 0, "午后可能有雷阵雨，尽量减少户外停留"),
+    "大风": (-3, -1, "风力较大，注意保暖"),
+    "寒冷": (-4, -2, "气温偏低，注意保暖"),
+    "闷热": (2, 3, "湿度较高，体感闷热"),
+    "微风": (0, 1, "有微风，体感舒适"),
+    "凉爽": (-1, 0, "天气凉爽，体感舒适"),
 }
-SEASON_TEMPERATURES: dict[str, tuple[int, int]] = {
-    "春": (12, 22),
-    "夏": (24, 33),
-    "秋": (15, 24),
-    "冬": (3, 12),
+# season -> (base low, base high, conditions cycled day by day)
+SEASONS: dict[str, tuple[int, int, tuple[str, ...]]] = {
+    "春": (12, 22, ("晴朗", "多云", "微风", "小雨", "阴天")),
+    "夏": (24, 33, ("晴朗", "闷热", "雷阵雨", "多云", "微风")),
+    "秋": (15, 24, ("晴朗", "凉爽", "多云", "微风", "小雨")),
+    "冬": (3, 12, ("晴朗", "阴天", "大风", "寒冷", "小雨")),
 }
-WEATHER_TEMP_DELTAS: dict[str, tuple[int, int]] = {
-    "晴朗": (1, 2),
-    "多云": (0, 0),
-    "阴天": (-1, 0),
-    "小雨": (-2, -1),
-    "雷阵雨": (-2, 0),
-    "大风": (-3, -1),
-    "寒冷": (-4, -2),
-    "闷热": (2, 3),
-    "微风": (0, 1),
-    "凉爽": (-1, 0),
-}
-WEATHER_DESCRIPTIONS: dict[str, str] = {
-    "晴朗": "阳光充足，适合外出",
-    "多云": "云量较多，光线柔和",
-    "阴天": "天色偏灰，体感偏凉",
-    "小雨": "有间歇小雨，出门记得带伞",
-    "雷阵雨": "午后可能有雷阵雨，尽量减少户外停留",
-    "大风": "风力较大，注意保暖",
-    "寒冷": "气温偏低，注意保暖",
-    "闷热": "湿度较高，体感闷热",
-    "微风": "有微风，体感舒适",
-    "凉爽": "天气凉爽，体感舒适",
-}
+# kept for callers that read the tables separately
+SEASON_WEATHER_POOLS = {season: pool for season, (_, _, pool) in SEASONS.items()}
+SEASON_TEMPERATURES = {season: (low, high) for season, (low, high, _) in SEASONS.items()}
+WEATHER_TEMP_DELTAS = {name: (low, high) for name, (low, high, _) in WEATHER_KINDS.items()}
+WEATHER_DESCRIPTIONS = {name: note for name, (_, _, note) in WEATHER_KINDS.items()}
 
 
 @dataclass(slots=True, frozen=True)
@@ -267,28 +241,22 @@ class Weather:
 
     def __post_init__(self) -> None:
         if not self.condition:
-            raise ValueError("weather condition is required")
-        if not -30 <= self.temperature_low <= 45:
-            raise ValueError("weather temperature_low out of range")
-        if not -30 <= self.temperature_high <= 45:
-            raise ValueError("weather temperature_high out of range")
+            raise ValueError("weather needs a condition")
+        for name in ("temperature_low", "temperature_high"):
+            if not -30 <= getattr(self, name) <= 45:
+                raise ValueError(f"weather {name} must be between -30 and 45")
         if self.temperature_low > self.temperature_high:
-            raise ValueError("weather temperature_low must not exceed temperature_high")
+            raise ValueError("weather temperature_low is above temperature_high")
         if len(self.description) > 160:
-            raise ValueError("weather description is too long")
+            raise ValueError("weather description is longer than 160 characters")
 
     @property
     def label(self) -> str:
-        return (
-            f"{self.condition} {self.temperature_low}~{self.temperature_high}°C"
-        )
+        return f"{self.condition} {self.temperature_low}~{self.temperature_high}°C"
 
     @property
     def prompt_text(self) -> str:
-        text = self.label
-        if self.description:
-            text += f"，{self.description}"
-        return text
+        return f"{self.label}，{self.description}" if self.description else self.label
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -296,46 +264,32 @@ class Weather:
     @classmethod
     def from_dict(cls, value: dict[str, Any]) -> Weather:
         if not isinstance(value, dict):
-            raise ValueError("weather must be a structured object")
+            raise ValueError("weather must be a JSON object")
         return cls(
-            condition=str(value.get("condition", "")).strip(),
-            temperature_low=int(
-                value.get("temperature_low", value.get("low", 18))
-            ),
-            temperature_high=int(
-                value.get("temperature_high", value.get("high", 25))
-            ),
-            description=str(value.get("description", "")).strip(),
+            condition=_clean(value.get("condition", "")),
+            temperature_low=int(value.get("temperature_low", value.get("low", 18))),
+            temperature_high=int(value.get("temperature_high", value.get("high", 25))),
+            description=_clean(value.get("description", "")),
         )
 
 
+SEASON_OF_MONTH = ("冬", "冬", "春", "春", "春", "夏", "夏", "夏", "秋", "秋", "秋", "冬")
+
+
 def season_for_date(target: date) -> str:
-    month = target.month
-    if month in (3, 4, 5):
-        return "春"
-    if month in (6, 7, 8):
-        return "夏"
-    if month in (9, 10, 11):
-        return "秋"
-    return "冬"
+    return SEASON_OF_MONTH[target.month - 1]
 
 
 def weather_for_date(target: date) -> Weather:
-    season = season_for_date(target)
-    pool = SEASON_WEATHER_POOLS[season]
+    """Default weather when none was generated: cycles through the season's conditions."""
+    base_low, base_high, pool = SEASONS[season_for_date(target)]
     condition = pool[target.toordinal() % len(pool)]
-    low, high = SEASON_TEMPERATURES[season]
-    low_delta, high_delta = WEATHER_TEMP_DELTAS.get(condition, (0, 0))
-    low += low_delta
-    high += high_delta
-    if low > high:
-        low = high
-    return Weather(
-        condition=condition,
-        temperature_low=low,
-        temperature_high=high,
-        description=WEATHER_DESCRIPTIONS.get(condition, ""),
-    )
+    shift_low, shift_high, note = WEATHER_KINDS.get(condition, (0, 0, ""))
+    high = base_high + shift_high
+    return Weather(condition, min(base_low + shift_low, high), high, note)
+
+
+# ----------------------------------------------------------------- daily plan
 
 
 @dataclass(slots=True, frozen=True)
@@ -354,56 +308,46 @@ class DailyPlan:
     weather: Weather | None = None
 
     def __post_init__(self) -> None:
-        target_date = date.fromisoformat(self.date)
+        day = date.fromisoformat(self.date)
         if self.weather is None:
-            object.__setattr__(self, "weather", weather_for_date(target_date))
+            object.__setattr__(self, "weather", weather_for_date(day))
         if not self.persona_id:
-            raise ValueError("persona_id is required")
+            raise ValueError("a plan needs a persona_id")
         if self.status == "ok" and self.outfit is not None:
             self.outfit.validate_complete()
-        previous_end = 0
-        ids: set[str] = set()
-        for item in self.timeline:
-            start = minute_of_day(item.start)
-            if ids and start != previous_end:
-                raise ValueError(
-                    "timeline items must be continuous and non-overlapping"
-                )
-            if start < previous_end:
-                raise ValueError("timeline items overlap or are unsorted")
-            previous_end = minute_of_day(item.end)
-            if item.id in ids:
-                raise ValueError("timeline ids must be unique")
-            ids.add(item.id)
+        self._check_timeline()
         if self.status == "ok" and self.timeline:
-            if self.timeline[0].start != "00:00" or self.timeline[-1].end != "24:00":
-                raise ValueError("timeline must cover 00:00 through 24:00")
-            window_ids: set[str] = set()
-            for window in self.proactive_windows:
-                if window.id in window_ids:
-                    raise ValueError("window ids must be unique")
-                window_ids.add(window.id)
-                source = next(
-                    (
-                        item
-                        for item in self.timeline
-                        if item.id == window.source_item_id
-                    ),
-                    None,
-                )
-                if source is None:
-                    raise ValueError("window references unknown timeline item")
-                planned = minute_of_day(window.at)
-                if (
-                    not minute_of_day(source.start)
-                    <= planned
-                    < minute_of_day(source.end)
-                ):
-                    raise ValueError(
-                        "window time must be inside its source timeline item"
-                    )
+            if (self.timeline[0].start, self.timeline[-1].end) != ("00:00", "24:00"):
+                raise ValueError("the timeline must run from 00:00 to 24:00")
+            self._check_windows()
         elif self.proactive_windows:
-            raise ValueError("proactive windows require a schedule")
+            raise ValueError("proactive windows need a schedule to attach to")
+
+    def _check_timeline(self) -> None:
+        cursor, seen = 0, set()
+        for item in self.timeline:
+            begin = minute_of_day(item.start)
+            if seen and begin != cursor:
+                raise ValueError("timeline segments must follow each other without gaps or overlaps")
+            if begin < cursor:
+                raise ValueError("timeline segments are out of order or overlap")
+            if item.id in seen:
+                raise ValueError("two timeline segments share an id")
+            cursor = minute_of_day(item.end)
+            seen.add(item.id)
+
+    def _check_windows(self) -> None:
+        segments = {item.id: item for item in self.timeline}
+        seen: set[str] = set()
+        for window in self.proactive_windows:
+            if window.id in seen:
+                raise ValueError("two proactive windows share an id")
+            seen.add(window.id)
+            source = segments.get(window.source_item_id)
+            if source is None:
+                raise ValueError("a proactive window points at a timeline segment that does not exist")
+            if not minute_of_day(source.start) <= minute_of_day(window.at) < minute_of_day(source.end):
+                raise ValueError("a proactive window time must fall inside its source segment")
 
     @property
     def has_schedule(self) -> bool:
@@ -416,28 +360,16 @@ class DailyPlan:
     @classmethod
     def from_dict(cls, value: dict[str, Any]) -> DailyPlan:
         bonus = value.get("budget_bonus") or {}
+        weather, outfit = value.get("weather"), value.get("outfit")
         return cls(
             date=str(value["date"]),
             persona_id=str(value["persona_id"]),
             theme=str(value.get("theme", "日常")),
             mood=str(value.get("mood", "平静")),
-            weather=(
-                Weather.from_dict(value.get("weather"))
-                if isinstance(value.get("weather"), dict)
-                else None
-            ),
-            outfit=(
-                Outfit.from_dict(value.get("outfit"))
-                if value.get("outfit") is not None
-                else None
-            ),
-            timeline=tuple(
-                TimelineItem.from_dict(item) for item in value.get("timeline", [])
-            ),
-            proactive_windows=tuple(
-                ProactiveWindow.from_dict(item)
-                for item in value.get("proactive_windows", [])
-            ),
+            weather=Weather.from_dict(weather) if isinstance(weather, dict) else None,
+            outfit=Outfit.from_dict(outfit) if outfit is not None else None,
+            timeline=tuple(map(TimelineItem.from_dict, value.get("timeline", []))),
+            proactive_windows=tuple(map(ProactiveWindow.from_dict, value.get("proactive_windows", []))),
             private_bonus=int(bonus.get("private", value.get("private_bonus", 0))),
             group_bonus=int(bonus.get("group", value.get("group_bonus", 0))),
             status=str(value.get("status", "ok")),
@@ -445,17 +377,14 @@ class DailyPlan:
         )
 
     def to_dict(self) -> dict[str, Any]:
-        value = asdict(self)
-        value["budget_bonus"] = {
-            "private": value.pop("private_bonus"),
-            "group": value.pop("group_bonus"),
-        }
-        return value
+        data = asdict(self)
+        data["budget_bonus"] = {"private": data.pop("private_bonus"), "group": data.pop("group_bonus")}
+        return data
 
 
 @dataclass(slots=True, frozen=True)
 class ScheduleRequirement:
-    """Persisted instruction applied once per date in an inclusive range."""
+    """An admin instruction applied once to every plan generated in [start_date, end_date]."""
 
     id: str
     persona_id: str
@@ -466,33 +395,25 @@ class ScheduleRequirement:
     consumed_dates: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
-        start = date.fromisoformat(self.start_date)
-        end = date.fromisoformat(self.end_date)
-        if not self.id or not self.persona_id:
-            raise ValueError("requirement id and persona_id are required")
-        if end < start:
-            raise ValueError("requirement end_date must not precede start_date")
+        first, last = date.fromisoformat(self.start_date), date.fromisoformat(self.end_date)
+        if not (self.id and self.persona_id):
+            raise ValueError("a schedule requirement needs an id and a persona_id")
+        if last < first:
+            raise ValueError("a schedule requirement ends before it starts")
         if not self.requirement:
-            raise ValueError("schedule requirement is required")
+            raise ValueError("a schedule requirement needs text")
         if len(self.requirement) > 500:
-            raise ValueError("schedule requirement must not exceed 500 characters")
+            raise ValueError("a schedule requirement is longer than 500 characters")
         if len(set(self.consumed_dates)) != len(self.consumed_dates):
-            raise ValueError("consumed schedule requirement dates must be unique")
-        for value in self.consumed_dates:
-            consumed = date.fromisoformat(value)
-            if not start <= consumed <= end:
-                raise ValueError("consumed date must be inside the requirement range")
+            raise ValueError("a schedule requirement lists a used date twice")
+        if any(not first <= date.fromisoformat(day) <= last for day in self.consumed_dates):
+            raise ValueError("a used date lies outside the requirement range")
 
     @classmethod
     def from_dict(cls, value: dict[str, Any]) -> ScheduleRequirement:
         return cls(
-            id=str(value.get("id", "")).strip(),
-            persona_id=str(value.get("persona_id", "")).strip(),
-            start_date=str(value.get("start_date", "")).strip(),
-            end_date=str(value.get("end_date", "")).strip(),
-            requirement=str(value.get("requirement", "")).strip(),
-            created_at=str(value.get("created_at", "")).strip(),
-            consumed_dates=tuple(str(item) for item in value.get("consumed_dates", [])),
+            **{key: _clean(value.get(key, "")) for key in ("id", "persona_id", "start_date", "end_date", "requirement", "created_at")},
+            consumed_dates=tuple(str(day) for day in value.get("consumed_dates", [])),
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -501,6 +422,8 @@ class ScheduleRequirement:
 
 @dataclass(slots=True)
 class SessionState:
+    """Per-chat proactive-message counters for one day (sessions.json)."""
+
     date: str
     persona_id: str = "default"
     daily_budget: int = 0
@@ -513,8 +436,8 @@ class SessionState:
 
     @classmethod
     def from_dict(cls, value: dict[str, Any]) -> SessionState:
-        allowed = {item.name for item in fields(cls)}
-        return cls(**{key: value[key] for key in allowed if key in value})
+        known = {item.name for item in fields(cls)}
+        return cls(**{key: item for key, item in value.items() if key in known})
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

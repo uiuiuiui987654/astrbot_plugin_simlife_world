@@ -444,7 +444,7 @@ class GeneratorTests(unittest.IsolatedAsyncioTestCase):
         )
 
         self.assertEqual(rewritten.outfit.summary, "包含内裤的穿搭")
-        self.assertIn("outfit must contain category: underpants", provider.prompts[1])
+        self.assertIn("missing the underpants category", provider.prompts[1])
 
     async def test_rewrite_outfit_honors_explicit_configured_style(self):
         response = json.dumps(
