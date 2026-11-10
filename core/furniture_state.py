@@ -391,7 +391,6 @@ def decorate_items(
 
 def action_message(item: dict[str, Any], action: str, *, now: datetime | None = None) -> str:
     """Short toast text for the window after an action."""
-    current = _now(now)
     item_id = str(item.get("id") or "")
     spec = DEVICE_SPECS.get(item_id)
     name = _item_name(item)

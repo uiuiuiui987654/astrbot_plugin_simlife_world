@@ -755,7 +755,6 @@ class TravelService:
         target: date,
         settings: dict | None = None,
     ) -> str:
-        config = self.settings(settings)
         if trip is None or phase == "none":
             return ""
         day = trip.day(target)

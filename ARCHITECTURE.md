@@ -81,6 +81,21 @@ AstrBot 按**定义所在的模块**绑定指令、LLM 工具和事件钩子，�
 
 模块之间只允许单向依赖：`base` ← 主题模块 ← `compute`，避免循环导入。
 
+## 面板接口：core/view_api.py 与 core/view_routes/
+
+`VirtualLifeViewAPI.dispatch` 只做两件事：按原顺序执行共用的检查（时间预览不能互动、POST 前要有今天的日程、家具和动作是否合法、角色在不在家），再把请求交给对应的处理函数。处理函数按领域放在 `core/view_routes/` 的 mixin 里：
+
+| 文件 | 内容 |
+| --- | --- |
+| `system.py` | 状态快照、旅行、备份 / 恢复、诊断、最近活动 |
+| `home.py` | 家具、装修、冰箱、做饭、心愿、礼物、家具互动 |
+| `money.py` | 钱包、存款目标、商店、车库 |
+| `journal.py` | 周报、日记、读书、好感称呼 |
+
+处理函数签名统一为 `_get_<名称>(self, ctx)` / `_post_<名称>(self, ctx)`，`ctx` 是 `view_routes/context.py` 的 `RouteContext`（请求参数，加上 dispatch 里已经算好的 `actual`、`item` 等）。新增接口时，在对应文件加处理函数，并在 `dispatch` 的相应位置加一行分发。
+
+相机同理：`core/camera_prompt.py` 只负责拼提示词（纯函数），`core/camera_photo.py` 负责调用绘图接口。
+
 ## 数据版本与迁移
 
 数据目录里的每个状态 JSON 都有顶层 `schema_version`。`core/migrations.py` 的 `SCHEMAS` 记录每个文件当前代码写出的版本，以及把旧格式逐级升级的函数；插件启动时（`initialize` 最开始）调用 `migrate_all`：

@@ -141,6 +141,7 @@ def seed_demo_day(data_dir: Path, day: datetime) -> None:
 
 def make_plugin(data_dir: Path):
     load_plugin_package()
+    from astrbot_plugin_simlife_world.core.food import FoodSystem
     from astrbot_plugin_simlife_world.core.storage import PluginStorage
     from astrbot_plugin_simlife_world.core.user_state import UserStateStore
 
@@ -156,7 +157,9 @@ def make_plugin(data_dir: Path):
         timezone=timezone,
         config={},
         context=None,
-        plan_generator=None,
+        plan_generator=SimpleNamespace(
+            food=FoodSystem(data_dir, ROOT / "core" / "food_catalog.json")
+        ),
         storage=storage,
         user_states=UserStateStore(data_dir),
         personas=SimpleNamespace(resolve=resolve),

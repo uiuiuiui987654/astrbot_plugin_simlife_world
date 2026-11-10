@@ -248,7 +248,6 @@ def update(
                 episodes = episodes[-10:]
     elif status == "recovering":
         required = recovery_required
-        has_actions = _has_recovery_actions(needs)
         targeted = _targeted_recovery(needs)
         if _targeted_harm(needs):
             required = 3

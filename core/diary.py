@@ -65,7 +65,6 @@ def add_entry(
     now: datetime | None = None,
 ) -> dict[str, Any]:
     moment = now or datetime.now()
-    entries = list_entries(data_dir, persona, limit=MAX_ENTRIES)
     entry = {
         "date": str(day or moment.date().isoformat()),
         "title": str(title or "这天")[:80],
