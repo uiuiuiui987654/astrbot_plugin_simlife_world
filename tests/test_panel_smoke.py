@@ -85,7 +85,13 @@ class PanelSmokeTests(unittest.TestCase):
         page.on("pageerror", lambda error: self.errors.append(str(error)))
         page.add_init_script(f"localStorage.setItem('vl-render', '{mode}')")
         page.goto(self.url + "/")
-        page.wait_for_function("document.querySelectorAll('#timeline > *').length > 0", timeout=20000)
+        # the first /api/state can take a few seconds on a cold CI runner
+        page.wait_for_function(
+            "name => (document.getElementById('persona') || {}).textContent.trim() === name",
+            arg=panel_server.PERSONA,
+            timeout=45000,
+        )
+        page.wait_for_function("document.querySelectorAll('#timeline > *').length > 1", timeout=20000)
         self.addCleanup(page.close)
         return page
 
