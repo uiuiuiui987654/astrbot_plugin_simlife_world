@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import base64
 import json
 import re
 import sys
@@ -29,6 +30,7 @@ from .core.human_style import (
     SELFIE_CHAT_RULE,
 )
 from .core import chat_schedule as chat_schedule_events
+from .core import platforms
 from .core import character_assets
 from .core import wardrobe
 from .core import (
@@ -998,21 +1000,20 @@ class ProactiveVirtualDailyPlugin(
                 (result or {}).get("error") if isinstance(result, dict) else ""
             ) or "这次没拍成，等会儿再试。"
         image_data = str(result.get("image") or "")
-        try:
-            if image_data.startswith("data:image") and "," in image_data:
-                component = Image.fromBase64(image_data.split(",", 1)[1])
-            elif image_data.startswith(("http://", "https://")):
-                component = Image.fromURL(image_data)
-            else:
-                component = Image.fromFileSystem(image_data)
-            sent = await self.context.send_message(
-                event.unified_msg_origin,
-                MessageChain(chain=[component]),
+
+        async def deliver(component) -> bool:
+            return bool(
+                await self.context.send_message(
+                    event.unified_msg_origin, MessageChain(chain=[component])
+                )
             )
-        except Exception as exc:
-            logger.warning("[虚拟人生] 自拍发送失败: %s", exc)
-            return "照片生成了，但发送失败。"
+
+        # 不同平台接受的图片来源不同：base64 发不出去时改用本地文件再试
+        sent, method = await platforms.send_image(
+            deliver, Image, image_data, data_dir=self.data_dir
+        )
         if not sent:
+            logger.warning("[虚拟人生] 自拍发送失败: %s", method)
             return "照片生成了，但当前平台发送失败。"
         return "已经把照片发到聊天里了。你可以自然补一句，也可以不说。"
 
@@ -2271,6 +2272,48 @@ class ProactiveVirtualDailyPlugin(
             "如果仍然看不到，发送 /虚拟人生 递东西 即可。"
         )
 
+    @virtual_life_group.command("平台测试")
+    @filter.permission_type(filter.PermissionType.ADMIN)
+    async def platform_test(self, event: AstrMessageEvent):
+        """在当前聊天测试文字和图片的几种发送方式，结果记入 /虚拟人生 自检。"""
+        umo = event.unified_msg_origin
+        try:
+            platform = str(event.get_platform_name() or "")
+        except Exception:
+            logger.debug("[虚拟人生] platform_test 出错，已忽略", exc_info=True)
+            platform = ""
+        platform = platform or umo.split(":", 1)[0] or "unknown"
+        results: dict[str, str] = {}
+
+        async def attempt(key: str, chain: MessageChain) -> None:
+            try:
+                sent = await self.context.send_message(umo, chain)
+                results[key] = "ok" if sent else "fail: 平台返回发送失败"
+            except Exception as exc:
+                logger.warning("[虚拟人生] 平台测试 %s 失败: %s", key, exc)
+                results[key] = f"fail: {type(exc).__name__}"
+
+        png = platforms.tiny_png()
+        path = platforms.spool_image(self.data_dir, png)
+        await attempt("text", MessageChain().message("【平台测试 1/4】主动发文字"))
+        await attempt("image_file", MessageChain(chain=[Image.fromFileSystem(str(path))]))
+        await attempt(
+            "image_base64",
+            MessageChain(chain=[Image.fromBase64(base64.b64encode(png).decode("ascii"))]),
+        )
+        results["reply_image"] = "sent"
+        platforms.record_check(self.data_dir, platform, results, now=self._now())
+        labels = "\n".join(
+            f"{label}：{results.get(key, '未测')}"
+            for key, label in platforms.CHECK_LABELS.items()
+        )
+        yield event.plain_result(
+            f"平台：{platforms.platform_label(platform)}\n{labels}\n"
+            "第 2、3 张应是淡紫色小方块；下面再发一张作为指令回复（4/4）。"
+            "没收到的那一项就是这个平台不支持的方式。"
+        )
+        yield event.image_result(str(path))
+
     @virtual_life_group.command("自检")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def self_check(self, event: AstrMessageEvent):
@@ -2384,6 +2427,7 @@ class ProactiveVirtualDailyPlugin(
                 )
         except Exception as exc:
             logger.warning("[虚拟人生] 自检读取主动状态失败 umo=%s: %s", umo, exc)
+        lines.append("平台测试：\n" + platforms.format_checks(platforms.load_checks(self.data_dir)))
         yield event.plain_result("\n".join(lines))
 
     @filter.command("回复延迟")

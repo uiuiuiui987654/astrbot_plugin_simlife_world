@@ -671,6 +671,22 @@
    "'ADMIN'"
   ],
   [],
+  "platform_test"
+ ],
+ [
+  "group:虚拟人生/command",
+  [
+   "'平台测试'"
+  ],
+  [],
+  "platform_test"
+ ],
+ [
+  "permission_type",
+  [
+   "'ADMIN'"
+  ],
+  [],
   "self_check"
  ],
  [

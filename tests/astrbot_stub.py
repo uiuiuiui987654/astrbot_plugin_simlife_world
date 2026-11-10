@@ -137,6 +137,10 @@ class _SessionLockManager:
 
 
 class MessageChain(list):
+    def __init__(self, chain=None, **_kwargs):
+        super().__init__(chain or [])
+        self.chain = self
+
     def message(self, text):
         self.append(Plain(text))
         return self
@@ -160,6 +164,10 @@ class Image(_Component):
     @classmethod
     def fromURL(cls, url):
         return cls(url=url)
+
+    @classmethod
+    def fromBase64(cls, data):
+        return cls(base64=data)
 
 
 class Record(_Component):
