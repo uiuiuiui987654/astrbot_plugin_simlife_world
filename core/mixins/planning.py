@@ -128,14 +128,14 @@ class PlanningMixin:
 
         sections = []
         if extra.strip():
-            sections.append("本次补充要求：\n" + extra.strip())
+            sections.append("这次额外的要求：\n" + extra.strip())
         if requirements:
             sections.append(
-                "预设日程要求：\n"
+                "之前预留的要求：\n"
                 + "\n".join(f"- {item.requirement}" for item in requirements)
             )
         if newcomer:
-            sections.append("新人物出现要求：\n" + newcomer)
+            sections.append("今天会遇到的新朋友：\n" + newcomer)
         if with_schedule:
             memory = self._recent_life_memory(persona.id, target)
             if memory:
@@ -185,7 +185,7 @@ class PlanningMixin:
     ) -> str:
         """Admin command: a wish for future days, used once when those days are first planned."""
         if not event.is_admin():
-            return "无权限：仅管理员可以添加日程要求。"
+            return "只有管理员能预留日程要求。"
         today = self._now().date()
         requirement = str(requirement).strip()
         try:
@@ -194,7 +194,7 @@ class PlanningMixin:
                 event, start, end, today, requirement
             )
         except ValueError as exc:
-            return f"无法添加日程要求：{exc}。"
+            return f"没加上：{exc}。"
 
         item = ScheduleRequirement(
             id=uuid.uuid4().hex[:12],
@@ -212,13 +212,13 @@ class PlanningMixin:
             logger.warning(
                 "[虚拟人生] 日程要求保存失败 persona=%s: %s", persona.id, exc
             )
-            return "日程要求保存失败，请检查日志后重试。"
+            return "要求没存上，看看日志再试一次。"
         span = (
             item.start_date
             if item.start_date == item.end_date
             else f"{item.start_date}..{item.end_date}"
         )
-        return f"已为人格 {persona.id} 添加日程要求：{span}。"
+        return f"记下了，{persona.id} 在 {span} 排日程时会照顾这条要求。"
 
     async def _requirement_target(
         self,
@@ -231,26 +231,26 @@ class PlanningMixin:
         """Validate a new requirement; returns the persona it is for or raises ``ValueError``."""
         span = (end - start).days + 1
         if start <= today:
-            raise ValueError("只能为今天之后的日期添加日程要求")
+            raise ValueError("只能给明天及以后的日子留要求")
         if span > MAX_REQUIREMENT_SPAN_DAYS:
-            raise ValueError(f"日期区间不能超过 {MAX_REQUIREMENT_SPAN_DAYS} 天")
+            raise ValueError(f"一次最多覆盖 {MAX_REQUIREMENT_SPAN_DAYS} 天")
         if not requirement:
-            raise ValueError("日程要求不能为空")
+            raise ValueError("要求是空的")
         if len(requirement) > MAX_REQUIREMENT_CHARS:
-            raise ValueError(f"每条日程要求不能超过 {MAX_REQUIREMENT_CHARS} 字")
+            raise ValueError(f"要求太长了，{MAX_REQUIREMENT_CHARS} 字以内")
         persona = await self.personas.resolve(event.unified_msg_origin)
         for day in (start + timedelta(days=offset) for offset in range(span)):
             planned = self.storage.get_plan(day.isoformat(), persona.id)
             if planned and planned.has_schedule:
                 raise ValueError(
-                    f"{day.isoformat()} 已有有效日程，无法添加首次生成要求"
+                    f"{day.isoformat()} 的日程已经排好了，要求来不及用上"
                 )
             if (
                 len(self.storage.active_schedule_requirements(persona.id, day))
                 >= MAX_REQUIREMENTS_PER_DAY
             ):
                 raise ValueError(
-                    f"{day.isoformat()} 已有 {MAX_REQUIREMENTS_PER_DAY} 条日程要求，无法继续添加"
+                    f"{day.isoformat()} 已经攒了 {MAX_REQUIREMENTS_PER_DAY} 条要求，满了"
                 )
         return persona
 

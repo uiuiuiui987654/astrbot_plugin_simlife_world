@@ -50,65 +50,54 @@ OWNER_DETAIL_RULE = (
     "这类没有输入依据的细节。"
 )
 PARTICIPANT_RULE = (
-    "Use the following stored relationship data only as factual context. "
-    "When a timeline item clearly involves a listed person, add that "
-    "person's exact id to the optional participant_ids array. Use an "
-    "empty array for solitary activities and never invent IDs.\n"
+    "下面是她认识的人（来自人际关系数据），只当作事实参考。某个时间段明显是和其中某人一起度过时，"
+    "把那人的 id 原样填进这一项的 participant_ids；一个人待着的时段填空数组。不要编造 id。\n"
 )
 
-LONG_TERM_SYSTEM_PROMPT = (
-    "You are a strict long-term timeline planner. Return exactly one JSON object and no Markdown or explanation.\n"
-    "The top-level object must contain a stages array with 1 to 3 stages. Never output null for required fields.\n"
-    "Stage rules:\n"
-    "- Every stage must contain id, name, kind, start_date, end_date, priority, summary, weekly_rules, "
-    "special_dates, special_periods, milestones, and constraints.\n"
-    "- id and name must be non-empty strings; ids must be unique. kind must be academic, project, or custom.\n"
-    "- start_date and end_date must use YYYY-MM-DD. The first stage must start on the requested date; each later "
-    "stage must start on the day after the previous stage ends. Stages must not overlap or leave gaps.\n"
-    "- priority must be a JSON integer from 0 to 100. Never use text values such as high, medium, or low.\n"
-    "- summary must be a string. constraints must be an array of strings; use [] when empty.\n"
-    "Recurring event rules for weekly_rules:\n"
-    "- Each item must contain weekdays, start, end, title, location, participants, and required.\n"
-    "- weekdays must be a non-empty JSON array of unique integers from 1 to 7: 1=Monday, 2=Tuesday, "
-    "3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday, 7=Sunday. Never use weekday names, strings, 0, null, or [].\n"
-    "- start and end must be non-empty HH:MM strings and start must be earlier than end. title must be non-empty.\n"
-    "- location must be a string, participants must be an array of strings, and required must be a JSON boolean.\n"
-    "Special date rules for special_dates:\n"
-    "- Each item uses the same event fields as weekly_rules except weekdays, plus date in YYYY-MM-DD.\n"
-    "- date must fall within its stage. start and end must be non-empty HH:MM strings with start earlier than end.\n"
-    "Special period rules for special_periods:\n"
-    "- Each item must contain a non-empty name, start_date, end_date, and constraints array.\n"
-    "- Both dates must fall within the stage and start_date must not be later than end_date.\n"
-    "Milestone rules for milestones:\n"
-    "- Each item must contain date, a non-empty title, and lead_days as a non-negative JSON integer.\n"
-    "- The milestone date must fall within its stage.\n"
-    "Use [] instead of placeholder objects when a list has no valid items. Before responding, self-check every field, "
-    "type, enum, date range, weekday, time, and stage boundary against all rules above."
-)
+LONG_TERM_SYSTEM_PROMPT = """你在为一个角色规划接下来几周到几个月的长期安排。只输出一个 JSON 对象，不要 Markdown，也不要任何解释。
+
+顶层只有一个 stages 数组，放 1 到 3 个阶段。必填字段一律不能是 null。
+
+每个阶段的字段：id、name、kind、start_date、end_date、priority、summary、weekly_rules、special_dates、special_periods、milestones、constraints。
+- id、name 是非空字符串，各阶段 id 互不相同；kind 取 academic / project / custom 之一。
+- start_date、end_date 写成 YYYY-MM-DD。第一个阶段从要求的日期开始，之后每个阶段都从前一个结束的第二天开始，不重叠、不留空档。
+- priority 是 0 到 100 的 JSON 整数，不能写 high、medium、low 这类文字。
+- summary 是字符串；constraints 是字符串数组，没有就写 []。
+
+weekly_rules（每周重复的事）每项：weekdays、start、end、title、location、participants、required。
+- weekdays 是不重复的 1 到 7 的整数组成的非空数组（1 是周一，7 是周日），不要写星期名称、字符串、0、null 或 []。
+- start、end 是 HH:MM，都不能为空，start 早于 end；title 不能为空。
+- location 是字符串，participants 是字符串数组，required 是 true 或 false。
+
+special_dates（某一天的特别安排）每项：字段和 weekly_rules 相同但没有 weekdays，另加 YYYY-MM-DD 的 date；date 落在本阶段内，时间规则同上。
+
+special_periods（阶段里的一段特殊时期）每项有非空 name、start_date、end_date 和 constraints 数组，两个日期都在本阶段内，且开始不晚于结束。
+
+milestones（里程碑）每项：date、非空 title、lead_days（提前几天提醒，不小于 0 的 JSON 整数）；date 落在本阶段内。
+
+列表里没有内容就写 []，不要放占位对象。输出前逐项检查字段、类型、取值、日期范围、星期、时间和阶段衔接是否都符合以上要求。"""
+
 LONG_TERM_TASK = (
-    "请根据人格自行判断适合的阶段类型和合理持续时间。学生角色可生成学期、假期、考试周等校历；"
-    "上班族角色可生成项目周期、冲刺期、发布期等工期；其他角色使用 custom。"
+    "请按人格设定判断适合什么样的阶段、各持续多久：学生一般是学期、假期、考试周；"
+    "上班族一般是项目周期、冲刺、上线；其他身份用 custom。"
 )
 
 CHARACTER_FIELDS = ("name", "bio", "personality", "preferences", "facts", "relationship_type", "relationship_description")
 CHARACTER_REQUIRED = ("name", "relationship_type", "relationship_description")
-NEW_CHARACTER_SYSTEM_PROMPT = (
-    "你是一个虚构人物生成器。只返回一个可被 JSON.parse 直接解析的 JSON 对象，"
-    "禁止 Markdown、代码块、解释或额外文字。\n"
-    "对象必须包含以下字段：\n"
-    "- name: 非空字符串，人物姓名\n"
-    "- bio: 字符串，人物身份、职业、家庭背景和相识经历，100字以内\n"
-    "- personality: 字符串，相对稳定的性格及行为方式，50字以内\n"
-    "- preferences: 字符串，稳定喜好、忌讳和活动倾向，50字以内\n"
-    "- facts: 字符串，生日、住址和重要人生事实等其他长期信息，50字以内\n"
-    "- relationship_type: 非空字符串，与人格的关系类型（身份名词，如 同学、朋友、同事、邻居），不超过6字\n"
-    "- relationship_description: 非空字符串，关系简述，不超过30字\n"
-    "禁止输出 null、空对象或缺少任何字段的对象。"
-)
-NEW_CHARACTER_TASK = (
-    "请根据人格设定，生成一个与人格今天有可能在日程中相遇的全新虚构人物。"
-    "人物应与人格的生活圈子相符，背景、性格和关系类型要自然合理。"
-)
+NEW_CHARACTER_SYSTEM_PROMPT = """请虚构一个人物。只输出一个能被 JSON.parse 直接解析的 JSON 对象，不要 Markdown、代码块或说明文字。
+
+字段：
+- name：名字，不能为空
+- bio：身份、职业、家庭情况，以及和她是怎么认识的（100 字以内）
+- personality：比较稳定的性格和做事方式（50 字以内）
+- preferences：长期的喜好、忌讳和爱做的事（50 字以内）
+- facts：生日、住处等其他长期信息（50 字以内）
+- relationship_type：和她是什么关系，用一个身份词，例如同学、朋友、同事、邻居（6 字以内，不能为空）
+- relationship_description：一句话说明这段关系（30 字以内，不能为空）
+
+每个字段都要有，不要写 null 或空对象。"""
+
+NEW_CHARACTER_TASK = "按上面的人格设定，编一个她今天可能在日常里碰到的新人物：要和她的生活圈子对得上，背景、性格和关系都要说得通。"
 
 MEAL_WORDS = (
     "早餐",
@@ -1464,7 +1453,7 @@ class DailyPlanGenerator:
         """Prompt → LLM → validate, retrying with the error fed back. Raises ``RuntimeError`` when it gives up."""
         job_key = f"{target.isoformat()}::{persona.id}"
         if job_key in self.generating:
-            raise RuntimeError("plan generation already running")
+            raise RuntimeError("this day is already being generated")
         self.generating.add(job_key)
         try:
             job = _Job(
@@ -1489,7 +1478,7 @@ class DailyPlanGenerator:
             systems = [setting(f"{name}_generation_system_prompt") for name in components]
             template = setting("complete_generation_prompt_template" if len(components) == 2 else f"{components[0]}_prompt_template")
             if not template or not all(systems):
-                raise RuntimeError("schedule or outfit generation prompt is empty")
+                raise RuntimeError("a generation prompt in the settings is empty")
             prompt = template.format(
                 mode=mode,
                 date=target.isoformat(),
@@ -1512,7 +1501,7 @@ class DailyPlanGenerator:
             attempts = max(1, int(self._settings().get("generation_retries", 2)) + 1)
             retry_template = setting("generation_retry_prompt_template")
             if attempts > 1 and not retry_template:
-                raise RuntimeError("generation retry prompt template is empty")
+                raise RuntimeError("the retry prompt in the settings is empty")
             session = f"daily_{'_'.join(components)}_{persona.id}_{target.isoformat()}"
             feedback = error = ""
             for attempt in range(1, attempts + 1):
@@ -1534,7 +1523,7 @@ class DailyPlanGenerator:
                         )
                     if attempt < attempts:
                         feedback = _retry_feedback(retry_template, mode, attempt + 1, error, raw)
-            raise RuntimeError(error or "plan generation failed")
+            raise RuntimeError(error or "could not generate a valid plan")
         finally:
             self.generating.discard(job_key)
 
@@ -1549,15 +1538,15 @@ class DailyPlanGenerator:
             blocks.append(PARTICIPANT_RULE + relationship_context)
         friend_cap, group_cap = job.caps
         limits = [
-            f"面向{who}（audience 为 {kinds}）的 proactive_windows 数量不得超过 {cap} 个"
+            f"给{who}的窗口（audience 为 {kinds}）最多 {cap} 个"
             for who, kinds, cap in (("好友", "private 或 both", friend_cap), ("群聊", "group 或 both", group_cap))
             if cap is not None
         ]
         if limits:
             blocks.append(
-                "主动消息预算约束：proactive_windows 数量必须与每日主动消息预算一致。"
+                "主动消息额度：proactive_windows 的数量要符合每天的额度——"
                 + "；".join(limits)
-                + "。audience 为 both 的窗口同时计入好友与群聊。"
+                + "。audience 为 both 的窗口两边都要算上。"
             )
         blocks += [
             self._home_items_prompt(),
@@ -1689,7 +1678,7 @@ class DailyPlanGenerator:
             f"- {latest.date}｜主题：{latest.theme or NONE_TEXT}｜心情：{latest.mood or NONE_TEXT}｜"
             f"穿搭风格：{outfit.style if outfit else NONE_TEXT}｜穿搭：{outfit.summary if outfit else NONE_TEXT}｜"
             f"活动：{DailyPlanGenerator._format_plan_context(latest)[1]}",
-            "新日程可以延续尚未完成的兴趣或状态，但不要照抄相同主题、穿搭和活动组合。",
+            "可以接着做之前没做完的事、延续之前的状态，但别把同样的主题、穿搭和活动组合再来一遍。",
         ]
         return "\n".join(lines)
 
@@ -1730,7 +1719,7 @@ class DailyPlanGenerator:
         payload = extract_json_object(raw)
         for field in CHARACTER_REQUIRED:
             if not isinstance(payload.get(field), str) or not payload[field].strip():
-                raise RuntimeError(f"new character missing required field: {field}")
+                raise RuntimeError(f"the new character lacks {field}")
         return {field: str(payload.get(field, "")).strip() for field in CHARACTER_FIELDS}
 
     # ------------------------------------------------------------------ LLM access
@@ -1749,13 +1738,13 @@ class DailyPlanGenerator:
         provider_id = str(self._settings().get("schedule_llm_provider") or "").strip()
         provider = (self.context.get_provider_by_id(provider_id) if provider_id else None) or self.context.get_using_provider()
         if not provider:
-            raise RuntimeError("no LLM provider available")
+            raise RuntimeError("no chat model is configured")
         response = await provider.text_chat(prompt=prompt, session_id=session_id, system_prompt=system_prompt)
         for name in ("completion_text", "completion", "text", "content"):
             text = getattr(response, name, None)
             if isinstance(text, str) and text.strip():
                 return text.strip()
-        raise RuntimeError("LLM returned empty completion")
+        raise RuntimeError("the model returned nothing")
 
 
 # ---------------------------------------------------------------------------- generation helpers
@@ -1793,19 +1782,19 @@ def _read_schedule(payload: dict, caps: tuple[int | None, int | None]) -> tuple[
     """``(timeline, windows, budget_bonus)`` from a schedule answer, enforcing the window budget."""
     for field in SCHEDULE_FIELDS:
         if field not in payload:
-            raise ValueError(f"missing schedule field: {field}")
+            raise ValueError(f"the schedule part lacks {field}")
     timeline, windows, bonus = (payload[field] for field in SCHEDULE_FIELDS)
     if not _object_list(timeline):
-        raise ValueError("timeline must be an array of objects")
+        raise ValueError("timeline has to be a list of objects")
     if not _object_list(windows):
-        raise ValueError("proactive_windows must be an array of objects")
+        raise ValueError("proactive_windows has to be a list of objects")
     timeline = split_multistop_transit(timeline)
     for (who, audiences), cap in zip(WINDOW_AUDIENCES, caps):
         count = sum(1 for window in windows if str(window.get("audience", "both")) in audiences)
         if cap is not None and count > cap:
-            raise ValueError(f"proactive_windows 面向{who}数量 {count} 超过预算上限 {cap}")
+            raise ValueError(f"给{who}的主动窗口有 {count} 个，超过了额度 {cap}")
     if not isinstance(bonus, dict):
-        raise ValueError("budget_bonus must be an object")
+        raise ValueError("budget_bonus has to be an object")
     return timeline, windows, bonus
 
 
@@ -1815,7 +1804,7 @@ def _read_outfit(payload: dict, style: str, *, alone: bool) -> Outfit:
     if alone and not isinstance(outfit, dict) and isinstance(payload.get("items"), list):
         outfit = payload
     if not isinstance(outfit, dict):
-        raise ValueError("missing structured outfit")
+        raise ValueError("no outfit object found (expected {\"outfit\": {...}})")
     outfit["style"] = style
     parsed = Outfit.from_dict(outfit)
     parsed.validate_complete()
@@ -1824,11 +1813,11 @@ def _read_outfit(payload: dict, style: str, *, alone: bool) -> Outfit:
 
 def _retry_feedback(template: str, mode: str, attempt: int, error: str, raw: str) -> str:
     """The retry note showing the model its previous answer (middle cut when very long)."""
-    previous = raw or "（模型未返回可用文本）"
+    previous = raw or "（上次没有返回任何内容）"
     if len(previous) > RETRY_ECHO_LIMIT:
         half = RETRY_ECHO_LIMIT // 2
-        previous = previous[:half] + "\n...（中间内容已截断）...\n" + previous[-half:]
+        previous = previous[:half] + "\n……（中间太长，略去）……\n" + previous[-half:]
     try:
         return "\n\n" + template.format(mode=mode, attempt=attempt, error=error, previous_output=previous)
     except (KeyError, IndexError, ValueError) as exc:
-        raise RuntimeError(f"invalid generation retry prompt variable: {exc}") from exc
+        raise RuntimeError(f"the retry prompt uses an unknown variable: {exc}") from exc

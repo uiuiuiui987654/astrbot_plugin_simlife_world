@@ -55,14 +55,14 @@ class TextSummaries(unittest.TestCase):
     def test_timeline_view(self):
         self.assert_mentions(
             format_timeline(PLAN, NINE_AM, STAGE_DAY),
-            present=("当前时段：08:00-12:00", "今日主题：日常", "心情状态：平静", "当前大时间段：暑期阶段", "特殊时间段：考试周", "今日节日：纪念日"),
+            present=("当前时段：08:00-12:00", "今日主题：日常", "心情状态：平静", "所处阶段：暑期阶段", "特殊时期：考试周", "今日节日：纪念日"),
             absent=("穿搭风格",),
         )
         empty_stage = {"stage": None, "active_periods": [], "holidays": []}
-        self.assertIn("当前大时间段：暂无当前阶段", format_timeline(PLAN, NINE_AM, empty_stage))
+        self.assertIn("所处阶段：不在任何长期阶段里", format_timeline(PLAN, NINE_AM, empty_stage))
 
     def test_outfit_view(self):
-        self.assert_mentions(format_outfit(PLAN), present=("穿搭风格：日常休闲风", "今日主题：日常", "今日心情：平静"), absent=("24 小时时间轴",))
+        self.assert_mentions(format_outfit(PLAN), present=("穿搭风格：日常休闲风", "今日主题：日常", "今日心情：平静"), absent=("今天的时间线",))
 
     def test_plan_view_shows_only_present_halves(self):
         self.assert_mentions(format_plan(replace(PLAN, outfit=None)), present=("日程：",), absent=("穿搭：", "当前大时间段"))
@@ -86,7 +86,7 @@ class DateRanges(unittest.TestCase):
                 self.assertEqual(parse_schedule_date_range(text, reference), expected)
 
     def test_explicit_backwards_range_is_refused(self):
-        with self.assertRaisesRegex(ValueError, "结束日期不能早于开始日期"):
+        with self.assertRaisesRegex(ValueError, "结束日期在开始日期之前"):
             parse_schedule_date_range("2026-08-03..2026-08-02", date(2026, 7, 27))
 
 

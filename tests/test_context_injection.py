@@ -85,7 +85,7 @@ class ChatInjection(unittest.TestCase):
     def test_schedule_and_long_term(self):
         self.check(
             ask("考试前我几点有空？"),
-            present=("上个时段：00:00-08:00 睡觉", "下个时段：12:00-24:00 午后安排", "当前大时间表阶段：秋季学期", "近期里程碑：2026-07-18 提交作业"),
+            present=("上个时段：00:00-08:00 睡觉", "下个时段：12:00-24:00 午后安排", "所处长期阶段：秋季学期", "近期里程碑：2026-07-18 提交作业"),
         )
         self.check(ask("在干嘛？"), present=("时间：2026-07-15 09:30", "当前活动：自习", "地点：图书馆", "状态：focus，可打扰度：low"))
         self.assertEqual(ask("在干嘛？", base_module_enable=True).count("当前活动：自习"), 1)
@@ -113,7 +113,7 @@ class ProactiveInjection(unittest.TestCase):
     def test_always_has_schedule_and_stage(self):
         text = injector().build_proactive_context(STUDY_DAY, NOW, store())
         self.assertTrue(text.startswith("<character_state>") and text.endswith("</character_state>"))
-        for needle in ("当前活动：自习", "上个时段：00:00-08:00 睡觉", "下个时段：12:00-24:00 午后安排", "今日主题：学习日；心情：专注", "当前大时间表阶段：秋季学期"):
+        for needle in ("当前活动：自习", "上个时段：00:00-08:00 睡觉", "下个时段：12:00-24:00 午后安排", "今日主题：学习日；心情：专注", "所处长期阶段：秋季学期"):
             self.assertIn(needle, text)
 
 

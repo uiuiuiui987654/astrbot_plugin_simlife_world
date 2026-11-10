@@ -54,16 +54,16 @@ class ScheduleRequirementTests(unittest.TestCase):
         self.assertEqual((stored.start_date, stored.end_date, stored.requirement), ("2026-07-20", "2026-07-22", "去图书馆"))
 
     def test_single_day_is_shown_once(self):
-        self.assertIn("要求：2026-07-20。", self.add("07-20"))
+        self.assertIn("在 2026-07-20 排日程", self.add("07-20"))
 
     def test_rejections(self):
         cases = {
-            "only admins": ({"span": "07-20", "admin": False}, "无权限"),
-            "today": ({"span": "07-14"}, "今天之后"),
+            "only admins": ({"span": "07-20", "admin": False}, "只有管理员"),
+            "today": ({"span": "07-14"}, "明天及以后"),
             "too long": ({"span": "2026-07-20..2027-07-21"}, "366"),
-            "empty": ({"span": "07-20", "text": "  "}, "不能为空"),
+            "empty": ({"span": "07-20", "text": "  "}, "要求是空的"),
             "too wordy": ({"span": "07-20", "text": "很" * 501}, "500"),
-            "bad date": ({"span": "07-40"}, "无法添加"),
+            "bad date": ({"span": "07-40"}, "没加上"),
         }
         for name, (kwargs, expected) in cases.items():
             with self.subTest(name):
@@ -74,10 +74,10 @@ class ScheduleRequirementTests(unittest.TestCase):
     def test_day_with_a_plan_or_ten_wishes_is_full(self):
         planned = DailyPlan.from_dict({"date": "2026-07-21", "persona_id": "alice", "timeline": life_timeline()})
         self.host.storage.plans[self.host.storage.plan_key("2026-07-21", "alice")] = planned
-        self.assertIn("已有有效日程", self.add("07-20..07-22"))
+        self.assertIn("日程已经排好了", self.add("07-20..07-22"))
         for number in range(10):
             self.add("07-25", f"要求{number}")
-        self.assertIn("已有 10 条", self.add("07-25"))
+        self.assertIn("已经攒了 10 条", self.add("07-25"))
         self.assertEqual(len(self.host.storage.schedule_requirements), 10)
 
 

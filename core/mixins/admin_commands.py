@@ -17,8 +17,8 @@ from ..models import DailyPlan
 from ..proactive import session_kind
 from ..utils import format_outfit, format_plan, format_timeline
 
-PRIVATE_ONLY = "虚拟日程系统仅在私聊生效，群聊中不提供{what}。"
-DRAFT_HINT = "使用 /大时间表 草稿 查看"
+PRIVATE_ONLY = "日程只在私聊里用，群里不能{what}。"
+DRAFT_HINT = "发 /大时间表 草稿 可以看"
 
 
 class AdminCommandsMixin:
@@ -29,7 +29,7 @@ class AdminCommandsMixin:
             return [event.plain_result(PRIVATE_ONLY.format(what="日程查看"))]
         persona, plan = await self._ensure_plan_for_umo(event.unified_msg_origin)
         if not plan.has_schedule:
-            return [event.plain_result("今日没有日程。")]
+            return [event.plain_result("今天还没有日程。")]
         now, day = self._now(), date.fromisoformat(plan.date)
         stage_day = self.long_term.expand_day(persona.id, day) or {
             "stage": None,
@@ -38,7 +38,7 @@ class AdminCommandsMixin:
         }
         return await self._image_view_results(
             event,
-            f"{persona.id} · {plan.date} 虚拟日程",
+            f"{persona.id} 的 {plan.date}",
             format_timeline(plan, now, stage_day),
             [lambda: self.image_renderer.render_timeline(plan, now, stage_day)],
         )
@@ -48,18 +48,18 @@ class AdminCommandsMixin:
             return [event.plain_result(PRIVATE_ONLY.format(what="穿搭查看"))]
         persona, plan = await self._ensure_plan_for_umo(event.unified_msg_origin)
         if not plan.has_outfit:
-            return [event.plain_result("今日没有穿搭。")]
+            return [event.plain_result("今天还没有穿搭。")]
         now = self._now()
         return await self._image_view_results(
             event,
-            f"{persona.id} · {plan.date} 今日穿搭",
+            f"{persona.id} 在 {plan.date} 的穿搭",
             format_outfit(plan),
             [lambda: self.image_renderer.render_outfit(plan, now)],
         )
 
     async def _cmd_rewrite_all(self, event: AstrMessageEvent, extra: str | None) -> str:
         if not any(self._daily_generation_flags()):
-            return "日程生成和穿搭生成均已关闭。"
+            return "自动排日程和自动搭穿搭都关着，没有可以重写的。"
         persona, plan = await self._ensure_plan_for_umo(
             event.unified_msg_origin,
             force=True,
@@ -70,7 +70,7 @@ class AdminCommandsMixin:
         return (
             format_plan(plan, self._now())
             if plan.status == "ok"
-            else "重写失败，请检查 LLM 输出。"
+            else "重排没成功，详情看日志。"
         )
 
     async def _cmd_rewrite_part(
@@ -80,11 +80,11 @@ class AdminCommandsMixin:
         label = "日程" if part == "schedule" else "穿搭"
         schedule_on, outfit_on = self._daily_generation_flags()
         if not (schedule_on if part == "schedule" else outfit_on):
-            return f"{label}生成功能已关闭。"
+            return f"自动生成{label}已关闭。"
         persona, current = await self._ensure_plan_for_umo(event.unified_msg_origin)
         if current.status != "ok":
             what = "日程" if part == "schedule" else "穿搭"
-            return f"今日没有可局部重写的有效{what}，请先使用“虚拟日程 重写”。"
+            return f"今天还没有能单独重写的{what}，先用“虚拟日程 重写”整个排一遍。"
         try:
             if part == "schedule":
                 plan = await self.plan_generator.rewrite_schedule(
@@ -106,7 +106,7 @@ class AdminCommandsMixin:
             logger.warning(
                 "[虚拟人生] %s重写失败 persona=%s: %s", label, persona.id, exc
             )
-            return f"{label}重写失败，已保留原{label}，请检查 LLM 输出或日志。"
+            return f"{label}没重写成功，原来的{label}保持不变；详情看日志。"
         try:
             await self._store_plan(persona, plan)
         except Exception as exc:
@@ -116,7 +116,7 @@ class AdminCommandsMixin:
                 persona.id,
                 exc,
             )
-            return f"{label}已生成，但保存或调度失败，请检查日志。"
+            return f"新的{label}生成了，但保存或排程时出错，详情看日志。"
         return (
             format_plan(plan, self._now())
             if part == "schedule"
@@ -157,9 +157,9 @@ class AdminCommandsMixin:
             mode="append",
         )
         return (
-            f"生成草稿失败：{failure}"
+            f"起草失败：{failure}"
             if failure is not None
-            else f"已生成大时间表草稿，{DRAFT_HINT}，确认后执行 /大时间表 批准。"
+            else f"草稿写好了，{DRAFT_HINT}；没问题就发 /大时间表 批准。"
         )
 
     async def _draft_or_error(
@@ -201,14 +201,14 @@ class AdminCommandsMixin:
             self.image_renderer.invalidate_persona(persona.id)
         except Exception as exc:
             logger.warning("[虚拟人生] 大时间表导入失败: %s", exc, exc_info=True)
-            return f"导入草稿失败：{exc}"
-        return "结构化数据已保存为草稿，确认后执行 /大时间表 批准。"
+            return f"导入失败：{exc}"
+        return "已存成草稿；确认没问题就发 /大时间表 批准。"
 
     async def _cmd_long_term_draft(self, event: AstrMessageEvent) -> list:
         persona = await self.personas.resolve(event.unified_msg_origin)
         draft = self.long_term.get_draft(persona.id)
         if not draft:
-            return [event.plain_result("当前人格没有待批准草稿。")]
+            return [event.plain_result("现在没有待批准的草稿。")]
         stages = [self.long_term.with_holidays(stage) for stage in draft["stages"]]
 
         def card(stage):
@@ -218,7 +218,7 @@ class AdminCommandsMixin:
 
         return await self._image_view_results(
             event,
-            f"{persona.id} · 大时间表草稿 · 待批准 · 共 {len(stages)} 个阶段",
+            f"{persona.id} 的长期安排草稿（待批准，{len(stages)} 个阶段）",
             json.dumps({**draft, "stages": stages}, ensure_ascii=False, indent=2),
             [card(stage) for stage in stages],
         )
@@ -233,7 +233,7 @@ class AdminCommandsMixin:
             plan = await self._refresh_persona_daily_plan(persona)
         except Exception as exc:
             logger.warning("[虚拟人生] 大时间表批准失败: %s", exc, exc_info=True)
-            return f"批准失败：{exc}"
+            return f"采用失败：{exc}"
         made = [
             name
             for name, present in (
@@ -243,9 +243,9 @@ class AdminCommandsMixin:
             if present
         ]
         outcome = (
-            "，已按开关重生成今日" + "和".join(made)
+            "，今天的" + "和".join(made) + "已按新安排重排"
             if made
-            else "；日程和穿搭生成均已关闭，未生成今日内容"
+            else "；自动排日程和穿搭都关着，今天没有重排"
         )
         return f"大时间表已生效{outcome}：" + "、".join(
             stage["name"] for stage in approved
@@ -257,11 +257,11 @@ class AdminCommandsMixin:
         persona = await self.personas.resolve(event.unified_msg_origin)
         draft = self.long_term.get_draft(persona.id)
         if not draft:
-            return "当前人格没有待拒绝草稿。"
+            return "现在没有可以退回的草稿。"
         await self.long_term.reject_draft(persona.id)
         self.image_renderer.invalidate_persona(persona.id)
         if not feedback:
-            return "草稿已拒绝并删除。"
+            return "草稿已退回并删掉。"
         mode = str(draft.get("mode", "append"))
         failure = await self._draft_or_error(
             event,
@@ -279,23 +279,23 @@ class AdminCommandsMixin:
             mode=mode,
         )
         return (
-            f"草稿已拒绝，但重新生成失败：{failure}"
+            f"草稿已退回，但按意见重写时出错：{failure}"
             if failure is not None
-            else f"已按修改意见重新生成草稿，{DRAFT_HINT}。"
+            else f"已按你的意见重写了草稿，{DRAFT_HINT}。"
         )
 
     async def _cmd_long_term_list(self, event: AstrMessageEvent) -> list:
         persona = await self.personas.resolve(event.unified_msg_origin)
         stages = self.long_term.list_for_persona(persona.id)
         if not stages:
-            return [event.plain_result("当前人格没有已批准的大时间表。")]
+            return [event.plain_result("她还没有确定的长期安排。")]
         text = "\n".join(
             f"{s['id']} | {s['name']} | {s['kind']} | {s['start_date']} 至 {s['end_date']} | 优先级 {s['priority']}"
             for s in stages
         )
         return await self._image_view_results(
             event,
-            f"{persona.id} · 已批准阶段，共 {len(stages)} 个",
+            f"{persona.id} 的长期安排（{len(stages)} 个阶段）",
             text,
             [lambda: self.image_renderer.render_stage_list(stages, persona.id)],
         )
@@ -309,7 +309,7 @@ class AdminCommandsMixin:
         )
         if not stage:
             if candidates:
-                lines = ["找到多个匹配阶段，请使用完整 ID 或名称："] + [
+                lines = ["有好几个阶段都对得上，请写完整的 ID 或名称："] + [
                     f"- {c['id']} | {c['name']} | {c['start_date']} 至 {c['end_date']}"
                     for c in candidates
                 ]
@@ -317,10 +317,10 @@ class AdminCommandsMixin:
             if stage_id:
                 return [
                     event.plain_result(
-                        "未找到匹配阶段，请先使用 /大时间表 列表 查看可用 ID。"
+                        "没找到这个阶段，先用 /大时间表 列表 看看有哪些。"
                     )
                 ]
-            return [event.plain_result("当前人格没有已批准的大时间表。")]
+            return [event.plain_result("她还没有确定的长期安排。")]
         stage = self.long_term.with_holidays(stage)
         return await self._image_view_results(
             event,
@@ -336,16 +336,16 @@ class AdminCommandsMixin:
         failure = await self._draft_or_error(
             event,
             persona,
-            requirements or "重新规划完整大时间表",
+            requirements or "从今天开始把长期安排整个重新规划一遍",
             self._now().date(),
             self.long_term.latest_stage(persona.id),
             source="regenerate",
             mode="replace_all",
         )
         return (
-            f"重生成草稿失败：{failure}"
+            f"重新规划失败：{failure}"
             if failure is not None
-            else f"已生成替换全部阶段的草稿，{DRAFT_HINT}，批准后才会生效。"
+            else f"新的整体规划已写成草稿，{DRAFT_HINT}；批准之后才会替换现有安排。"
         )
 
     # ------------------------------------------------------------------ 主动消息
@@ -354,7 +354,7 @@ class AdminCommandsMixin:
         umo = event.unified_msg_origin
         persona, plan = await self._ensure_plan_for_umo(umo)
         if not plan.has_schedule:
-            return "今日没有日程，主动消息未安排。"
+            return "今天没有日程，所以没有安排主动消息。"
         state = self.policy.ensure_state(umo, persona.id, plan, self._now())
         return f"人格：{persona.id}\n今日预算：{state.sent_count}/{state.daily_budget}\n连续未回复：{state.unanswered_count}"
 
@@ -362,7 +362,7 @@ class AdminCommandsMixin:
         umo = event.unified_msg_origin
         persona, plan = await self._ensure_plan_for_umo(umo)
         if not plan.has_schedule:
-            return "今日没有日程，无法发送测试主动消息。"
+            return "今天没有日程，没法试发主动消息。"
         sent = await self._deliver(
             umo,
             persona,
@@ -372,16 +372,16 @@ class AdminCommandsMixin:
             self._conversation_generation(umo),
         )
         return (
-            "测试主动消息已发送。" if sent else "会话状态已变化，测试主动消息未发送。"
+            "试发的主动消息已经发出。" if sent else "刚好有新消息进来，试发的那条取消了。"
         )
 
     async def _cmd_proactive_times(self, event: AstrMessageEvent) -> str:
         _, plan = await self._ensure_plan_for_umo(event.unified_msg_origin)
         entries = self._scheduled_proactive_entries(event.unified_msg_origin, plan)
         if not entries:
-            return "当前会话没有已安排的主动消息。"
+            return "这个聊天里暂时没有排好的主动消息。"
         return "\n".join(
-            ["主动消息具体执行时间："]
+            ["接下来会在这些时间主动找你："]
             + [
                 f"- {at.astimezone(self.timezone).strftime('%Y-%m-%d %H:%M:%S %z')}｜{label}"
                 for at, label in entries
@@ -393,17 +393,17 @@ class AdminCommandsMixin:
         umo = event.unified_msg_origin
         added = self.policy.subscribe(umo)
         self.config.save_config()
-        verb = "已订阅" if added else "已刷新订阅"
-        where = f"当前{'群聊' if session_kind(umo) == 'group' else '私聊'}会话"
-        logger.info("[虚拟人生] %s主动消息会话 umo=%s", verb, umo)
+        verb = "已开启" if added else "已重新开启"
+        where = f"这个{'群' if session_kind(umo) == 'group' else '私聊'}里的主动消息"
+        logger.info("[虚拟人生] %s umo=%s", verb, umo)
         try:
             persona, plan = await self._ensure_plan_for_umo(umo)
             await self._schedule_session(umo, persona, plan)
             await self.storage.save_sessions()
         except Exception as exc:
-            logger.warning("[虚拟人生] 订阅后即时调度失败 umo=%s: %s", umo, exc)
-            return f"{verb}{where}，但今日日程调度失败，请检查日志或稍后重试。"
-        return f"{verb}{where}，主动消息将在符合日程与发送规则时触发。"
+            logger.warning("[虚拟人生] 已订阅，但今天的安排没排上 umo=%s: %s", umo, exc)
+            return f"{verb}{where}，不过今天的主动消息没排上，看看日志或稍后再试。"
+        return f"{verb}{where}；之后她会按日程和发送规则主动找你。"
 
     # ------------------------------------------------------------------ 回复延迟
 
@@ -413,15 +413,15 @@ class AdminCommandsMixin:
         if action == "结算":
             batch = await self.reply_delay_coordinator.settle_now(umo)
             if batch is None:
-                return "当前会话没有等待结算的回复批次。"
+                return "这里没有在等待中的消息。"
             logger.info(
-                "[虚拟人生] 管理员立即结算回复延迟批次 会话=%s 消息数=%s",
+                "[虚拟人生] 手动放行等待中的消息 umo=%s 条数=%s",
                 umo,
                 len(batch.messages),
             )
-            return f"已立即结算当前会话的回复批次，共 {len(batch.messages)} 条消息。"
+            return f"已放行等待中的 {len(batch.messages)} 条消息，马上回复。"
         if action not in {"开启", "关闭"}:
-            return "用法：/回复延迟 开启|关闭|结算"
+            return "用法：/回复延迟 开启 | 关闭 | 结算"
         enabled = action == "开启"
         settings = self.config.get("reply_delay_settings", {}) or {}
         changed = bool(settings.get("enable")) != enabled
@@ -435,10 +435,10 @@ class AdminCommandsMixin:
             0 if enabled else len(await self.reply_delay_coordinator.settle_all_now())
         )
         logger.info(
-            "[虚拟人生] 管理员%s回复延迟 配置变更=%s 结算批次=%s",
+            "[虚拟人生] 晚点回复已%s 配置有变=%s 放行批次=%s",
             action,
             changed,
             settled,
         )
-        suffix = f"，并立即结算 {settled} 个等待批次" if settled else ""
-        return f"回复延迟{'已开启' if enabled else '已关闭'}{suffix}。"
+        suffix = f"，等待中的 {settled} 批消息已马上放行" if settled else ""
+        return f"晚点回复{'已打开' if enabled else '已关闭'}{suffix}。"

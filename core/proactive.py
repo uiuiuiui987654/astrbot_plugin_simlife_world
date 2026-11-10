@@ -202,11 +202,11 @@ class ProactivePolicy:
     def _gate(self, umo: str, state: SessionState, current_item: TimelineItem | None, now: datetime, trigger: str) -> str:
         """Hard rules (whitelist, unanswered, budget, cooldown, idle, sleep); ``""`` when all pass."""
         if not self.is_enabled(umo):
-            return "session disabled or not whitelisted"
+            return "chat not subscribed"
         delivery = self.config.get("delivery_settings", {}) or {}
         unanswered_cap = max(0, int(delivery.get("max_unanswered", 3)))
         if unanswered_cap and state.unanswered_count >= unanswered_cap:
-            return "maximum unanswered count reached"
+            return "too many unanswered"
         if trigger == "decision":
             # self-initiated messages wait for a reply before the next one
             reply_cap = max(0, int(delivery.get("decision_max_unanswered", 1)))
@@ -214,7 +214,7 @@ class ProactivePolicy:
                 return "waiting for a reply before another proactive message"
         group_window = session_kind(umo) == "group" and trigger == "window"
         if state.sent_count >= state.daily_budget and not group_window:
-            return "daily budget exhausted"
+            return "daily quota used up"
         if state.last_proactive_at and not group_window:
             cooldown = (
                 delivery.get("decision_cooldown_minutes", 15)
@@ -222,11 +222,11 @@ class ProactivePolicy:
                 else self.settings_for(umo).get("cooldown_minutes", 0)
             )
             if self._minutes_since(state.last_proactive_at, now) < max(0, int(cooldown)):
-                return "cooldown active"
+                return "cooling down"
         if trigger == "window" and state.last_user_message_at:
             quiet_needed = max(0, int(delivery.get("minimum_idle_for_window_minutes", 20)))
             if self._minutes_since(state.last_user_message_at, now) < quiet_needed:
-                return "conversation is not idle enough"
+                return "chat not quiet yet"
         if trigger != "sleep" and current_item and current_item.state == "sleep":
             return "sleeping"
         return ""
@@ -269,7 +269,7 @@ class ProactivePolicy:
         chance = max(0.0, min(1.0, self.availability_probability(current_item) * _need_factor(needs)))
         key = attempt_key or (current_item.id if current_item else "none")
         if deterministic_probability(f"availability::{state.date}::{umo}::{key}") >= chance:
-            return SendDecision(False, "availability probability rejected")
+            return SendDecision(False, "not a good moment")
         return SendDecision(True, "allowed")
 
     @staticmethod

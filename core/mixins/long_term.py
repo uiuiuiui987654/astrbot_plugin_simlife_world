@@ -14,7 +14,7 @@ from ..models import DailyPlan
 from ..persona import PersonaContext
 
 RENEWAL_REQUIREMENT = (
-    "自动延续当前人物的大时间表，保持经历连续但允许进入新的学期、假期、项目或生活阶段。"
+    "接着上一个阶段往下排：经历要连得上，可以进入新的学期、假期、项目或生活阶段。"
 )
 JOB_LABELS = (("window-retry:", "延迟窗口"), ("window:", "日程窗口"))
 
@@ -68,7 +68,7 @@ class LongTermMixin:
             self.renewal_attempts.pop(persona_id, None)
             await self._notify_admin(
                 admin,
-                f"人格 {persona_id} 的大时间表已自动续期："
+                f"{persona_id} 的长期安排已自动续上："
                 + "、".join(map(_stage_span, stages)),
             )
         except Exception as exc:
@@ -80,7 +80,7 @@ class LongTermMixin:
             )
             await self._notify_admin(
                 admin,
-                f"人格 {persona_id} 的大时间表自动续期失败（第 {attempt} 次）：{exc}",
+                f"{persona_id} 的长期安排到期了，自动续写第 {attempt} 次没成功：{exc}",
             )
             if attempt >= max(1, int(settings.get("renewal_max_attempts", 6))):
                 return
@@ -96,7 +96,7 @@ class LongTermMixin:
         try:
             await self.context.send_message(umo, MessageChain().message(text))
         except Exception as exc:
-            logger.error("[虚拟人生] 管理员通知发送失败 %s: %s", umo, exc)
+            logger.error("[虚拟人生] 没能通知管理员 %s: %s", umo, exc)
 
     def _scheduled_proactive_entries(
         self, umo: str, plan: DailyPlan
@@ -177,8 +177,8 @@ class LongTermMixin:
         try:
             paths = [await job() for job in jobs]
         except Exception:
-            logger.exception("[虚拟人生] 图片渲染失败，回退文字输出")
-            return [event.plain_result("图片渲染失败，已切换为文字模式。\n" + fallback)]
+            logger.exception("[虚拟人生] 卡片没画出来，改发文字")
+            return [event.plain_result("卡片没画出来，先看文字版：\n" + fallback)]
         return [event.plain_result(title), *map(event.image_result, paths)]
 
     @staticmethod
@@ -187,9 +187,9 @@ class LongTermMixin:
         try:
             payload = json.loads(content)
         except json.JSONDecodeError as exc:
-            raise ValueError(f"结构化数据不是合法 JSON：{exc}") from exc
+            raise ValueError(f"JSON 格式有误：{exc}") from exc
         if not isinstance(payload, dict):
-            raise ValueError("结构化数据必须是 JSON 对象")
+            raise ValueError("最外层要是一个 JSON 对象")
         return validate_stage_bundle(
             payload if "stages" in payload else {"stages": [payload]}, persona_id
         )

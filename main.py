@@ -245,7 +245,7 @@ class ProactiveVirtualDailyPlugin(
         # Start unconditionally so toggling "即时互动" in the panel works without a reload.
         self._interaction_task = asyncio.create_task(self._interaction_loop())
         self._decision_task = asyncio.create_task(self._decision_loop())
-        logger.info("[虚拟人生] 插件已启动，时区=%s", self.timezone.key)
+        logger.info("[虚拟人生] 已就绪，时区 %s", self.timezone.key)
 
     async def terminate(self) -> None:
         """Unregister the panel API, stop every job and background task, then persist state."""
@@ -750,7 +750,7 @@ class ProactiveVirtualDailyPlugin(
         if injection:
             req.extra_user_content_parts.append(TextPart(text=injection).mark_as_temp())
             logger.info(
-                "[虚拟人生] 智能状态注入 persona=%s modules=%s chars=%s limit=%s\n%s",
+                "[虚拟人生] 附带状态 persona=%s 模块=%s 字数=%s/%s\n%s",
                 plan.persona_id,
                 ",".join(modules),
                 len(injection),
@@ -888,12 +888,12 @@ class ProactiveVirtualDailyPlugin(
 
     @filter.llm_tool(name="get_virtual_daily_schedule")
     async def get_virtual_daily_schedule(self, event: AstrMessageEvent) -> str:
-        """查询机器人当前人格的完整虚拟日程、穿搭与当前活动。"""
+        """取出她今天完整的日程、穿搭和此刻在做的事。"""
         if not self._schedule_available_for_umo(event.unified_msg_origin):
             return "虚拟日程系统仅在私聊生效，群聊中不提供日程查询。"
         _, plan = await self._ensure_plan_for_umo(event.unified_msg_origin)
         if plan.status != "ok":
-            return "今日没有日程和穿搭。"
+            return "今天还没有日程，也没有穿搭。"
         return format_plan(plan, self._now())
 
     @filter.llm_tool(name="set_future_outfit")
@@ -1614,13 +1614,13 @@ class ProactiveVirtualDailyPlugin(
 
     @filter.llm_tool(name="get_long_term_timeline")
     async def get_long_term_timeline(self, event: AstrMessageEvent) -> str:
-        """查询机器人当前人格全部已批准的大时间表阶段。"""
+        """取出她所有已经确定的长期阶段（学期、项目等）。"""
         if not self._schedule_available_for_umo(event.unified_msg_origin):
             return "虚拟日程系统仅在私聊生效，群聊中不提供大时间表查询。"
         persona = await self.personas.resolve(event.unified_msg_origin)
         stages = self.long_term.list_for_persona(persona.id)
         if not stages:
-            return "当前人格没有已批准的大时间表。"
+            return "她还没有确定的长期安排。"
         enriched = [self.long_term.with_holidays(stage) for stage in stages]
         return json.dumps(
             {"persona_id": persona.id, "stages": enriched}, ensure_ascii=False, indent=2
@@ -1634,12 +1634,12 @@ class ProactiveVirtualDailyPlugin(
         end_date: str,
         requirement: str,
     ) -> str:
-        """仅当当前管理员明确要求时，为当前人格未来日期的首次日程生成添加要求。
+        """管理员明确要求时才调用：给以后某几天的日程预先留一条要求，在那几天第一次排日程时生效。
 
         Args:
-            start_date(string): 开始日期，支持 YYYY-MM-DD、MM-DD 或 DD。
-            end_date(string): 结束日期，支持 YYYY-MM-DD、MM-DD 或 DD；省略部分相对开始日期向后推导。
-            requirement(string): 要应用于区间内每个日期首次日程生成的要求，最多 500 字。
+            start_date(string): 从哪天开始，可写 YYYY-MM-DD、MM-DD 或 DD。
+            end_date(string): 到哪天结束，格式同上；省略的年、月按开始日期往后推。
+            requirement(string): 这些天排日程时要照顾的要求，500 字以内。
         """
         if not self._schedule_available_for_umo(event.unified_msg_origin):
             return "虚拟日程系统仅在私聊生效，群聊中不能修改日程要求。"
@@ -1651,13 +1651,13 @@ class ProactiveVirtualDailyPlugin(
 
     @filter.command_group("虚拟人生")
     def virtual_life_group(self):
-        """虚拟人生命令组；不提供子命令时由 AstrBot 输出帮助。"""
+        """插件本身的设置与工具；只输入组名会列出可用的子命令。"""
         pass
 
     @virtual_life_group.command("订阅会话")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def subscribe_session(self, event: AstrMessageEvent):
-        """订阅当前会话的主动消息。"""
+        """让她在这个聊天里主动找你。"""
         yield event.plain_result(await self._cmd_subscribe(event))
 
     @virtual_life_group.command("递东西")
@@ -2442,7 +2442,7 @@ class ProactiveVirtualDailyPlugin(
 
     @filter.command_group("虚拟日程")
     def virtual_daily_group(self):
-        """虚拟日程命令组；不提供子命令时由 AstrBot 输出帮助。"""
+        """今天的日程与穿搭；只输入组名会列出可用的子命令。"""
         pass
 
     @virtual_daily_group.command("要求")
@@ -2453,20 +2453,20 @@ class ProactiveVirtualDailyPlugin(
         date_range: str,
         requirement=GreedyStr,
     ):
-        """为当前人格未来日期的首次日程生成添加要求。"""
+        """给以后某几天预留一条排日程时的要求。"""
         yield event.plain_result(
             await self._add_schedule_requirement(event, date_range, requirement)
         )
 
     @virtual_daily_group.command("查看")
     async def show_schedule(self, event: AstrMessageEvent):
-        """查看今日虚拟日程时间轴图片。"""
+        """看今天的时间线（图片）。"""
         for result in await self._cmd_show_schedule(event):
             yield result
 
     @virtual_daily_group.command("穿搭")
     async def show_outfit(self, event: AstrMessageEvent):
-        """查看今日穿搭图片。"""
+        """看今天的穿搭（图片）。"""
         for result in await self._cmd_show_outfit(event):
             yield result
 
@@ -2507,7 +2507,7 @@ class ProactiveVirtualDailyPlugin(
     @virtual_daily_group.command("重写")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def rewrite_schedule(self, event: AstrMessageEvent, extra: str | None = None):
-        """重新生成今日完整虚拟日程。"""
+        """把今天的日程和穿搭整个重排一遍。"""
         yield event.plain_result(await self._cmd_rewrite_all(event, extra))
 
     @virtual_daily_group.command("重写日程")
@@ -2515,7 +2515,7 @@ class ProactiveVirtualDailyPlugin(
     async def rewrite_daily_timeline(
         self, event: AstrMessageEvent, extra: str | None = None
     ):
-        """保留主题、心情与穿搭，只重写今日时间日程。"""
+        """主题、心情和穿搭不动，只重排今天的时间线。"""
         yield event.plain_result(await self._cmd_rewrite_part(event, extra, part="schedule"))
 
     @virtual_daily_group.command("重写穿搭")
@@ -2523,12 +2523,12 @@ class ProactiveVirtualDailyPlugin(
     async def rewrite_daily_outfit(
         self, event: AstrMessageEvent, extra: str | None = None
     ):
-        """保留主题、心情与时间日程，只重写今日穿搭。"""
+        """今天的日程不动，只换一套穿搭。"""
         yield event.plain_result(await self._cmd_rewrite_part(event, extra, part="outfit"))
 
     @filter.command_group("大时间表")
     def long_term_group(self):
-        """大时间表命令组；不提供子命令时由 AstrBot 输出帮助。"""
+        """学期、项目等长期安排；只输入组名会列出可用的子命令。"""
         pass
 
     @long_term_group.command("生成")
@@ -2536,26 +2536,26 @@ class ProactiveVirtualDailyPlugin(
     async def long_term_generate(
         self, event: AstrMessageEvent, requirements: str | None = None
     ):
-        """根据自然语言要求生成追加草稿。"""
+        """按一句话的要求，接着现有安排往后起草。"""
         yield event.plain_result(await self._cmd_long_term_generate(event, requirements))
 
     @long_term_group.command("导入")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def long_term_import(self, event: AstrMessageEvent, content: str):
-        """导入结构化 JSON 为替换全部阶段的草稿。"""
+        """用一段 JSON 建草稿，批准后会替换现有的全部阶段。"""
         yield event.plain_result(await self._cmd_long_term_import(event, content))
 
     @long_term_group.command("草稿")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def long_term_draft(self, event: AstrMessageEvent):
-        """查看当前人格待批准草稿。"""
+        """看还没批准的长期安排草稿。"""
         for result in await self._cmd_long_term_draft(event):
             yield result
 
     @long_term_group.command("批准")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def long_term_approve(self, event: AstrMessageEvent):
-        """批准草稿并重新生成今日日程。"""
+        """采用草稿，并按新安排重排今天。"""
         yield event.plain_result(await self._cmd_long_term_approve(event))
 
     @long_term_group.command("拒绝")
@@ -2563,13 +2563,13 @@ class ProactiveVirtualDailyPlugin(
     async def long_term_reject(
         self, event: AstrMessageEvent, feedback: str | None = None
     ):
-        """拒绝草稿；提供修改意见时重新生成。"""
+        """不要这份草稿；附上修改意见就按意见重新起草。"""
         yield event.plain_result(await self._cmd_long_term_reject(event, feedback))
 
     @long_term_group.command("列表")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def long_term_list(self, event: AstrMessageEvent):
-        """查看当前人格全部已批准阶段。"""
+        """列出所有已确定的长期阶段。"""
         for result in await self._cmd_long_term_list(event):
             yield result
 
@@ -2578,7 +2578,7 @@ class ProactiveVirtualDailyPlugin(
     async def long_term_view(
         self, event: AstrMessageEvent, stage_id: str | None = None
     ):
-        """查看阶段；可省略参数或输入阶段 ID、名称及唯一片段。"""
+        """看某个阶段：不带参数看当前阶段，也可以给 ID、名称或能唯一确定它的一部分。"""
         for result in await self._cmd_long_term_view(event, stage_id):
             yield result
 
@@ -2587,12 +2587,12 @@ class ProactiveVirtualDailyPlugin(
     async def long_term_regenerate(
         self, event: AstrMessageEvent, requirements: str | None = None
     ):
-        """重新生成替换全部阶段的草稿。"""
+        """从今天起整个重新规划，生成替换全部阶段的草稿。"""
         yield event.plain_result(await self._cmd_long_term_regenerate(event, requirements))
 
     @filter.command_group("主动消息")
     def proactive_group(self):
-        """主动消息命令组；不提供子命令时由 AstrBot 输出帮助。"""
+        """她主动找你聊天的相关操作；只输入组名会列出可用的子命令。"""
         pass
 
     @proactive_group.command("状态")

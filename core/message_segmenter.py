@@ -89,12 +89,12 @@ class ProactiveMessageSegmenter:
         self.regex = _compile(
             settings.get("regex"),
             re.DOTALL | re.MULTILINE,
-            "[Virtual Life] Invalid proactive split regex; segmentation skipped: %s",
+            "[虚拟人生] 拆分正则写错了，这次不拆：%s",
         )
         self.split_words = _to_words(settings.get("split_words"))
         self.words_pattern = _words_pattern(self.split_words)
         cleanup = str(settings.get("content_cleanup_rule") or "") if settings.get("enable_content_cleanup") else ""
-        self.cleanup_pattern = _compile(cleanup, 0, "[虚拟人生] 主动消息清理正则无效，已跳过: %s")
+        self.cleanup_pattern = _compile(cleanup, 0, "[虚拟人生] 清理正则写错了，这次不清理：%s")
         self.interval_method = str(settings.get("interval_method") or "").strip().lower()
         self.random_interval = _interval_range(settings.get("interval"))
         self.log_base = _log_base(settings.get("log_base"))
@@ -106,12 +106,12 @@ class ProactiveMessageSegmenter:
         if not self.enabled:
             return self._skip(text, "disabled")
         if self.threshold is None:
-            return self._skip(text, "invalid threshold")
+            return self._skip(text, "bad threshold")
         if len(text) > self.threshold:
-            return self._skip(text, "over threshold")
-        patterns = {"words": (self.words_pattern, "empty split words"), "regex": (self.regex, "invalid regex")}
+            return self._skip(text, "too long to split")
+        patterns = {"words": (self.words_pattern, "no split words"), "regex": (self.regex, "broken regex")}
         if self.mode not in patterns:
-            return self._skip(text, "invalid split mode")
+            return self._skip(text, "unknown split mode")
         pattern, missing = patterns[self.mode]
         if pattern is None:
             return self._skip(text, missing)
@@ -120,7 +120,7 @@ class ProactiveMessageSegmenter:
             pieces = [self.cleanup_pattern.sub("", piece) for piece in pieces]
         pieces = [piece for piece in pieces if piece.strip()]
         if not pieces:
-            return self._skip(text, "no segments")
+            return self._skip(text, "nothing left")
         return SegmentResult(pieces, self.mode, len(text), self.threshold)
 
     def interval_for(self, segment: str) -> float:

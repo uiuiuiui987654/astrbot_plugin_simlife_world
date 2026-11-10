@@ -40,52 +40,52 @@ class SafeFormulaEvaluator:
 
     def evaluate(self, expression: str, variables: dict[str, float]) -> float:
         if not isinstance(expression, str) or not expression.strip():
-            raise FormulaError("formula must be a non-empty string")
+            raise FormulaError("the formula is empty")
         if len(expression) > MAX_FORMULA_LENGTH:
-            raise FormulaError("formula is too long")
+            raise FormulaError("the formula is longer than allowed")
         try:
             tree = ast.parse(expression, mode="eval")
         except SyntaxError as exc:
-            raise FormulaError(f"invalid formula syntax: {exc.msg}") from exc
+            raise FormulaError(f"the formula does not parse: {exc.msg}") from exc
         if sum(1 for _ in ast.walk(tree)) > MAX_FORMULA_NODES:
-            raise FormulaError("formula is too complex")
+            raise FormulaError("the formula has too many parts")
         try:
             result = float(self._eval(tree.body, variables))
         except FormulaError:
             raise
         except (ArithmeticError, TypeError, ValueError) as exc:
-            raise FormulaError(f"formula evaluation failed: {exc}") from exc
+            raise FormulaError(f"could not compute the formula: {exc}") from exc
         if not math.isfinite(result):
-            raise FormulaError("formula result must be finite")
+            raise FormulaError("the formula did not give a finite number")
         return result
 
     def _eval(self, node: ast.AST, variables: dict[str, float]) -> float:
         match node:
             case ast.Constant(value=value):
                 if isinstance(value, bool) or not isinstance(value, (int, float)):
-                    raise FormulaError("only numeric constants are allowed")
+                    raise FormulaError("constants must be numbers")
                 return float(value)
             case ast.Name(id=name):
                 if name not in variables:
-                    raise FormulaError(f"unknown variable: {name}")
+                    raise FormulaError(f"no variable called {name}")
                 return float(variables[name])
             case ast.BinOp(left=left, op=op, right=right):
                 apply = BINARY.get(type(op))
                 if apply is None:
-                    raise FormulaError("unsupported binary operator")
+                    raise FormulaError("only + - * / are allowed between values")
                 return float(apply(self._eval(left, variables), self._eval(right, variables)))
             case ast.UnaryOp(op=op, operand=operand):
                 apply = UNARY.get(type(op))
                 if apply is None:
-                    raise FormulaError("unsupported unary operator")
+                    raise FormulaError("only + and - are allowed in front of a value")
                 return float(apply(self._eval(operand, variables)))
             case ast.Call():
                 return self._call(node, variables)
-        raise FormulaError(f"unsupported formula element: {type(node).__name__}")
+        raise FormulaError(f"{type(node).__name__} is not allowed in a formula")
 
     def _call(self, node: ast.Call, variables: dict[str, float]) -> float:
         if not isinstance(node.func, ast.Name) or node.keywords:
-            raise FormulaError("only direct function calls without keywords are allowed")
+            raise FormulaError("call functions by name with plain arguments")
         name = node.func.id
         args = [self._eval(arg, variables) for arg in node.args]
 
@@ -94,31 +94,31 @@ class SafeFormulaEvaluator:
                 raise FormulaError(message)
 
         if name == "random":
-            arity(2, message="random requires exactly two arguments")
+            arity(2, message="random() takes two numbers")
             low, high = args
             if high < low:
-                raise FormulaError("random upper bound must not be below lower bound")
+                raise FormulaError("random(low, high) needs high >= low")
             return float(self.random_fn(low, high))
         if name == "probability":
-            arity(2, 3, message="probability requires two or three arguments")
+            arity(2, 3, message="probability() takes two or three values")
             chance, hit = args[:2]
             miss = args[2] if len(args) == 3 else 0.0
             if not 0 <= chance <= 1:
-                raise FormulaError("probability must be between 0 and 1")
+                raise FormulaError("probability p has to be within 0..1")
             if chance in (0, 1):
                 return float(hit if chance else miss)
             return float(hit if self.random_fn(0.0, 1.0) < chance else miss)
         if name in ("min", "max"):
             if not args:
-                raise FormulaError(f"{name} requires at least one argument")
+                raise FormulaError(f"{name}() needs at least one value")
             return float((min if name == "min" else max)(args))
         if name == "round":
-            arity(1, 2, message="round requires one or two arguments")
+            arity(1, 2, message="round() takes one or two values")
             return float(round(args[0], int(args[1]) if len(args) == 2 else 0))
         if name in ("ceil", "floor"):
-            arity(1, message=f"{name} requires exactly one argument")
+            arity(1, message=f"{name}() takes one value")
             return float((math.ceil if name == "ceil" else math.floor)(args[0]))
-        raise FormulaError(f"unsupported function: {name}")
+        raise FormulaError(f"there is no function called {name}")
 
 
 # ---------------------------------------------------------------------------- body state → extra seconds
@@ -480,7 +480,7 @@ def format_queued_messages(messages: tuple[QueuedMessage, ...], *, group: bool) 
         f"[{message.received_at.strftime('%H:%M:%S')}] {_sender_label(message, group)}：{_message_body(message)}"
         for message in messages
     ]
-    return "\n".join(["<delayed_user_messages>", "以下消息在同一等待批次中按时间顺序收到：", *lines, "</delayed_user_messages>"])
+    return "\n".join(["<delayed_user_messages>", "这些消息是你忙的时候陆续收到的（按时间先后）：", *lines, "</delayed_user_messages>"])
 
 
 def _item_lines(prefix: str, item: TimelineItem, *, with_slot: bool) -> list[str]:
@@ -497,7 +497,7 @@ def format_delay_context(batch: DelayBatch, settled_at: datetime, current_item: 
     waited = max(0, math.ceil((settled_at - batch.created_at).total_seconds()))
     lines = [
         "<reply_delay_context>",
-        f"首条消息到达时间：{batch.created_at.strftime('%Y-%m-%d %H:%M:%S')}",
+        f"第一条消息收到于：{batch.created_at.strftime('%Y-%m-%d %H:%M:%S')}",
         f"计划回复延迟：{batch.decision.delay_seconds} 秒",
         f"实际等待时间：{waited} 秒",
         f"消息批次数量：{len(batch.messages)}",
@@ -511,7 +511,7 @@ def format_delay_context(batch: DelayBatch, settled_at: datetime, current_item: 
     if current_item is not None:
         lines += _item_lines("结算时", current_item, with_slot=False)
     lines += [
-        "角色行为要求：结合上述具体状态自然回复，保持角色一致；按照与用户的关系，选择性披露具体活动、地点；不要主动向用户披露内部延迟计算规则。",
+        "回复方式：按上面的真实状态自然地回，保持人设；具体在做什么、在哪里，按你们的关系决定说多少；等了多久、为什么等，这些规则都别跟对方讲。",
         "</reply_delay_context>",
     ]
     return "\n".join(lines)

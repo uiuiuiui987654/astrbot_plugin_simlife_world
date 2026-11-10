@@ -26,16 +26,16 @@ UPCOMING_HOLIDAY_DAYS = 7
 
 def normalize_priority(value: object) -> int:
     if isinstance(value, bool):
-        raise ValueError("priority must be an integer from 0 to 100, not a boolean")
+        raise ValueError("priority is a whole number 0-100 (true/false is not accepted)")
     if isinstance(value, str):
         try:
             value = int(value.strip())
         except ValueError as exc:
-            raise ValueError("priority must be an integer from 0 to 100") from exc
+            raise ValueError("priority should be a whole number from 0 to 100") from exc
     if not isinstance(value, int):
-        raise ValueError("priority must be an integer from 0 to 100")
+        raise ValueError("priority should be a whole number from 0 to 100")
     if not 0 <= value <= 100:
-        raise ValueError("priority must be between 0 and 100")
+        raise ValueError("priority is outside 0-100")
     return value
 
 
@@ -72,13 +72,13 @@ def _fixed_event(raw: dict[str, Any]) -> dict[str, Any]:
         "participants": _strings(raw.get("participants", [])),
     }
     if not event["title"]:
-        raise ValueError("固定事件 title 不能为空")
+        raise ValueError("固定事件缺少 title")
     try:
         begins, ends = minute_of_day(event["start"]), minute_of_day(event["end"])
     except ValueError as exc:
-        raise ValueError(f"fixed event {event['title']!r} requires non-empty start and end in HH:MM") from exc
+        raise ValueError(f"event {event['title']!r}: start and end both need an HH:MM time") from exc
     if begins >= ends:
-        raise ValueError(f"固定事件时间无效: {event['title']}")
+        raise ValueError(f"「{event['title']}」的结束时间要晚于开始时间")
     event["required"] = bool(raw.get("required", True))
     return event
 
@@ -87,7 +87,7 @@ def _weekly_rule(raw: dict[str, Any]) -> dict[str, Any]:
     event = _fixed_event(raw)
     weekdays = sorted({int(day) for day in raw.get("weekdays", [])})
     if not weekdays or not all(1 <= day <= 7 for day in weekdays):
-        raise ValueError(f"周规则 weekdays 无效: {event['title']}")
+        raise ValueError(f"「{event['title']}」的 weekdays 要是 1-7 的整数")
     return {**event, "weekdays": weekdays}
 
 
@@ -95,14 +95,14 @@ def _special_date(raw: dict[str, Any], start: date, end: date) -> dict[str, Any]
     event = _fixed_event(raw)
     on = _day(raw, "date")
     if not start <= on <= end:
-        raise ValueError(f"特殊日期超出阶段范围: {on}")
+        raise ValueError(f"特殊日期 {on} 不在这个阶段里")
     return {**event, "date": on.isoformat()}
 
 
 def _special_period(raw: dict[str, Any], start: date, end: date) -> dict[str, Any]:
     first, last = _day(raw, "start_date"), _day(raw, "end_date")
     if not start <= first <= last <= end:
-        raise ValueError("特殊时期日期范围无效")
+        raise ValueError("特殊时期的起止日期不对（要在阶段范围内，且开始不晚于结束）")
     return {
         "name": _text(raw, "name", "特殊时期"),
         "start_date": first.isoformat(),
@@ -114,10 +114,10 @@ def _special_period(raw: dict[str, Any], start: date, end: date) -> dict[str, An
 def _milestone(raw: dict[str, Any], start: date, end: date) -> dict[str, Any]:
     on = _day(raw, "date")
     if not start <= on <= end:
-        raise ValueError(f"里程碑超出阶段范围: {on}")
+        raise ValueError(f"里程碑 {on} 不在这个阶段里")
     title = _text(raw, "title")
     if not title:
-        raise ValueError("里程碑 title 不能为空")
+        raise ValueError("里程碑缺少 title")
     return {"date": on.isoformat(), "title": title, "lead_days": max(0, int(raw.get("lead_days", 0)))}
 
 
@@ -133,12 +133,12 @@ def validate_stage(value: dict[str, Any], persona_id: str, *, stage_id: str | No
         "summary": _text(value, "summary"),
     }
     if not stage["id"] or not stage["name"]:
-        raise ValueError("长期时间表阶段必须包含 id 和 name")
+        raise ValueError("每个阶段都要有 id 和 name")
     if stage["kind"] not in STAGE_KINDS:
-        raise ValueError("kind 必须是 academic、project 或 custom")
+        raise ValueError("kind 只能填 academic、project、custom 之一")
     start, end = _day(value, "start_date"), _day(value, "end_date")
     if start > end:
-        raise ValueError("start_date 不能晚于 end_date")
+        raise ValueError("start_date 在 end_date 之后了")
     stage["start_date"], stage["end_date"] = start.isoformat(), end.isoformat()
     stage["priority"] = normalize_priority(value.get("priority", 0))
     stage["constraints"] = _strings(value.get("constraints", []))
@@ -153,18 +153,18 @@ def validate_stage_bundle(value: dict[str, Any], persona_id: str, *, required_st
     """A generated batch: non-empty, unique ids, back to back with no gaps or overlaps."""
     raw_stages = value.get("stages") if isinstance(value, dict) else None
     if not isinstance(raw_stages, list) or not raw_stages:
-        raise ValueError("大时间表必须包含非空 stages 列表")
+        raise ValueError("需要一个非空的 stages 列表")
     stages = sorted(
         (validate_stage(raw, persona_id) for raw in raw_stages),
         key=lambda stage: (stage["start_date"], stage["end_date"], stage["id"]),
     )
     if len({stage["id"] for stage in stages}) != len(stages):
-        raise ValueError("大时间表阶段 ID 必须唯一")
+        raise ValueError("阶段 id 有重复")
     if required_start and date.fromisoformat(stages[0]["start_date"]) != required_start:
-        raise ValueError(f"首个阶段必须从 {required_start.isoformat()} 开始")
+        raise ValueError(f"第一个阶段应该从 {required_start.isoformat()} 开始")
     for earlier, later in zip(stages, stages[1:]):
         if date.fromisoformat(later["start_date"]) != date.fromisoformat(earlier["end_date"]) + timedelta(days=1):
-            raise ValueError("同一批生成的阶段必须首尾连续，不得重叠或留空")
+            raise ValueError("这一批阶段要一个接一个：前一个结束的第二天就是下一个开始，不能重叠也不能空出日子")
     return stages
 
 
@@ -217,7 +217,7 @@ class LongTermTimelineStore:
         mode: str = "append",
     ) -> dict[str, Any]:
         if mode not in DRAFT_MODES:
-            raise ValueError("草稿 mode 必须是 append 或 replace_all")
+            raise ValueError("草稿的 mode 只能是 append 或 replace_all")
         self.drafts[persona_id] = dict(
             persona_id=persona_id,
             stages=stages,
@@ -244,7 +244,7 @@ class LongTermTimelineStore:
         """Adopt the pending draft; same-id stages are replaced (or all of them for ``replace_all``)."""
         draft = self.drafts.get(persona_id)
         if not draft:
-            raise ValueError("当前人格没有待批准草稿")
+            raise ValueError("没有待批准的草稿")
         approved = [dict(stage) for stage in draft["stages"]]
         replace_all = draft.get("mode") == "replace_all"
         incoming = {stage["id"] for stage in approved}
@@ -352,7 +352,7 @@ class LongTermTimelineStore:
         events = sorted(weekly + special, key=lambda event: event["start"])
         for index, event in enumerate(events):
             if any(_clash(event, later) for later in events[index + 1 :]):
-                raise ValueError(f"长期时间表固定事件冲突: {event['title']}")
+                raise ValueError(f"固定事件时间撞了：{event['title']}")
 
         periods = [dict(period) for period in stage.get("special_periods", []) if _days_of(period)[0] <= target <= _days_of(period)[1]]
         constraints = list(stage.get("constraints", []))
@@ -382,7 +382,7 @@ class LongTermTimelineStore:
         day = self.expand_day(persona_id, target)
         if not day:
             latest = self.latest_stage(persona_id) if fallback_to_latest else None
-            return self._ended_context(latest) if latest else "长期时间表：当前日期没有生效阶段。"
+            return self._ended_context(latest) if latest else "长期安排：今天不在任何阶段里。"
         stage = day["stage"]
         upcoming = self.holidays.upcoming(target, UPCOMING_HOLIDAY_DAYS)
 
@@ -395,8 +395,8 @@ class LongTermTimelineStore:
                 f"阶段：{stage['name']}（{stage['kind']}，{stage['start_date']} 至 {stage['end_date']}）",
                 f"说明：{stage.get('summary') or '无'}",
                 f"今日节日：{'、'.join(item['name'] for item in day['holidays']) or '无'}",
-                "未来 7 天节日：" + ("；".join(f"{item['date']} {item['name']}" for item in upcoming) or "无"),
-                "今日必须保留的固定事件：",
+                "接下来一周的节日：" + ("；".join(f"{item['date']} {item['name']}" for item in upcoming) or "无"),
+                "今天固定要做的事：",
                 *bullets(
                     [
                         f"- {event['start']}-{event['end']} {event['title']}"
@@ -407,7 +407,7 @@ class LongTermTimelineStore:
                 "阶段约束：" + ("；".join(day["constraints"]) if day["constraints"] else "无"),
                 "临近里程碑：",
                 *bullets([f"- {item['date']} {item['title']}" for item in day["milestones"]]),
-                "生成当天日程时必须保留固定事件，并围绕阶段约束和里程碑安排其余活动。",
+                "排今天的日程时，上面的固定事件一个都不能少，其余时间结合阶段约束和临近的里程碑来安排。",
                 "</long_term_timeline>",
             ]
         )

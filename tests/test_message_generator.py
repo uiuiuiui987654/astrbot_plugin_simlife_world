@@ -124,7 +124,7 @@ class History(unittest.TestCase):
         (pair,) = conversations.pairs
         note, reply = texts(pair)
         self.assertEqual((pair["cid"], conversations.created, reply), ("conversation-1", [], "今天的午饭很好吃。"))
-        self.assertIn("你主动发起的消息", note)
+        self.assertIn("你自己主动发的", note)
         self.assertIn("分享午饭", note)
         self.assertNotIn("系统事件", note)
 

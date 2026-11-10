@@ -91,14 +91,14 @@
       <div class="stat"><small>心情状态</small><b>{{ mood }}</b></div>
     </div>
     <section>
-      <h2>当前大时间段</h2>
+      <h2>所处阶段</h2>
       {% if current_stage %}<div class="tile"><div class="head"><span>{{ current_stage.name }}</span><span>{{ current_stage.kind_label }}</span></div><div class="meta">{{ current_stage.start_date }} 至 {{ current_stage.end_date }}</div>{% if current_stage.summary %}<p>{{ current_stage.summary }}</p>{% endif %}</div>
       {% else %}<div class="blank">暂无当前阶段</div>{% endif %}
     </section>
-    {% if active_periods %}<section><h2>今日生效的特殊时间段</h2><div class="stack">{% for period in active_periods %}{{ tile(period.name, period.start_date ~ " 至 " ~ period.end_date, ("约束：" ~ period.constraints_text) if period.constraints_text else "") }}{% endfor %}</div></section>{% endif %}
+    {% if active_periods %}<section><h2>今天的特殊时期</h2><div class="stack">{% for period in active_periods %}{{ tile(period.name, period.start_date ~ " 至 " ~ period.end_date, ("约束：" ~ period.constraints_text) if period.constraints_text else "") }}{% endfor %}</div></section>{% endif %}
     {% if today_holidays %}<section><h2>今日节日</h2><div class="stack">{% for holiday in today_holidays %}{{ tile(holiday.name, holiday.kind_label) }}{% endfor %}</div></section>{% endif %}
     <section>
-      <h2>24 小时时间轴</h2>
+      <h2>今天的时间线</h2>
       <div class="stack">
         {% for slot in items %}
         <div class="slot">

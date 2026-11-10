@@ -152,11 +152,11 @@ class ProactiveWindowBudget(unittest.TestCase):
         llm = ScriptedLLM(answer())
         sessions = {"friend_settings": {"enable": True, "daily_budget_max": 4}, "group_settings": {"enable": True, "daily_budget_max": 2}}
         run(generator(llm, config(sessions=sessions))[0].generate(DAY, ALICE))
-        for needle in ("主动消息预算约束", "不得超过 4 个", "不得超过 2 个"):
+        for needle in ("主动消息额度", "最多 4 个", "最多 2 个"):
             self.assertIn(needle, llm.prompts[0])
         llm = ScriptedLLM(answer())
         run(generator(llm)[0].generate(DAY, ALICE))
-        self.assertNotIn("主动消息预算约束", llm.prompts[0])
+        self.assertNotIn("主动消息额度", llm.prompts[0])
 
     def test_too_many_windows_is_sent_back(self):
         cases = {
@@ -164,15 +164,15 @@ class ProactiveWindowBudget(unittest.TestCase):
                 {"friend_settings": {"enable": True, "daily_budget_max": 2}, "group_settings": {"enable": True, "daily_budget_max": 1}},
                 [window("w1", "both"), window("w2", "both", "12:00"), window("w3", "both", "18:00")],
                 [window("w1", "both")],
-                "面向好友数量 3 超过预算上限 2",
+                "给好友的主动窗口有 3 个，超过了额度 2",
                 None,
             ),
             "groups only": (
                 {"friend_settings": {"enable": False}, "group_settings": {"enable": True, "daily_budget_max": 1}},
                 [window("w1", "group"), window("w2", "group", "12:00")],
                 [window("w1", "group")],
-                "面向群聊数量 2 超过预算上限 1",
-                "面向好友",
+                "给群聊的主动窗口有 2 个，超过了额度 1",
+                "给好友",
             ),
         }
         for name, (sessions, too_many, fine, complaint, unmentioned) in cases.items():
@@ -193,7 +193,7 @@ class Retries(unittest.TestCase):
         self.assertEqual(llm.systems[0], "SCHEDULE_SYSTEM\n\nOUTFIT_SYSTEM")
         self.assertIn("COMPLETE 完整生成", llm.prompts[0])
         self.assertEqual(llm.prompts[0].count("persona"), 1)
-        for needle in ("not json", "LLM response does not contain a JSON object", "attempt=2"):
+        for needle in ("not json", "no JSON object found in the model output", "attempt=2"):
             self.assertIn(needle, llm.prompts[1])
 
     def test_retry_shows_only_the_latest_bad_answer(self):
@@ -209,7 +209,7 @@ class Retries(unittest.TestCase):
         flattened.update(flattened.pop("outfit"))
         llm = ScriptedLLM(json.dumps(flattened, ensure_ascii=False), answer())
         self.assertEqual(run(generator(llm, config(retries=1))[0].generate(DAY, ALICE)).status, "ok")
-        self.assertIn("missing structured outfit", llm.prompts[1])
+        self.assertIn("no outfit object found", llm.prompts[1])
 
     def test_giving_up(self):
         llm = ScriptedLLM("bad", "still bad")
@@ -261,7 +261,7 @@ class Rewrites(unittest.TestCase):
 
     def test_outfit_rewrite_retries(self):
         cases = {
-            "no wrapper": ('{"result": "missing wrapper"}', ('"result": "missing wrapper"', "missing structured outfit")),
+            "no wrapper": ('{"result": "missing wrapper"}', ('"result": "missing wrapper"', "no outfit object found")),
             "no underpants": (outfit_answer("缺少内裤的穿搭", drop={"underpants"}), ("missing the underpants category",)),
         }
         for name, (bad, complaints) in cases.items():
@@ -293,7 +293,7 @@ class PromptHistory(unittest.TestCase):
         )
         llm = ScriptedLLM(answer())
         run(generator(llm)[0].generate(DAY, ALICE, history_plans=[yesterday]))
-        for needle in ("2026-07-13", "在家看书", "不要照抄"):
+        for needle in ("2026-07-13", "在家看书", "别把同样的主题"):
             self.assertIn(needle, llm.prompts[0])
 
     def test_only_the_latest_day_is_detailed(self):
@@ -350,14 +350,14 @@ class LongTermGeneration(unittest.TestCase):
         stages = run(gen.generate_long_term_timeline(PersonaContext("student", "persona"), start_date=date(2027, 2, 20), previous_stage=winter))
         self.assertEqual((stages[0]["start_date"], stages[0]["priority"]), ("2027-02-20", 75))
         for rule in (
-            "priority",
-            "text values such as high, medium, or low",
-            "start and end must be non-empty",
-            "unique integers from 1 to 7",
-            "required must be a JSON boolean",
-            "Special period rules",
-            "non-negative JSON integer",
-            "self-check every field",
+            "priority 是 0 到 100 的 JSON 整数",
+            "不能写 high、medium、low",
+            "start、end 是 HH:MM，都不能为空",
+            "不重复的 1 到 7 的整数",
+            "required 是 true 或 false",
+            "special_periods",
+            "不小于 0 的 JSON 整数",
+            "输出前逐项检查",
         ):
             self.assertIn(rule, llm.systems[0])
         self.assertIn("前一阶段：寒假", llm.prompts[0])

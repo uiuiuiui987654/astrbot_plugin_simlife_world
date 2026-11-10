@@ -120,10 +120,9 @@ class PersonalNetworkMixin:
             logger.exception("[虚拟人生] 新人物写入人际关系失败 persona=%s", persona.id)
             return ""
         return (
-            f"今天日程中应安排与 {person['name']}（{person['relationship_type']}）的相遇或互动。"
-            f"关系说明：{person['relationship_description']}。"
-            f"人物简介：{person['bio']}。"
-            "请在时间线中自然地加入这次会面，并在对应 timeline 项目的 participant_ids 中填入该人物的 ID（从关系数据中获取）。"
+            f"今天她会碰到 {person['name']}（{person['relationship_type']}，{person['relationship_description']}）。"
+            f"这个人：{person['bio']}。"
+            "在时间线里自然地安排一次见面，并把这个人在关系数据里的 id 填进那一项的 participant_ids。"
         )
 
     async def _personal_network_participants_context(
@@ -158,7 +157,7 @@ class PersonalNetworkMixin:
                 [person.get("name", "（未知）"), *(part for part in extra if part)]
             )
 
-        return "\n".join(["当前时段参与人物：", *map(describe, present)])
+        return "\n".join(["此刻和她在一起的人：", *map(describe, present)])
 
     async def _personal_network_context(self, persona_id: str) -> str:
         plugin = self._personal_network_plugin()

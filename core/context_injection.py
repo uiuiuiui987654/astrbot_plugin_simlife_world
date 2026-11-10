@@ -19,7 +19,7 @@ from .utils import timeline_item_at
 from .wardrobe import appearance_context, appearance_for
 
 INTIMATES = frozenset({"underwear", "underpants"})
-FULL_QUERY_HINT = "用户明确请求完整信息：必须优先调用 {tool}，不要凭当前摘要补全未查询的数据。"
+FULL_QUERY_HINT = "对方想看完整的内容：先调用 {tool} 取数据，别拿这里的摘要去补没查到的部分。"
 
 
 def _minute(now: datetime) -> int:
@@ -127,7 +127,7 @@ class SmartContextInjector:
                 f"状态：{current.state}，可打扰度：{current.availability}\n",
                 self._body_line(plan, now, furniture_states, history_plans, health_summary),
                 f"\n家具状态：{furniture_context}" if furniture_context else "",
-                "\n普通回复必须与当前状态保持一致。",
+                "\n回复内容要和她此刻的状态对得上。",
             ]
         )
 
@@ -174,13 +174,13 @@ class SmartContextInjector:
         if not day:
             latest = long_term.latest_stage(persona_id)
             if not latest:
-                return ["大时间表：当前没有已批准阶段。"]
+                return ["长期安排：还没有确定的阶段。"]
             return [
-                f"最近阶段已于 {latest['end_date']} 结束：{latest['name']}。后续阶段正在生成中，"
-                "不要虚构已过期的固定课程、会议或截止日期。"
+                f"上一个阶段「{latest['name']}」已在 {latest['end_date']} 结束，新的阶段还在安排中；"
+                "别再提已经过去的固定课程、会议或截止日期。"
             ]
         stage = day["stage"]
-        header = f"当前大时间表阶段：{stage['name']}（{stage['kind']}，{stage['start_date']} 至 {stage['end_date']}）。"
+        header = f"所处长期阶段：{stage['name']}（{stage['kind']}，{stage['start_date']} 至 {stage['end_date']}）。"
         if stage.get("summary"):
             header += f"摘要：{stage['summary']}。"
         if day["constraints"]:

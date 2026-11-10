@@ -27,7 +27,7 @@ RenderHtml = Callable[..., Awaitable[str]]
 PLUGIN_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_TEMPLATE = PLUGIN_ROOT / "templates" / "schedule.html"
 ASSETS = PLUGIN_ROOT / "assets"
-BASE_FONTS = '"Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif'
+BASE_FONTS = '"PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif'
 WIDTH_RANGE = (720, 2000)
 
 STATE_LABELS = dict(sleep="睡眠", busy="忙碌", focus="专注", transit="通勤", available="空闲", social="社交")
@@ -210,7 +210,7 @@ class ScheduleImageRenderer:
     async def render_outfit(self, plan: DailyPlan, now: datetime) -> str:
         outfit = plan.outfit
         if outfit is None:
-            raise ValueError("outfit is unavailable")
+            raise ValueError("this plan has no outfit")
         payload = {
             "title": f"{plan.date} 今日穿搭",
             "subtitle": plan.persona_id,
@@ -332,7 +332,7 @@ class ScheduleImageRenderer:
             await self.render_html(self.template, data, return_url=False, options={"full_page": True, "type": "png"})
         )
         if not produced.exists():
-            raise RuntimeError(f"rendered image does not exist: {produced}")
+            raise RuntimeError(f"the renderer reported {produced}, but no file is there")
         shutil.copyfile(produced, target)
         try:
             if produced.resolve() != target.resolve():

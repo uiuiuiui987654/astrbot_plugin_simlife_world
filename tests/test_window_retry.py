@@ -17,7 +17,7 @@ HALF_PAST_NOON = datetime(2026, 7, 14, 12, 30, tzinfo=TZ)
 FRIEND = "aiocqhttp:FriendMessage:42"
 PLAN = nap_day()
 WINDOW = PLAN.proactive_windows[0]
-NOT_IDLE = "conversation is not idle enough"
+NOT_IDLE = "chat not quiet yet"
 
 
 def host(now=HALF_PAST_NOON, **delivery):
@@ -40,10 +40,10 @@ def host(now=HALF_PAST_NOON, **delivery):
 class LateIntent(unittest.TestCase):
     def test_explains_the_missed_moment_naturally(self):
         intent = host()._delayed_window_intent(WINDOW, PLAN, "sleeping")
-        for needle in ("上午打个招呼", "上午日程", "休息"):
+        for needle in ("上午打个招呼", "上午日程", "在休息"):
             self.assertIn(needle, intent)
         self.assertNotIn("延迟的主动消息", intent)
-        self.assertIn("时机不太合适", host()._delayed_window_intent(WINDOW, PLAN, ""))
+        self.assertIn("时机不太对", host()._delayed_window_intent(WINDOW, PLAN, ""))
 
     def test_still_inside_the_activity_means_nothing_was_missed(self):
         self.assertEqual(host(HALF_PAST_NOON.replace(hour=10))._delayed_window_intent(WINDOW, PLAN, NOT_IDLE), WINDOW.intent)
@@ -52,16 +52,16 @@ class LateIntent(unittest.TestCase):
 class WhetherToRetry(unittest.TestCase):
     def test_policy(self):
         default, opted_in = host(), host(window_retry_when_not_idle=True, window_retry_when_cooldown=True)
-        for reason in ("sleeping", "availability probability rejected"):
+        for reason in ("sleeping", "not a good moment"):
             self.assertTrue(default._should_retry_window(FRIEND, reason))
-        for reason in (NOT_IDLE, "cooldown active", "agent task active"):
+        for reason in (NOT_IDLE, "cooling down", "agent running"):
             with self.subTest(reason):
                 self.assertFalse(default._should_retry_window(FRIEND, reason))
                 self.assertTrue(opted_in._should_retry_window(FRIEND, reason))
 
     def test_waiting_for_an_agent_does_not_use_up_retries(self):
         plugin = host(window_retry_when_not_idle=True)
-        plugin._attempt_unsolicited = AsyncMock(return_value=(False, "agent task active"))
+        plugin._attempt_unsolicited = AsyncMock(return_value=(False, "agent running"))
         plugin._schedule_window_retry = Mock()
         asyncio.run(plugin._attempt_window(FRIEND, SimpleNamespace(id="alice"), PLAN, WINDOW, delayed=False))
         self.assertEqual(plugin._window_retry_counts, {})
@@ -89,15 +89,15 @@ class WhenToRetry(unittest.TestCase):
         self.assertGreaterEqual(self.retry_at(NOT_IDLE, plugin, last_user_message_at=self.ago(hours=1)), HALF_PAST_NOON + timedelta(minutes=15))
 
     def test_cooldown_waits_until_it_ends(self):
-        self.assertGreaterEqual(self.retry_at("cooldown active", last_proactive_at=self.ago(minutes=30)), HALF_PAST_NOON + timedelta(minutes=90))
+        self.assertGreaterEqual(self.retry_at("cooling down", last_proactive_at=self.ago(minutes=30)), HALF_PAST_NOON + timedelta(minutes=90))
 
     def test_no_retry(self):
         long_cooldown = host()
         long_cooldown.config["friend_settings"]["cooldown_minutes"] = 2000
         cases = {
-            "unknown reason": ("budget exhausted", None, {}),
-            "cooldown past midnight": ("cooldown active", long_cooldown, {"last_proactive_at": self.ago(minutes=10)}),
-            "agent wait past midnight": ("agent task active", host(HALF_PAST_NOON.replace(hour=23, minute=45)), {}),
+            "unknown reason": ("quota used up", None, {}),
+            "cooldown past midnight": ("cooling down", long_cooldown, {"last_proactive_at": self.ago(minutes=10)}),
+            "agent wait past midnight": ("agent running", host(HALF_PAST_NOON.replace(hour=23, minute=45)), {}),
         }
         for name, (reason, plugin, session) in cases.items():
             with self.subTest(name):

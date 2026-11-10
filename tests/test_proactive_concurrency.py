@@ -58,9 +58,9 @@ class Gate(unittest.IsolatedAsyncioTestCase):
         just_talked = host()
         just_talked._mark_conversation_activity(FRIEND, NOW - timedelta(minutes=5))
         no_schedule = PLAN.__class__(date=PLAN.date, persona_id=PLAN.persona_id, theme="", mood="", outfit=PLAN.outfit, timeline=())
-        self.assertEqual(await self.attempt(busy), (False, "agent task active"))
-        self.assertEqual(await self.attempt(just_talked), (False, "conversation is not idle enough"))
-        self.assertEqual(await self.attempt(host(), no_schedule, "idle"), (False, "schedule unavailable"))
+        self.assertEqual(await self.attempt(busy), (False, "agent running"))
+        self.assertEqual(await self.attempt(just_talked), (False, "chat not quiet yet"))
+        self.assertEqual(await self.attempt(host(), no_schedule, "idle"), (False, "no schedule today"))
 
 
 class Delivery(unittest.IsolatedAsyncioTestCase):

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 from astrbot.api import logger
 
-FALLBACK_PROMPT = "You are a helpful and friendly assistant."
+FALLBACK_PROMPT = "你是一个温和、乐于帮忙的伙伴。"
 NO_PERSONA = "[%None]"  # AstrBot's marker for "persona explicitly disabled"
 
 
@@ -28,7 +28,7 @@ class PersonaResolver:
                 return None
             conversation = await manager.get_conversation(umo, conversation_id)
         except Exception as exc:
-            logger.warning("[虚拟人生] 读取会话人格失败 %s: %s", umo, exc)
+            logger.warning("[虚拟人生] 读不到这个会话的人格 %s: %s", umo, exc)
             return None
         return getattr(conversation, "persona_id", None)
 
@@ -51,7 +51,7 @@ class PersonaResolver:
         try:
             default = await self.context.persona_manager.get_default_persona_v3(umo=umo)
         except Exception as exc:
-            logger.warning("[虚拟人生] 回退默认人格: %s", exc)
+            logger.warning("[虚拟人生] 改用默认人格：%s", exc)
             return PersonaContext("default", FALLBACK_PROMPT)
         return PersonaContext(str(default.get("name", "default")), str(default.get("prompt", "") or FALLBACK_PROMPT))
 
@@ -69,5 +69,5 @@ class PersonaResolver:
             return PersonaContext(persona_id, str(legacy.get("prompt", "") or ""))
         resolved = await self.resolve(fallback_umo)
         if resolved.id != persona_id:
-            raise RuntimeError(f"无法加载已批准人格 {persona_id}")
+            raise RuntimeError(f"找不到人格 {persona_id}")
         return resolved

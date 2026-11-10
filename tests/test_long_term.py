@@ -49,8 +49,8 @@ class Validation(unittest.TestCase):
         empty_time = semester()
         empty_time["special_dates"][0]["start"] = ""
         for name, (value, message) in {
-            "empty event time": (empty_time, "requires non-empty start and end"),
-            "worded priority": (semester(priority="high"), "priority must be an integer"),
+            "empty event time": (empty_time, "start and end both need an HH:MM time"),
+            "worded priority": (semester(priority="high"), "priority should be a whole number"),
         }.items():
             with self.subTest(name), self.assertRaisesRegex(ValueError, message):
                 validate_stage(value, "student")

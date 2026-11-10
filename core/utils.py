@@ -113,7 +113,7 @@ def extract_json_object(text: str) -> dict:
         return whole
     starts = [match.start() for match in re.finditer(r"\{", body)]
     if not starts:
-        raise ValueError("LLM response does not contain a JSON object")
+        raise ValueError("no JSON object found in the model output")
     decoder = json.JSONDecoder()
     for start in starts:  # valid object somewhere in the text
         try:
@@ -129,7 +129,7 @@ def extract_json_object(text: str) -> dict:
             value = _as_object(candidate)
             if value is not None:
                 return value
-    raise ValueError("unable to parse JSON object")
+    raise ValueError("the JSON object in the model output is malformed")
 
 
 # ------------------------------------------------------------------ stable randomness
@@ -162,7 +162,7 @@ def parse_datetime(value: str, timezone: ZoneInfo) -> datetime:
     return (moment if moment.tzinfo else moment.replace(tzinfo=timezone)).astimezone(timezone)
 
 
-_RANGE_HELP = "日期应为 YYYY-MM-DD、MM-DD、DD，或使用 .. 连接的日期区间"
+_RANGE_HELP = "日期写成 YYYY-MM-DD、MM-DD 或 DD，区间用 .. 连起来（例如 7-20..7-22）"
 
 
 def _date_numbers(text: str) -> list[int]:
@@ -189,7 +189,7 @@ def parse_schedule_date_range(value: str, reference: date) -> tuple[date, date]:
     try:
         start = date(*([reference.year, reference.month][: 3 - len(first)] + first))
     except ValueError as exc:
-        raise ValueError(f"无效的开始日期：{ends[0]}") from exc
+        raise ValueError(f"开始日期不对：{ends[0]}") from exc
     if len(ends) == 1:
         return start, start
     last = _date_numbers(ends[1])
@@ -205,9 +205,9 @@ def parse_schedule_date_range(value: str, reference: date) -> tuple[date, date]:
             if end < start:
                 end = date(*_next_month(start), last[0])
     except ValueError as exc:
-        raise ValueError(f"无效的结束日期：{ends[1]}") from exc
+        raise ValueError(f"结束日期不对：{ends[1]}") from exc
     if end < start:
-        raise ValueError("结束日期不能早于开始日期")
+        raise ValueError("结束日期在开始日期之前")
     return start, end
 
 
@@ -269,7 +269,7 @@ def _timeline_lines(plan: DailyPlan) -> list[str]:
 
 def format_plan(plan: DailyPlan, moment: datetime | None = None) -> str:
     if not plan.has_schedule:
-        return format_outfit(plan) if plan.has_outfit else f"📅 {plan.date}\n今日没有日程和穿搭。"
+        return format_outfit(plan) if plan.has_outfit else f"📅 {plan.date}\n今天还没有日程，也没有穿搭。"
     lines = [f"📅 {plan.date} · {plan.theme}", f"💭 心情：{plan.mood}", f"🌤️ 天气：{_weather_text(plan)}"]
     if plan.outfit:
         parts = _outfit_parts(plan)
@@ -294,14 +294,14 @@ def format_timeline(
     ]
     stage = day.get("stage")
     lines.append(
-        f"🗓️ 当前大时间段：{stage['name']}（{stage['start_date']} 至 {stage['end_date']}）"
+        f"🗓️ 所处阶段：{stage['name']}（{stage['start_date']} 至 {stage['end_date']}）"
         if isinstance(stage, dict)
-        else "🗓️ 当前大时间段：暂无当前阶段"
+        else "🗓️ 所处阶段：不在任何长期阶段里"
     )
     for period in day.get("active_periods", []):
         rules = "；".join(period.get("constraints", []))
         lines.append(
-            f"⚠️ 特殊时间段：{period['name']}（{period['start_date']} 至 {period['end_date']}）"
+            f"⚠️ 特殊时期：{period['name']}（{period['start_date']} 至 {period['end_date']}）"
             + (f" · {rules}" if rules else "")
         )
     if day.get("holidays", []):
@@ -310,12 +310,12 @@ def format_timeline(
     if current:
         where = f" @ {current.location}" if current.location else ""
         lines.append(f"📍 当前时段：{current.start}-{current.end} {current.activity}{where}")
-    return "\n".join([*lines, "📝 24 小时时间轴：", *_timeline_lines(plan)])
+    return "\n".join([*lines, "📝 今天的时间线：", *_timeline_lines(plan)])
 
 
 def format_outfit(plan: DailyPlan) -> str:
     if plan.outfit is None:
-        return f"📅 {plan.date}\n今日没有穿搭。"
+        return f"📅 {plan.date}\n今天还没有穿搭。"
     lines = [f"👗 {plan.date} 今日穿搭", f"🎨 穿搭风格：{plan.outfit.style}"]
     if plan.has_schedule:
         lines += [f"💡 今日主题：{plan.theme}", f"💭 今日心情：{plan.mood}", f"🌤️ 今日天气：{_weather_text(plan)}"]

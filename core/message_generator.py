@@ -14,7 +14,8 @@ from .human_style import CURRENT_STATE_RULE, HUMAN_PROACTIVE_RULE
 from .persona import PersonaContext
 from .state_hints import state_hints
 
-PROACTIVE_MARK = "（你主动发起的消息）"
+PROACTIVE_MARK = "（这条是你自己主动发的）"
+OLDER_MARKS = ("（你主动发起的消息）",)  # written by earlier versions; still recognised in chat history
 NO_HISTORY = "无"
 RESPONSE_TEXT_FIELDS = ("completion_text", "completion", "text", "content")
 
@@ -135,13 +136,13 @@ class ProactiveMessageGenerator:
         provider_id = str((self.config.get("schedule_settings", {}) or {}).get("proactive_llm_provider") or "").strip()
         provider = (self.context.get_provider_by_id(provider_id) if provider_id else None) or self.context.get_using_provider()
         if not provider:
-            raise RuntimeError("no LLM provider available")
+            raise RuntimeError("no chat model is configured")
         response = await provider.text_chat(prompt, session_id=f"proactive_message::{umo}")
         for name in RESPONSE_TEXT_FIELDS:
             value = getattr(response, name, None)
             if isinstance(value, str) and value.strip():
                 return value.strip()
-        raise RuntimeError("LLM returned empty proactive message")
+        raise RuntimeError("the model wrote an empty message")
 
     @staticmethod
     def parse_decision(raw: str) -> dict:
@@ -219,7 +220,7 @@ class ProactiveMessageGenerator:
             ]
             return "\n".join(lines) or NO_HISTORY
         except Exception as exc:
-            logger.debug("[虚拟人生] 读取历史失败 %s: %s", umo, exc)
+            logger.debug("[虚拟人生] 读不到聊天记录 %s: %s", umo, exc)
             return NO_HISTORY
 
     async def recent_proactive_texts(self, umo: str, limit: int = 5) -> list[str]:
@@ -241,14 +242,14 @@ class ProactiveMessageGenerator:
             if role == "user":
                 prompt_before = text
             elif role == "assistant":
-                if text and prompt_before.startswith(PROACTIVE_MARK):
+                if text and prompt_before.startswith((PROACTIVE_MARK, *OLDER_MARKS)):
                     texts.append(text)
                 prompt_before = ""
         return texts[-limit:][::-1]
 
     def _history_note(self, intent: str) -> str:
         template = str(self._delivery().get("proactive_history_note_template", "")).strip()
-        fallback = f"{PROACTIVE_MARK}\n背景：{intent}"
+        fallback = f"{PROACTIVE_MARK}\n起因：{intent}"
         if not template:
             return fallback
         try:
@@ -264,15 +265,15 @@ class ProactiveMessageGenerator:
                 umo, persona_id=persona_id
             )
             if not conversation_id:
-                logger.warning("[虚拟人生] 主动消息未写入上下文：无法创建对话 umo=%s", umo)
+                logger.warning("[虚拟人生] 主动消息没记入聊天记录：新建对话失败 umo=%s", umo)
                 return False
             await manager.add_message_pair(
                 cid=conversation_id,
                 user_message=UserMessageSegment(content=[TextPart(text=self._history_note(intent))]),
                 assistant_message=AssistantMessageSegment(content=[TextPart(text=assistant_text)]),
             )
-            logger.info("[虚拟人生] 主动消息已写入对话上下文 umo=%s conversation=%s", umo, conversation_id)
+            logger.info("[虚拟人生] 主动消息记入聊天记录 umo=%s conversation=%s", umo, conversation_id)
             return True
         except Exception as exc:
-            logger.error("[虚拟人生] 主动消息写入对话上下文失败 umo=%s: %s", umo, exc)
+            logger.error("[虚拟人生] 主动消息没能记入聊天记录 umo=%s: %s", umo, exc)
             return False

@@ -195,7 +195,7 @@ def _message_time(item: dict[str, Any]) -> datetime | None:
         return None
 
 
-PROACTIVE_NOTE_RE = re.compile(r"^(?:（你主动发起的消息）|\[系统任务[:：])")
+PROACTIVE_NOTE_RE = re.compile(r"^(?:（这条是你自己主动发的）|（你主动发起的消息）|\[系统任务[:：])")
 
 
 def _is_proactive_note(text: str) -> bool:

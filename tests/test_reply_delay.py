@@ -111,7 +111,7 @@ class Decisions(unittest.TestCase):
         self.assertEqual(
             (policy.enabled, policy.notify_user, policy.active_conversation_seconds, policy.max_delay_seconds), (False, True, 300, 1800)
         )
-        self.assertTrue(policy.notification(decision).startswith("预计"))
+        self.assertTrue(policy.notification(decision).startswith("稍后回复"))
 
     def test_formula_help_lists_every_function(self):
         hint = SCHEMA["delay_formulas"]["hint"]
@@ -203,7 +203,7 @@ class Batching(unittest.IsolatedAsyncioTestCase):
         context = format_delay_context(batch, batch.deadline, lunch)
         for needle in ("甲 (1)：第一条 [附件：1 张图片]", "乙 (2)：第二条"):
             self.assertIn(needle, merged)
-        for needle in ("消息到达时活动：和同事吃午饭", "消息到达时地点：餐厅", "不要主动向用户披露"):
+        for needle in ("消息到达时活动：和同事吃午饭", "消息到达时地点：餐厅", "这些规则都别跟对方讲"):
             self.assertIn(needle, context)
 
 

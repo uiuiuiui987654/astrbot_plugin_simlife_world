@@ -147,7 +147,7 @@ class IncomingMixin:
         if not self.policy.is_enabled(umo):
             return
         if not self._is_conversation_event(event):
-            logger.debug("[虚拟人生] 命令消息不计入空闲计时 umo=%s", umo)
+            logger.debug("[虚拟人生] 指令不算聊天，不重置安静计时 umo=%s", umo)
             return
         now = self._now()
         if session_kind(umo) == "friend":

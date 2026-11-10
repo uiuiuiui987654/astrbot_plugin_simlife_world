@@ -22,21 +22,21 @@ from ..window_schedule import proactive_window_offset_minutes
 
 # Rejection reasons reported by the proactive policy.
 ASLEEP = "sleeping"
-UNAVAILABLE = "availability probability rejected"
-NOT_IDLE = "conversation is not idle enough"
-AGENT_BUSY = "agent task active"
-COOLDOWN = "cooldown active"
+UNAVAILABLE = "not a good moment"
+NOT_IDLE = "chat not quiet yet"
+AGENT_BUSY = "agent running"
+COOLDOWN = "cooling down"
 WAIT_FOR_FREE_SLOT = {ASLEEP, UNAVAILABLE}
 
 MISSED_REASONS = {
-    NOT_IDLE: "当时你正在忙或正在聊天，没找到合适的插话时机",
-    AGENT_BUSY: "当时你们正在处理一件复杂的事情，不适合突然打断",
-    COOLDOWN: "当时你们刚刚才聊过，紧接着再开口会显得太突兀",
-    UNAVAILABLE: "当时对方的状态不太适合被打扰",
-    ASLEEP: "当时对方正在休息",
+    NOT_IDLE: "那会儿你们正聊着别的，没插上话",
+    AGENT_BUSY: "那会儿你们在忙一件挺费事的事，不好打断",
+    COOLDOWN: "那会儿你刚找过对方，马上再说有点太密",
+    UNAVAILABLE: "那会儿你不太方便",
+    ASLEEP: "那会儿你在休息",
 }
-NIGHT_INTENT = "睡梦中醒来、起夜或失眠时忽然想起对方"
-IDLE_INTENT = "会话已经沉默了一段时间，想自然地重新联系"
+NIGHT_INTENT = "半夜醒了（起夜或者睡不着），忽然想到对方"
+IDLE_INTENT = "有一阵子没聊了，想找个由头说说话"
 
 
 class SchedulingMixin:
@@ -292,10 +292,10 @@ class SchedulingMixin:
         )
         if not source or self._now() < self._end_time(plan.date, source.end):
             return window.intent
-        why = MISSED_REASONS.get(retry_reason, "当时时机不太合适")
+        why = MISSED_REASONS.get(retry_reason, "那会儿时机不太对")
         return (
-            f"{window.intent}。你原本打算在「{source.activity}」时段联系对方，但{why}，"
-            "错过了那个时机；现在自然地向对方提起，别让对方察觉这是程序自动安排的。"
+            f"{window.intent}。本来想在「{source.activity}」的时候说，可{why}，就错过了；"
+            "现在自然地提起就好，别让人觉得是定好时间发的。"
         )
 
     def _should_retry_window(self, umo: str, reason: str) -> bool:

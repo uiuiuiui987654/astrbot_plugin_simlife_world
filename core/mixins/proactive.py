@@ -99,7 +99,7 @@ class ProactiveMixin:
         """``(sent, reason)``; the reason feeds the retry logic in the scheduling mixin."""
         async with self.delivery_locks.setdefault(umo, asyncio.Lock()):
             if not plan.has_schedule:
-                return False, "schedule unavailable"
+                return False, "no schedule today"
             now = self._now()
             refusal = self._quick_refusal(umo, trigger, now)
             if refusal:
@@ -115,7 +115,7 @@ class ProactiveMixin:
                 needs=self._life_needs(plan, now),
             )
             if not verdict.allowed:
-                logger.info("[虚拟人生] 跳过 %s: %s", umo, verdict.reason)
+                logger.info("[虚拟人生] %s 这次不发：%s", umo, verdict.reason)
                 return False, verdict.reason
             sent = await self._deliver(
                 umo,
@@ -128,10 +128,10 @@ class ProactiveMixin:
             )
             if not sent:
                 if trigger == "decision":
-                    return False, "model chose silence"
-                return False, "agent task active" if self._agent_is_active(
+                    return False, "decided to stay quiet"
+                return False, "agent running" if self._agent_is_active(
                     umo
-                ) else "conversation is not idle enough"
+                ) else "chat not quiet yet"
             # Group windows are scheduled chatter and don't spend the daily budget.
             self.policy.record_delivery(
                 state,
@@ -144,14 +144,14 @@ class ProactiveMixin:
     def _quick_refusal(self, umo: str, trigger: str, now) -> str:
         """Reasons to stay quiet that don't need the policy at all."""
         if self._agent_is_active(umo):
-            logger.info("[虚拟人生] 跳过 %s: 会话正在处理 Agent 任务", umo)
-            return "agent task active"
+            logger.info("[虚拟人生] %s 正在跑 Agent 任务，先不打扰", umo)
+            return "agent running"
         if self.user_states.is_sleeping(now):
             logger.info("[虚拟人生] 跳过 %s: 主人在睡觉", umo)
             return "user sleeping"
         if trigger == "window" and not self._window_is_idle_enough(umo, now):
-            logger.info("[虚拟人生] 跳过 %s: 会话尚未达到窗口沉默时间", umo)
-            return "conversation is not idle enough"
+            logger.info("[虚拟人生] %s 刚刚还在聊，窗口先不发", umo)
+            return "chat not quiet yet"
         return ""
 
     # ------------------------------------------------------------------ writing the message
@@ -237,7 +237,7 @@ class ProactiveMixin:
         doing = (
             GROUP_STATE
             if group
-            else (current.activity if current else "今日状态暂未明确")
+            else (current.activity if current else "今天的安排还没定")
         )
         settings = self._decision_settings()
         await self._record_completed_personal_network_events(persona.id, now)
@@ -359,11 +359,11 @@ class ProactiveMixin:
     ) -> bool:
         """Send unless the user spoke while we were writing (checked again under the session lock)."""
         if not self._proactive_context_is_current(umo, generation):
-            logger.info("[虚拟人生] 丢弃 %s 的主动消息：生成期间会话已发生变化", umo)
+            logger.info("[虚拟人生] %s 写消息时对方说话了，这条作废", umo)
             return False
         async with session_lock_manager.acquire_lock(umo):
             if not self._proactive_context_is_current(umo, generation):
-                logger.info("[虚拟人生] 丢弃 %s 的主动消息：提交前会话已发生变化", umo)
+                logger.info("[虚拟人生] %s 发送前对方说话了，这条作废", umo)
                 return False
             await self._send_text(umo, text)
             await self.message_generator.record_conversation(
@@ -375,7 +375,7 @@ class ProactiveMixin:
         """Send in human-sized pieces with typing pauses; raises when the platform refuses."""
         split = self.message_segmenter.split(text)
         logger.info(
-            "[虚拟人生] 主动消息分段 umo=%s mode=%s chars=%s parts=%s threshold=%s reason=%s",
+            "[虚拟人生] 拆分发送 umo=%s 方式=%s 字数=%s 条数=%s 阈值=%s 说明=%s",
             umo,
             split.mode,
             split.source_length,
@@ -385,7 +385,7 @@ class ProactiveMixin:
         )
         for number, piece in enumerate(split.segments, start=1):
             if not await self.context.send_message(umo, MessageChain().message(piece)):
-                raise RuntimeError(f"platform unavailable for {umo}")
+                raise RuntimeError(f"could not send to {umo}")
             if number < len(split.segments):
                 await asyncio.sleep(self.message_segmenter.interval_for(piece))
 

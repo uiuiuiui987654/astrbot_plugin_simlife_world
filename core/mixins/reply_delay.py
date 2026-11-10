@@ -39,13 +39,13 @@ class ReplyDelayMixin:
         try:
             persona = await self.personas.resolve(umo)
         except Exception:
-            logger.exception("[虚拟人生] 回复延迟跳过：人格解析失败")
+            logger.exception("[虚拟人生] 不知道是哪个人格，不做晚点回复")
             return
         day = received_at.date().isoformat()
         plan = self.storage.get_plan(day, persona.id)
         if not plan or not plan.has_schedule:
             logger.info(
-                "[虚拟人生] 回复延迟跳过：内存中没有有效日程 persona=%s date=%s",
+                "[虚拟人生] 今天没有日程，不做晚点回复 persona=%s date=%s",
                 persona.id,
                 day,
             )
@@ -92,7 +92,7 @@ class ReplyDelayMixin:
             self._detach_temporary_files(event, message.temporary_files)
             event.stop_event()
             logger.info(
-                "[虚拟人生] 消息已加入回复延迟批次 umo=%s queued=%s deadline=%s",
+                "[虚拟人生] 消息并入等待中的一批 umo=%s 条数=%s 截止=%s",
                 umo,
                 len(batch.messages),
                 batch.deadline.isoformat(),
@@ -108,7 +108,7 @@ class ReplyDelayMixin:
             try:
                 await self.context.send_message(umo, MessageChain().message(notice))
             except Exception:
-                logger.exception("[虚拟人生] 回复延迟提示发送失败")
+                logger.exception("[虚拟人生] 等待提示没发出去")
 
         messages = await self.reply_delay_coordinator.settle(batch, self._now())
         settled_at = self._now()
@@ -120,7 +120,7 @@ class ReplyDelayMixin:
         ):
             event.set_extra(EXTRA + key, value)
         logger.info(
-            "[虚拟人生] 回复延迟批次开始结算 umo=%s availability=%s planned=%ss actual=%ss queued=%s",
+            "[虚拟人生] 等待结束，开始回复 umo=%s 可打扰度=%s 计划=%ss 实际=%ss 条数=%s",
             umo,
             decision.availability,
             decision.delay_seconds,

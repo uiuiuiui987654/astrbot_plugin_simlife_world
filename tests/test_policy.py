@@ -75,7 +75,7 @@ class Gate(unittest.TestCase):
         self.assertEqual(self.policy.availability_probability(whole_day("blocked").timeline[0]), 0.0)
         self.assertTrue(self.window_verdict("high").allowed)
         blocked = self.window_verdict("blocked")
-        self.assertEqual((blocked.allowed, blocked.reason), (False, "availability probability rejected"))
+        self.assertEqual((blocked.allowed, blocked.reason), (False, "not a good moment"))
 
     def test_a_reply_resets_the_streak(self):
         state = self.state(whole_day(), unanswered_count=2)

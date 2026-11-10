@@ -42,10 +42,10 @@ class Splitting(unittest.TestCase):
 
     def test_left_whole(self):
         cases = {
-            "longer than threshold": ("第一句。第二句。", {"words_count_threshold": 7}, "over threshold"),
-            "threshold zero": ("一句。", {"words_count_threshold": 0}, "over threshold"),
-            "broken regex": ("第一句。第二句！", {"split_mode": "regex", "regex": "("}, "invalid regex"),
-            "no split words": ("第一句。第二句。", {"split_words": []}, "empty split words"),
+            "longer than threshold": ("第一句。第二句。", {"words_count_threshold": 7}, "too long to split"),
+            "threshold zero": ("一句。", {"words_count_threshold": 0}, "too long to split"),
+            "broken regex": ("第一句。第二句！", {"split_mode": "regex", "regex": "("}, "broken regex"),
+            "no split words": ("第一句。第二句。", {"split_words": []}, "no split words"),
         }
         for name, (text, settings, reason) in cases.items():
             with self.subTest(name):
