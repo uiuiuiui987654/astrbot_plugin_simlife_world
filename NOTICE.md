@@ -24,13 +24,16 @@ Copyright (C) 2026 uiuiuiui8
 
 - 插件标识改为 `astrbot_plugin_simlife_world`，显示名改为“模拟人生_世界”；保留对旧标识 `astrbot_plugin_virtual_life` 数据目录的兼容读取。
 
-**修改的上游文件**
+**从上游继承、已重新编写的部分**
 
-- `main.py`：加入生活模拟相关的指令、LLM 工具与事件钩子；非装饰器方法拆入 `core/mixins/`。
-- `core/context_injection.py`：基础状态模块默认关闭；日程段落总是附带当前实际服装。
-- `core/generator.py`：加入日程现实性校验（全天覆盖、睡眠时长、三餐、午休等）。
-- `core/models.py`、`core/storage.py`、`core/proactive.py`、`core/message_generator.py`、`core/reply_delay.py`、`core/image_renderer.py`、`core/utils.py`：为新增子系统扩展数据字段与调用；主人睡觉时跳过主动消息；状态文件改为原子写入。
-- `_conf_schema.json`、`metadata.yaml`、`README.md`、`templates/`：配置项、元数据、文档与渲染模板相应调整。
+上游项目的程序已全部按“行为不变”的要求重新编写，不再沿用上游的实现代码：
+
+- `core/models.py`、`core/utils.py`、`core/storage.py`、`core/persona.py`、`core/runtime.py`、`core/window_schedule.py`、`core/holiday_calendar.py`、`core/message_segmenter.py`、`core/proactive.py`、`core/context_injection.py`、`core/reply_delay.py`、`core/message_generator.py`（状态提示改为数据表 `core/state_hints.py`）、`core/long_term.py`、`core/image_renderer.py`、`core/generator.py` 的生成流程。
+- `main.py` 的事件钩子与指令：指令实现移入 `core/mixins/admin_commands.py`，`main.py` 只保留注册（指令名、参数与 LLM 工具接口不变）；`core/mixins/` 中的调度、规划、主动消息、回复延迟、大时间表与人际关系联动逻辑。
+- `templates/schedule.html` 卡片模板与 `_conf_schema.json` 中所有配置说明（配置键名与默认值保持不变，以兼容现有配置）。
+- 上游的测试全部改写为新的测试。
+
+重写过程中用差分测试（同一批随机输入分别交给旧实现和新实现，逐项比较输出）确认行为一致。为保持与现有配置、数据文件、指令和 LLM 工具的兼容，下列内容属于对外接口，按原样保留：配置键名与默认提示词、数据文件字段名、指令与工具名称及其说明文字、日志之外面向用户的提示语。
 
 **新增的文件**
 
