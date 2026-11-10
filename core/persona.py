@@ -1,8 +1,13 @@
+"""Find the AstrBot persona (id + system prompt) a chat is using."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
 
 from astrbot.api import logger
+
+FALLBACK_PROMPT = "You are a helpful and friendly assistant."
+NO_PERSONA = "[%None]"  # AstrBot's marker for "persona explicitly disabled"
 
 
 @dataclass(slots=True, frozen=True)
@@ -15,49 +20,53 @@ class PersonaResolver:
     def __init__(self, context):
         self.context = context
 
-    async def resolve(self, umo: str | None) -> PersonaContext:
-        conversation_persona_id = None
-        if umo:
-            try:
-                conversation_id = await self.context.conversation_manager.get_curr_conversation_id(umo)
-                if conversation_id:
-                    conversation = await self.context.conversation_manager.get_conversation(umo, conversation_id)
-                    conversation_persona_id = getattr(conversation, "persona_id", None)
-            except Exception as exc:
-                logger.warning("[虚拟人生] 读取会话人格失败 %s: %s", umo, exc)
-
-        if conversation_persona_id and conversation_persona_id != "[%None]":
-            try:
-                persona = await self.context.persona_manager.get_persona(conversation_persona_id)
-                prompt = str(getattr(persona, "system_prompt", "") or "").strip()
-                if prompt:
-                    return PersonaContext(str(conversation_persona_id), prompt)
-            except Exception:
-                logger.debug("[虚拟人生] resolve 出错，已忽略", exc_info=True)
-
+    async def _conversation_persona_id(self, umo: str) -> str | None:
+        manager = self.context.conversation_manager
         try:
-            persona = await self.context.persona_manager.get_default_persona_v3(umo=umo)
-            persona_id = str(persona.get("name", "default"))
-            prompt = str(persona.get("prompt", "") or "You are a helpful and friendly assistant.")
-            return PersonaContext(persona_id, prompt)
+            conversation_id = await manager.get_curr_conversation_id(umo)
+            if not conversation_id:
+                return None
+            conversation = await manager.get_conversation(umo, conversation_id)
         except Exception as exc:
-            logger.warning("[虚拟人生] 回退默认人格: %s", exc)
-            return PersonaContext("default", "You are a helpful and friendly assistant.")
+            logger.warning("[虚拟人生] 读取会话人格失败 %s: %s", umo, exc)
+            return None
+        return getattr(conversation, "persona_id", None)
 
-    async def resolve_id(self, persona_id: str, fallback_umo: str | None = None) -> PersonaContext:
+    async def _prompt_of(self, persona_id: str) -> str:
+        """System prompt of a stored persona, or ``""`` when it has none / cannot be read."""
         try:
             persona = await self.context.persona_manager.get_persona(persona_id)
-            prompt = str(getattr(persona, "system_prompt", "") or "").strip()
+        except Exception:
+            logger.debug("[虚拟人生] 读取人格 %s 失败", persona_id, exc_info=True)
+            return ""
+        return str(getattr(persona, "system_prompt", "") or "").strip()
+
+    async def resolve(self, umo: str | None) -> PersonaContext:
+        """The chat's own persona if it has one, otherwise AstrBot's default persona."""
+        chosen = await self._conversation_persona_id(umo) if umo else None
+        if chosen and chosen != NO_PERSONA:
+            prompt = await self._prompt_of(chosen)
             if prompt:
-                return PersonaContext(persona_id, prompt)
-        except Exception:
-            logger.debug("[虚拟人生] resolve_id 出错，已忽略", exc_info=True)
+                return PersonaContext(str(chosen), prompt)
         try:
-            persona = self.context.persona_manager.get_persona_v3_by_id(persona_id)
-            if persona:
-                return PersonaContext(persona_id, str(persona.get("prompt", "") or ""))
+            default = await self.context.persona_manager.get_default_persona_v3(umo=umo)
+        except Exception as exc:
+            logger.warning("[虚拟人生] 回退默认人格: %s", exc)
+            return PersonaContext("default", FALLBACK_PROMPT)
+        return PersonaContext(str(default.get("name", "default")), str(default.get("prompt", "") or FALLBACK_PROMPT))
+
+    async def resolve_id(self, persona_id: str, fallback_umo: str | None = None) -> PersonaContext:
+        """Load a specific persona; raise if it no longer exists and the fallback differs."""
+        prompt = await self._prompt_of(persona_id)
+        if prompt:
+            return PersonaContext(persona_id, prompt)
+        try:
+            legacy = self.context.persona_manager.get_persona_v3_by_id(persona_id)
         except Exception:
-            logger.debug("[虚拟人生] resolve_id 出错，已忽略", exc_info=True)
+            logger.debug("[虚拟人生] 读取人格 %s 失败", persona_id, exc_info=True)
+            legacy = None
+        if legacy:
+            return PersonaContext(persona_id, str(legacy.get("prompt", "") or ""))
         resolved = await self.resolve(fallback_umo)
         if resolved.id != persona_id:
             raise RuntimeError(f"无法加载已批准人格 {persona_id}")

@@ -1,3 +1,5 @@
+"""Chinese public holidays (``holidays``) and traditional festivals (``lunar_python``)."""
+
 from __future__ import annotations
 
 import logging
@@ -11,20 +13,11 @@ logger = logging.getLogger("astrbot")
 
 try:
     from lunar_python import Solar
-except ImportError:  # pragma: no cover - requirements installation is managed by AstrBot
+except ImportError:  # pragma: no cover - AstrBot installs requirements.txt
     Solar = None
 
-TRADITIONAL_FESTIVALS = {
-    "除夕",
-    "春节",
-    "元宵节",
-    "端午节",
-    "七夕节",
-    "中秋节",
-    "重阳节",
-    "腊八节",
-}
-PUBLIC_NAME_ALIASES = {"农历除夕": "除夕"}
+FESTIVALS = frozenset({"除夕", "春节", "元宵节", "端午节", "七夕节", "中秋节", "重阳节", "腊八节"})
+RENAMES = {"农历除夕": "除夕"}
 
 
 @lru_cache(maxsize=16)
@@ -32,48 +25,40 @@ def _public_holidays(year: int) -> dict[date, str]:
     try:
         return dict(holidays.country_holidays("CN", years=[year], language="zh_CN"))
     except Exception:
-        logger.debug("[虚拟人生] _public_holidays 出错，已忽略", exc_info=True)
+        logger.debug("[虚拟人生] 读取 %s 年法定节假日失败", year, exc_info=True)
         return {}
+
+
+def _public_names(day: date) -> list[str]:
+    raw = str(_public_holidays(day.year).get(day, ""))
+    names = (RENAMES.get(part.strip(), part.strip()) for part in raw.split("; "))
+    return [name for name in names if name and not name.startswith("休息日")]
+
+
+def _festival_names(day: date) -> list[str]:
+    if Solar is None:
+        return []
+    try:
+        festivals = Solar.fromYmd(day.year, day.month, day.day).getLunar().getFestivals()
+    except Exception:
+        logger.debug("[虚拟人生] 计算 %s 的农历节日失败", day, exc_info=True)
+        return []
+    return [name for name in festivals if name in FESTIVALS]
 
 
 class ChinaHolidayCalendar:
     def on(self, target: date) -> list[dict[str, Any]]:
-        names: list[tuple[str, str]] = []
-        public_name = _public_holidays(target.year).get(target, "")
-        for value in str(public_name).split("; "):
-            name = PUBLIC_NAME_ALIASES.get(value.strip(), value.strip())
-            if name and not name.startswith("休息日"):
-                names.append((name, "public"))
-
-        if Solar is not None:
-            try:
-                lunar = Solar.fromYmd(target.year, target.month, target.day).getLunar()
-                names.extend(
-                    (name, "traditional")
-                    for name in lunar.getFestivals()
-                    if name in TRADITIONAL_FESTIVALS
-                )
-            except Exception:
-                logger.debug("[虚拟人生] on 出错，已忽略", exc_info=True)
-
-        result = []
-        seen = set()
-        for name, kind in names:
-            if name in seen:
-                continue
-            seen.add(name)
-            result.append({"date": target.isoformat(), "name": name, "kind": kind})
-        return result
+        """Holidays on ``target``: public ones first, then traditional festivals, no duplicates."""
+        found: dict[str, str] = {}
+        for name in _public_names(target):
+            found.setdefault(name, "public")
+        for name in _festival_names(target):
+            found.setdefault(name, "traditional")
+        return [{"date": target.isoformat(), "name": name, "kind": kind} for name, kind in found.items()]
 
     def between(self, start: date, end: date) -> list[dict[str, Any]]:
-        if end < start:
-            return []
-        result = []
-        target = start
-        while target <= end:
-            result.extend(self.on(target))
-            target += timedelta(days=1)
-        return result
+        days = (end - start).days
+        return [item for offset in range(days + 1) for item in self.on(start + timedelta(days=offset))]
 
     def upcoming(self, target: date, days: int = 7) -> list[dict[str, Any]]:
         return self.between(target + timedelta(days=1), target + timedelta(days=max(0, days)))
