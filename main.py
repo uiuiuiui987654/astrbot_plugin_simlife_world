@@ -248,34 +248,28 @@ class ProactiveVirtualDailyPlugin(
         logger.info("[虚拟人生] 插件已启动，时区=%s", self.timezone.key)
 
     async def terminate(self) -> None:
+        """Unregister the panel API, stop every job and background task, then persist state."""
         self.context.registered_web_apis[:] = [
-            api
-            for api in self.context.registered_web_apis
-            if getattr(api[1], "__self__", None) is not self.view_api
+            api for api in self.context.registered_web_apis if getattr(api[1], "__self__", None) is not self.view_api
         ]
         self.runtime.stop()
-        if self._interaction_task is not None:
-            self._interaction_task.cancel()
-            await asyncio.gather(self._interaction_task, return_exceptions=True)
-            self._interaction_task = None
-        if self._decision_task is not None:
-            self._decision_task.cancel()
-            await asyncio.gather(self._decision_task, return_exceptions=True)
-            self._decision_task = None
+        loops = [task for task in (self._interaction_task, self._decision_task) if task is not None]
+        self._interaction_task = self._decision_task = None
+        await self._cancel_tasks(loops)
         await self._cancel_stale_loops()
-        chat_schedule_tasks = tuple(self._chat_schedule_tasks)
-        for task in chat_schedule_tasks:
-            task.cancel()
-        if chat_schedule_tasks:
-            await asyncio.gather(*chat_schedule_tasks, return_exceptions=True)
+        await self._cancel_tasks(self._chat_schedule_tasks)
         self.reply_delay_coordinator.clear()
-        release_tasks = tuple(self._agent_release_tasks)
-        for task in release_tasks:
-            task.cancel()
-        if release_tasks:
-            await asyncio.gather(*release_tasks, return_exceptions=True)
+        await self._cancel_tasks(self._agent_release_tasks)
         await self.storage.save_plans()
         await self.storage.save_sessions()
+
+    @staticmethod
+    async def _cancel_tasks(tasks) -> None:
+        pending = tuple(tasks)
+        for task in pending:
+            task.cancel()
+        if pending:
+            await asyncio.gather(*pending, return_exceptions=True)
 
     # ------------------------------------------------------- 发言机会（自主决定）
 
@@ -1664,25 +1658,7 @@ class ProactiveVirtualDailyPlugin(
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def subscribe_session(self, event: AstrMessageEvent):
         """订阅当前会话的主动消息。"""
-        umo = event.unified_msg_origin
-        added = self.policy.subscribe(umo)
-        self.config.save_config()
-        kind = "群聊" if session_kind(umo) == "group" else "私聊"
-        action = "已订阅" if added else "已刷新订阅"
-        logger.info("[虚拟人生] %s主动消息会话 umo=%s", action, umo)
-        try:
-            persona, plan = await self._ensure_plan_for_umo(umo)
-            await self._schedule_session(umo, persona, plan)
-            await self.storage.save_sessions()
-        except Exception as exc:
-            logger.warning("[虚拟人生] 订阅后即时调度失败 umo=%s: %s", umo, exc)
-            yield event.plain_result(
-                f"{action}当前{kind}会话，但今日日程调度失败，请检查日志或稍后重试。"
-            )
-            return
-        yield event.plain_result(
-            f"{action}当前{kind}会话，主动消息将在符合日程与发送规则时触发。"
-        )
+        yield event.plain_result(await self._cmd_subscribe(event))
 
     @virtual_life_group.command("递东西")
     @filter.permission_type(filter.PermissionType.ADMIN)

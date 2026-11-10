@@ -14,6 +14,7 @@ from astrbot.api import logger
 from astrbot.api.event import AstrMessageEvent
 
 from ..models import DailyPlan
+from ..proactive import session_kind
 from ..utils import format_outfit, format_plan, format_timeline
 
 PRIVATE_ONLY = "虚拟日程系统仅在私聊生效，群聊中不提供{what}。"
@@ -386,6 +387,23 @@ class AdminCommandsMixin:
                 for at, label in entries
             ]
         )
+
+    async def _cmd_subscribe(self, event: AstrMessageEvent) -> str:
+        """Turn on proactive messages for this chat and schedule today right away."""
+        umo = event.unified_msg_origin
+        added = self.policy.subscribe(umo)
+        self.config.save_config()
+        verb = "已订阅" if added else "已刷新订阅"
+        where = f"当前{'群聊' if session_kind(umo) == 'group' else '私聊'}会话"
+        logger.info("[虚拟人生] %s主动消息会话 umo=%s", verb, umo)
+        try:
+            persona, plan = await self._ensure_plan_for_umo(umo)
+            await self._schedule_session(umo, persona, plan)
+            await self.storage.save_sessions()
+        except Exception as exc:
+            logger.warning("[虚拟人生] 订阅后即时调度失败 umo=%s: %s", umo, exc)
+            return f"{verb}{where}，但今日日程调度失败，请检查日志或稍后重试。"
+        return f"{verb}{where}，主动消息将在符合日程与发送规则时触发。"
 
     # ------------------------------------------------------------------ 回复延迟
 
