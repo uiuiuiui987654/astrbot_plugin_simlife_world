@@ -1,0 +1,130 @@
+/* ---------- instant interaction: speech bubble, talk box, item action ---------- */
+
+.speech-bubble {
+  position: fixed;
+  z-index: 60;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(240, 184, 110, 0.38);
+  background: linear-gradient(180deg, rgba(40, 31, 26, 0.97), rgba(24, 19, 19, 0.97));
+  color: #ffe9cf;
+  font-size: 13px;
+  line-height: 1.55;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.48);
+  pointer-events: none;
+  animation: bubbleIn 0.22s ease-out;
+}
+
+.speech-bubble.thinking {
+  color: #c9b8a6;
+  font-style: italic;
+  border-color: rgba(160, 150, 140, 0.3);
+}
+
+.speech-tail {
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 12px;
+  height: 12px;
+  transform: translateX(-50%) rotate(45deg);
+  border-right: 1px solid rgba(240, 184, 110, 0.38);
+  border-bottom: 1px solid rgba(240, 184, 110, 0.38);
+  background: rgba(24, 19, 19, 0.97);
+}
+
+.talk-box {
+  display: flex;
+  gap: 6px;
+  margin: 8px 14px 0;
+}
+
+.talk-box input {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 12px;
+  font-family: var(--font);
+}
+
+.talk-box input:focus {
+  outline: none;
+  border-color: rgba(240, 184, 110, 0.5);
+}
+
+.talk-box input::placeholder {
+  color: var(--muted-2);
+}
+
+.talk-reply,
+.interact-reply {
+  margin: 6px 14px 12px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  border: 1px solid rgba(240, 184, 110, 0.2);
+  background: rgba(240, 184, 110, 0.08);
+  color: #f0d8b8;
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.interact-reply {
+  margin: 8px 0 0;
+}
+
+.interact-box {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(126, 150, 178, 0.22);
+}
+
+.interact-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.interact-head small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.interact-btn {
+  width: 100%;
+  padding: 9px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(240, 184, 110, 0.42);
+  background: linear-gradient(180deg, rgba(240, 184, 110, 0.22), rgba(240, 184, 110, 0.08));
+  color: var(--accent-2);
+  font-family: var(--font);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.interact-btn:hover {
+  background: linear-gradient(180deg, rgba(240, 184, 110, 0.3), rgba(240, 184, 110, 0.12));
+}
+
+.interact-btn:active {
+  transform: translateY(1px);
+}
+
+@keyframes bubbleIn {
+  from { opacity: 0; transform: translateY(6px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+/* Crop the bundled daily illustration for avatar slots without another asset. */
+.avatar-wrap { position: relative; overflow: hidden; }
+.avatar-wrap img { position: absolute; left: -65%; top: -5%; width: 235%; height: auto; max-width: none; }
+

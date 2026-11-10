@@ -1,0 +1,856 @@
+/* ---------- travel scenes: temple / onsen / harbor / mountain / izakaya ---------- */
+
+/* temple */
+.scene-temple .scene-sky { background: linear-gradient(180deg, #241a2b, #4a2f3a 55%, #7a4a45); }
+.scene-temple .scene-ground { background: linear-gradient(180deg, #3a352f, #1c1916); }
+.scene-temple .scene-trees { display: none; }
+.scene-temple .scene-buildings { opacity: 0.2; }
+.temple-path {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 20%;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 26px),
+    linear-gradient(180deg, #45403a, #232020);
+}
+.temple-torii {
+  position: absolute;
+  left: 7%;
+  bottom: 17%;
+  width: 148px;
+  height: 108px;
+}
+.temple-torii .post {
+  position: absolute;
+  bottom: 0;
+  width: 11px;
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #e0655a, #9c3433);
+  box-shadow: 3px 0 12px rgba(0, 0, 0, 0.35);
+}
+.temple-torii .post.p1 { left: 7%; }
+.temple-torii .post.p2 { right: 7%; }
+.temple-torii .beam {
+  position: absolute;
+  top: 0;
+  left: -7%;
+  right: -7%;
+  height: 11px;
+  border-radius: 5px;
+  background: linear-gradient(180deg, #ef7568, #b93f39);
+}
+.temple-torii .beam::before {
+  content: "";
+  position: absolute;
+  top: 9px;
+  left: -6px;
+  right: -6px;
+  height: 7px;
+  border-radius: 4px;
+  background: #c34a44;
+}
+.temple-torii .tie {
+  position: absolute;
+  top: 33%;
+  left: 5%;
+  right: 5%;
+  height: 8px;
+  border-radius: 3px;
+  background: #d9574f;
+}
+.temple-hall {
+  position: absolute;
+  right: 6%;
+  bottom: 17%;
+  width: 38%;
+  height: 32%;
+  border: 1px solid #5b4437;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, #3b2c24, #211a16);
+}
+.temple-hall .roof {
+  position: absolute;
+  left: -12%;
+  right: -12%;
+  top: -22px;
+  height: 26px;
+  clip-path: polygon(3% 100%, 50% 0, 97% 100%);
+  background: linear-gradient(180deg, #4b3a30, #241c18);
+}
+.temple-hall .pillar {
+  position: absolute;
+  top: 8%;
+  bottom: 14%;
+  width: 7px;
+  background: #c9a06a;
+  opacity: 0.75;
+}
+.temple-hall .pillar.p1 { left: 12%; }
+.temple-hall .pillar.p2 { right: 12%; }
+.temple-hall .door {
+  position: absolute;
+  left: 34%;
+  right: 34%;
+  bottom: 0;
+  height: 54%;
+  background: linear-gradient(180deg, #f0b06a, #8a5a34);
+  opacity: 0.75;
+  box-shadow: 0 0 18px rgba(240, 176, 106, 0.35);
+}
+.temple-lantern {
+  position: absolute;
+  bottom: 15%;
+  width: 18px;
+  height: 26px;
+  border-radius: 3px 3px 2px 2px;
+  background: #5a544c;
+}
+.temple-lantern::before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  right: -5px;
+  top: -8px;
+  height: 10px;
+  border-radius: 3px;
+  background: #6a635a;
+}
+.temple-lantern::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -24px;
+  width: 8px;
+  height: 16px;
+  transform: translateX(-50%);
+  border-radius: 50% 50% 0 0;
+  background: #57504a;
+}
+.temple-lantern i {
+  position: absolute;
+  inset: 4px 5px;
+  border-radius: 2px;
+  background: #ffd9a0;
+  box-shadow: 0 0 14px 4px rgba(255, 190, 110, 0.4);
+}
+.temple-lantern.l1 { left: 34%; }
+.temple-lantern.l2 { left: 58%; }
+.temple-incense {
+  position: absolute;
+  left: 45%;
+  bottom: 16%;
+  width: 26px;
+  height: 30px;
+}
+.temple-incense::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 18px;
+  height: 8px;
+  transform: translateX(-50%);
+  border-radius: 2px;
+  background: #5a4632;
+}
+.temple-incense i {
+  position: absolute;
+  bottom: 10px;
+  width: 2px;
+  height: 16px;
+  background: rgba(225, 215, 205, 0.35);
+  filter: blur(1px);
+  animation: steamRise 4.2s ease-in-out infinite;
+}
+.temple-incense i:nth-child(1) { left: 8px; animation-delay: -0.4s; }
+.temple-incense i:nth-child(2) { left: 14px; animation-delay: -1.6s; }
+.temple-incense i:nth-child(3) { left: 20px; animation-delay: -2.7s; }
+.temple-emas {
+  position: absolute;
+  right: 22%;
+  bottom: 19%;
+  width: 46px;
+  height: 26px;
+  border: 2px solid #6a513d;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+}
+.temple-emas i {
+  position: absolute;
+  top: 4px;
+  width: 8px;
+  height: 13px;
+  border-radius: 1px;
+  background: #d8bb8e;
+  transform-origin: top center;
+  animation: flagWave 5s ease-in-out infinite;
+}
+.temple-emas i:nth-child(1) { left: 2px; }
+.temple-emas i:nth-child(2) { left: 12px; transform: rotate(3deg); animation-delay: -1s; }
+.temple-emas i:nth-child(3) { left: 22px; animation-delay: -2s; }
+.temple-emas i:nth-child(4) { left: 32px; transform: rotate(5deg); animation-delay: -3s; }
+.temple-petals i {
+  position: absolute;
+  top: -8px;
+  width: 5px;
+  height: 4px;
+  border-radius: 50% 0 50% 50%;
+  background: rgba(255, 190, 210, 0.75);
+  animation: petalFall 9s linear infinite;
+}
+.temple-petals i:nth-child(1) { left: 18%; animation-delay: -1s; }
+.temple-petals i:nth-child(2) { left: 34%; animation-delay: -4s; }
+.temple-petals i:nth-child(3) { left: 52%; animation-delay: -6.5s; }
+.temple-petals i:nth-child(4) { left: 68%; animation-delay: -2.5s; }
+.temple-petals i:nth-child(5) { left: 84%; animation-delay: -7.5s; }
+.temple-bell {
+  position: absolute;
+  left: 30%;
+  top: 22%;
+  width: 3px;
+  height: 34px;
+  background: #6a513d;
+}
+.temple-bell span {
+  position: absolute;
+  left: -9px;
+  top: 32px;
+  width: 21px;
+  height: 22px;
+  border-radius: 10px 10px 4px 4px;
+  background: linear-gradient(180deg, #7d6a52, #3f342a);
+  box-shadow: inset 0 3px 0 rgba(255, 220, 170, 0.25);
+}
+
+/* onsen */
+.scene-onsen .scene-sky { background: linear-gradient(180deg, #0f2029, #1d3b44 55%, #35635f); }
+.scene-onsen .scene-ground { background: linear-gradient(180deg, #2a2f2b, #141816); }
+.scene-onsen .scene-buildings,
+.scene-onsen .scene-trees { display: none; }
+.onsen-fence {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 36%;
+  height: 28%;
+  background: repeating-linear-gradient(90deg, #7d6544 0 11px, #5f4d33 11px 13px);
+  opacity: 0.85;
+}
+.onsen-fence::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 6px;
+  background: #8d7350;
+}
+.onsen-fence i { display: none; }
+.onsen-pool {
+  position: absolute;
+  left: 7%;
+  right: 7%;
+  bottom: 8%;
+  height: 22%;
+  border-radius: 50% / 46%;
+  background: radial-gradient(ellipse at 50% 38%, #7fdcd6, #2f7f86 58%, #1d5a63);
+  box-shadow: inset 0 8px 20px rgba(255, 255, 255, 0.14);
+}
+.onsen-pool .ripple {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  top: 30%;
+  height: 6px;
+  border-radius: 50%;
+  border-top: 1px solid rgba(225, 255, 255, 0.5);
+  animation: waveMove 8s linear infinite;
+}
+.onsen-pool .ripple.r2 { top: 58%; left: 30%; right: 30%; opacity: 0.6; animation-delay: -3.4s; }
+.onsen-rocks i {
+  position: absolute;
+  bottom: 6%;
+  width: 28px;
+  height: 18px;
+  border-radius: 50% 50% 30% 30%;
+  background: linear-gradient(180deg, #4d4a44, #2b2925);
+}
+.onsen-rocks i:nth-child(1) { left: 4%; }
+.onsen-rocks i:nth-child(2) { left: 20%; bottom: 4%; width: 40px; height: 24px; }
+.onsen-rocks i:nth-child(3) { left: 46%; bottom: 3%; width: 34px; height: 20px; }
+.onsen-rocks i:nth-child(4) { right: 18%; bottom: 5%; width: 44px; height: 26px; }
+.onsen-rocks i:nth-child(5) { right: 3%; }
+.onsen-steam i {
+  position: absolute;
+  bottom: 26%;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(220, 245, 245, 0.22), transparent 70%);
+  animation: steamRise 5.4s ease-in-out infinite;
+}
+.onsen-steam i:nth-child(1) { left: 14%; }
+.onsen-steam i:nth-child(2) { left: 38%; animation-delay: -1.6s; }
+.onsen-steam i:nth-child(3) { left: 60%; animation-delay: -3.1s; }
+.onsen-steam i:nth-child(4) { left: 78%; animation-delay: -4.2s; }
+.onsen-lantern {
+  position: absolute;
+  left: 9%;
+  bottom: 26%;
+  width: 20px;
+  height: 30px;
+  border-radius: 3px;
+  background: #5a544c;
+}
+.onsen-lantern::before {
+  content: "";
+  position: absolute;
+  left: -6px;
+  right: -6px;
+  top: -9px;
+  height: 11px;
+  border-radius: 3px;
+  background: #6a635a;
+}
+.onsen-lantern::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -26px;
+  width: 9px;
+  height: 17px;
+  transform: translateX(-50%);
+  border-radius: 50% 50% 0 0;
+  background: #57504a;
+}
+.onsen-lantern i {
+  position: absolute;
+  inset: 5px 6px;
+  border-radius: 2px;
+  background: #ffd9a0;
+  box-shadow: 0 0 16px 5px rgba(255, 190, 110, 0.4);
+}
+.onsen-bucket {
+  position: absolute;
+  right: 14%;
+  bottom: 22%;
+  width: 22px;
+  height: 16px;
+  border-radius: 2px 2px 5px 5px;
+  background: linear-gradient(180deg, #a6814f, #6a5133);
+}
+.onsen-bucket span {
+  position: absolute;
+  left: 50%;
+  top: -7px;
+  width: 18px;
+  height: 12px;
+  transform: translateX(-50%);
+  border: 2px solid #8a6b45;
+  border-bottom: none;
+  border-radius: 50% 50% 0 0;
+}
+.onsen-towel {
+  position: absolute;
+  right: 26%;
+  bottom: 20%;
+  width: 34px;
+  height: 12px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #f2f6f8, #cfdbe2);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+.onsen-pine {
+  position: absolute;
+  left: 3%;
+  bottom: 34%;
+  width: 60px;
+  height: 90px;
+  background:
+    radial-gradient(circle at 30% 20%, #24483a 0 40%, transparent 41%),
+    radial-gradient(circle at 68% 34%, #2c5744 0 36%, transparent 37%),
+    radial-gradient(circle at 44% 54%, #1f3f33 0 42%, transparent 43%);
+  opacity: 0.85;
+}
+
+/* harbor */
+.scene-harbor .scene-sky { background: linear-gradient(180deg, #7fb4d8, #a9cfe4 55%, #dcebf2); }
+.scene-harbor .scene-ground { background: linear-gradient(180deg, #3f4a4f, #22282b); }
+.scene-harbor .scene-buildings { opacity: 0.2; }
+.scene-harbor .scene-trees { display: none; }
+.harbor-sea {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 27%;
+  height: 25%;
+  background: linear-gradient(180deg, #3f8fa8, #175a72);
+  box-shadow: inset 0 6px 14px rgba(255, 255, 255, 0.1);
+}
+.harbor-wave {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  height: 10px;
+  border-radius: 50%;
+  border-top: 2px solid rgba(225, 250, 255, 0.55);
+  animation: waveMove 7s linear infinite;
+}
+.harbor-wave.w1 { bottom: 10%; }
+.harbor-wave.w2 { bottom: 38%; opacity: 0.5; animation-delay: -2.6s; }
+.harbor-houses {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 51%;
+  height: 15%;
+  display: flex;
+  gap: 4px;
+  padding: 0 5%;
+  align-items: flex-end;
+}
+.harbor-houses i {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  border-radius: 3px 3px 0 0;
+  background: linear-gradient(180deg, #f0dfc0, #baa079);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+.harbor-houses i:nth-child(2n) { height: 88%; background: linear-gradient(180deg, #cfe0ea, #7f9db0); }
+.harbor-houses i:nth-child(3n) { height: 94%; background: linear-gradient(180deg, #ecb7ab, #b5716a); }
+.harbor-houses i::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 6px;
+  height: 7px;
+  transform: translateX(-50%);
+  border-radius: 1px;
+  background: rgba(40, 30, 24, 0.55);
+}
+.harbor-houses i::before {
+  content: "";
+  position: absolute;
+  left: -6%;
+  right: -6%;
+  bottom: 100%;
+  height: 13px;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  background: #8d5f4a;
+}
+.harbor-houses i:nth-child(2n)::before { background: #4a6a86; }
+.harbor-houses i:nth-child(3n)::before { background: #8a4a44; }
+.harbor-pier {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 15%;
+  height: 8%;
+  background: repeating-linear-gradient(90deg, #8a6b45 0 20px, #6a513d 20px 24px);
+}
+.harbor-boat {
+  position: absolute;
+  left: 14%;
+  bottom: 24%;
+  width: 108px;
+  height: 44px;
+}
+.harbor-boat .hull {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 20px;
+  border-radius: 0 0 16px 16px / 0 0 20px 20px;
+  background: linear-gradient(180deg, #3b5b72, #22404f);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.28);
+}
+.harbor-boat .cabin {
+  position: absolute;
+  left: 22%;
+  bottom: 18px;
+  width: 34px;
+  height: 18px;
+  border-radius: 3px 3px 0 0;
+  background: linear-gradient(180deg, #dfe9ef, #a7b8c3);
+}
+.harbor-boat .mast {
+  position: absolute;
+  left: 70%;
+  bottom: 18px;
+  width: 3px;
+  height: 26px;
+  background: #6a513d;
+}
+.harbor-boat i {
+  position: absolute;
+  left: 24%;
+  bottom: 22px;
+  width: 26px;
+  height: 8px;
+  border-radius: 1px;
+  background: rgba(90, 150, 180, 0.65);
+}
+.harbor-crates {
+  position: absolute;
+  left: 8%;
+  bottom: 16%;
+  width: 44px;
+  height: 22px;
+}
+.harbor-crates i {
+  position: absolute;
+  bottom: 0;
+  width: 18px;
+  height: 13px;
+  background: repeating-linear-gradient(90deg, #8a6b45 0 4px, #634b32 4px 6px);
+  border-radius: 1px;
+}
+.harbor-crates i:nth-child(1) { left: 0; }
+.harbor-crates i:nth-child(2) { left: 22px; bottom: 8px; }
+.harbor-net {
+  position: absolute;
+  left: 30%;
+  bottom: 16%;
+  width: 62px;
+  height: 20px;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(240, 240, 230, 0.35) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(-45deg, rgba(240, 240, 230, 0.35) 0 1px, transparent 1px 7px);
+  border-radius: 4px;
+  opacity: 0.7;
+}
+.harbor-gulls i {
+  position: absolute;
+  width: 9px;
+  height: 5px;
+  border-top: 1px solid rgba(60, 70, 80, 0.7);
+  border-radius: 50%;
+  animation: birdFly 11s linear infinite;
+}
+.harbor-gulls i:nth-child(1) { left: 24%; top: 20%; }
+.harbor-gulls i:nth-child(2) { left: 44%; top: 14%; animation-delay: -3.5s; }
+.harbor-gulls i:nth-child(3) { left: 66%; top: 24%; animation-delay: -7s; }
+.harbor-lighthouse {
+  position: absolute;
+  right: 4%;
+  bottom: 50%;
+  width: 16px;
+  height: 40px;
+  border-radius: 3px 3px 0 0;
+  background: repeating-linear-gradient(180deg, #f2f6f8 0 8px, #d9544c 8px 16px);
+}
+.harbor-lighthouse::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  width: 20px;
+  height: 8px;
+  transform: translateX(-50%);
+  border-radius: 3px 3px 0 0;
+  background: #3f4a4f;
+}
+.harbor-lighthouse i {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  margin-bottom: 9px;
+  width: 6px;
+  height: 6px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: #ffd9a0;
+  box-shadow: 0 0 14px 5px rgba(255, 200, 120, 0.5);
+}
+
+/* mountain */
+.scene-mountain .scene-sky { background: linear-gradient(180deg, #1b2740, #33507a 55%, #7f9cb8); }
+.scene-mountain .scene-ground { background: linear-gradient(180deg, #2c3a34, #141a17); }
+.scene-mountain .scene-buildings,
+.scene-mountain .scene-trees { display: none; }
+.mountain-ridge {
+  position: absolute;
+  left: -8%;
+  right: -8%;
+  clip-path: polygon(0 100%, 10% 54%, 22% 76%, 36% 28%, 50% 66%, 64% 40%, 78% 72%, 90% 46%, 100% 78%, 100% 100%);
+}
+.mountain-ridge.r1 { bottom: 34%; height: 34%; opacity: 0.62; background: linear-gradient(180deg, #5d809c, #33506a); }
+.mountain-ridge.r2 { bottom: 24%; height: 30%; opacity: 0.85; background: linear-gradient(180deg, #3a5a74, #22384a); }
+.mountain-ridge.r3 { bottom: 14%; height: 26%; background: linear-gradient(180deg, #35566b, #1d3140); }
+.mountain-mist {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(220, 235, 245, 0.18);
+  filter: blur(3px);
+  animation: cloudDrift 34s linear infinite;
+}
+.mountain-mist.m1 { bottom: 46%; }
+.mountain-mist.m2 { bottom: 30%; opacity: 0.75; animation-delay: -9s; }
+.mountain-pines i {
+  position: absolute;
+  bottom: 14%;
+  width: 0;
+  height: 0;
+  border-left: 11px solid transparent;
+  border-right: 11px solid transparent;
+  border-bottom: 30px solid #2c5a46;
+  opacity: 1;
+}
+.mountain-pines i:nth-child(1) { left: 8%; }
+.mountain-pines i:nth-child(2) { left: 16%; bottom: 12%; border-bottom-width: 22px; border-left-width: 8px; border-right-width: 8px; }
+.mountain-pines i:nth-child(3) { right: 10%; bottom: 13%; border-bottom-width: 26px; }
+.mountain-deck {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 15%;
+  background: repeating-linear-gradient(180deg, #6a513d 0 5px, #55402f 5px 9px);
+  border-top: 2px solid #8a6b45;
+}
+.mountain-deck .rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -16px;
+  height: 3px;
+  background: #8a6b45;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25);
+}
+.mountain-deck i {
+  position: absolute;
+  top: -16px;
+  width: 3px;
+  height: 16px;
+  background: #7a5f45;
+}
+.mountain-deck i:nth-of-type(1) { left: 22%; }
+.mountain-deck i:nth-of-type(2) { left: 46%; }
+.mountain-scope {
+  position: absolute;
+  left: 30%;
+  bottom: 15%;
+  width: 12px;
+  height: 40px;
+}
+.mountain-scope span {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 3px;
+  height: 24px;
+  transform: translateX(-50%);
+  background: #8a6b45;
+}
+.mountain-scope span::before,
+.mountain-scope span::after {
+  content: "";
+  position: absolute;
+  top: 22px;
+  width: 16px;
+  height: 2px;
+  background: #8a6b45;
+}
+.mountain-scope span::before { left: -15px; transform: rotate(-16deg); }
+.mountain-scope span::after { left: 2px; transform: rotate(16deg); }
+.mountain-scope i {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 28px;
+  height: 10px;
+  transform: translateX(-50%) rotate(-20deg);
+  border-radius: 5px;
+  background: linear-gradient(180deg, #dbe6ee, #96a3ae);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+}
+.mountain-cable {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 34%;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(230, 240, 250, 0.15), rgba(230, 240, 250, 0.65), rgba(230, 240, 250, 0.15));
+  box-shadow: 0 1px 0 rgba(10, 20, 30, 0.35);
+}
+.mountain-cable .car {
+  position: absolute;
+  left: 8%;
+  top: -11px;
+  width: 28px;
+  height: 17px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #f2f7fb, #bccddb);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+  animation: cableCar 22s linear infinite;
+}
+.mountain-cable .car::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  right: 5px;
+  top: 5px;
+  height: 6px;
+  border-radius: 2px;
+  background: rgba(60, 90, 120, 0.45);
+}
+.mountain-cable .car::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -6px;
+  width: 1px;
+  height: 6px;
+  background: rgba(230, 240, 250, 0.6);
+}
+.mountain-birds i {
+  position: absolute;
+  width: 8px;
+  height: 4px;
+  border-top: 1px solid rgba(230, 240, 250, 0.55);
+  border-radius: 50%;
+  animation: birdFly 13s linear infinite;
+}
+.mountain-birds i:nth-child(1) { left: 30%; top: 16%; }
+.mountain-birds i:nth-child(2) { left: 52%; top: 11%; animation-delay: -4s; }
+.mountain-birds i:nth-child(3) { left: 72%; top: 19%; animation-delay: -8s; }
+
+/* izakaya */
+.scene-izakaya .scene-sky { background: linear-gradient(180deg, #151019, #2b1d24 55%, #4a2c30); }
+.scene-izakaya .scene-ground { background: linear-gradient(180deg, #241a19, #100b0c); }
+.scene-izakaya .scene-buildings { opacity: 0.3; }
+.scene-izakaya .scene-trees { display: none; }
+.izakaya-front {
+  position: absolute;
+  left: 6%;
+  bottom: 17%;
+  width: 46%;
+  height: 36%;
+  border: 1px solid #5a3f34;
+  border-radius: 3px 3px 0 0;
+  background: linear-gradient(180deg, #3a2a24, #241815);
+}
+.izakaya-front .roof {
+  position: absolute;
+  left: -7%;
+  right: -7%;
+  bottom: 100%;
+  height: 16px;
+  clip-path: polygon(2% 100%, 50% 0, 98% 100%);
+  background: #402b28;
+}
+.izakaya-front .noren {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 8%;
+  height: 34%;
+  background: repeating-linear-gradient(90deg, #7d2f2f 0 30%, #963a3a 30% 33%, #6a2626 33% 63%, #963a3a 63% 66%, #7d2f2f 66% 100%);
+  border-bottom: 2px solid #4a1c1c;
+  animation: norenSway 6s ease-in-out infinite;
+  transform-origin: top center;
+}
+.izakaya-front .door {
+  position: absolute;
+  left: 32%;
+  right: 32%;
+  bottom: 0;
+  height: 46%;
+  background: linear-gradient(180deg, #f2c078, #9a6234);
+  opacity: 0.8;
+  box-shadow: 0 0 22px rgba(240, 180, 110, 0.35);
+}
+.izakaya-sign {
+  position: absolute;
+  left: 54%;
+  bottom: 29%;
+  width: 27px;
+  padding: 7px 5px;
+  border-radius: 2px;
+  background: #efe0c4;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.izakaya-sign i {
+  height: 3px;
+  border-radius: 1px;
+  background: #3b2a22;
+}
+.izakaya-lanterns i {
+  position: absolute;
+  top: 20%;
+  width: 16px;
+  height: 22px;
+  border-radius: 8px;
+  background: radial-gradient(circle at 50% 35%, #ffd9a0, #d0453c 72%);
+  box-shadow: 0 0 18px 6px rgba(255, 130, 90, 0.35);
+  animation: lanternSwing 5s ease-in-out infinite;
+}
+.izakaya-lanterns i:nth-child(1) { left: 20%; }
+.izakaya-lanterns i:nth-child(2) { left: 30%; animation-delay: -1.6s; }
+.izakaya-lanterns i:nth-child(3) { left: 40%; animation-delay: -3.2s; }
+.izakaya-crates i {
+  position: absolute;
+  bottom: 14%;
+  width: 22px;
+  height: 14px;
+  border-radius: 1px;
+  background: repeating-linear-gradient(90deg, #7d5a33 0 5px, #5a3f24 5px 7px);
+}
+.izakaya-crates i:nth-child(1) { right: 24%; }
+.izakaya-crates i:nth-child(2) { right: 18%; bottom: 14%; }
+.izakaya-crates i:nth-child(3) { right: 21%; bottom: 22%; }
+.izakaya-stools i {
+  position: absolute;
+  bottom: 10%;
+  width: 16px;
+  height: 10px;
+  border-radius: 4px 4px 2px 2px;
+  background: #6a3f33;
+  box-shadow: 0 8px 0 -6px #4a2c24;
+}
+.izakaya-stools i:nth-child(1) { right: 30%; }
+.izakaya-stools i:nth-child(2) { right: 38%; }
+.izakaya-smoke i {
+  position: absolute;
+  bottom: 30%;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(230, 220, 210, 0.16), transparent 70%);
+  animation: steamRise 5s ease-in-out infinite;
+}
+.izakaya-smoke i:nth-child(1) { right: 26%; }
+.izakaya-smoke i:nth-child(2) { right: 34%; animation-delay: -2.2s; }
+.izakaya-lamp {
+  position: absolute;
+  right: 12%;
+  bottom: 52%;
+  width: 3px;
+  height: 46px;
+  background: #6d5a44;
+}
+.izakaya-lamp::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -10px;
+  width: 15px;
+  height: 15px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: #ffd9a0;
+  box-shadow: 0 0 18px 7px rgba(255, 190, 110, 0.32);
+}
+

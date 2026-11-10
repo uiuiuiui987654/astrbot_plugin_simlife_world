@@ -1,7 +1,8 @@
+/* 由 views/life/src/app/ 下的片段生成，请勿直接修改；改完片段后运行 python tools/build_frontend.py */
 (function () {
   'use strict';
 
-  window.__VIRTUAL_LIFE_UI_VERSION = '20261109-sleepwear1';
+  window.__VIRTUAL_LIFE_UI_VERSION = '20261110-split1';
   console.log('[VirtualLife UI] ' + window.__VIRTUAL_LIFE_UI_VERSION);
 
   var $ = function (id) { return document.getElementById(id); };

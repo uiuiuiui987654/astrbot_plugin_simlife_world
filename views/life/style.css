@@ -1,3 +1,4 @@
+/* 由 views/life/src/style/ 下的片段生成，请勿直接修改；改完片段后运行 python tools/build_frontend.py */
 :root {
   --bg: #0a0e14;
   --bg-2: #0f151d;
@@ -9734,8 +9735,6 @@ button {
   pointer-events: none;
   background: radial-gradient(ellipse at 50% 38%, transparent 36%, rgba(8, 12, 14, 0.38) 100%);
 }
-.studio-indoor .scene-character-wrap { z-index: 3; }
-.studio-indoor .scene-label { z-index: 4; }
 
 .studio-indoor .scene-indoor-art { z-index: 0; }
 .studio-indoor .scene-indoor-wash { z-index: 1; }

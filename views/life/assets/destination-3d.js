@@ -1,3 +1,4 @@
+/* 由 views/life/src/destination-3d/ 下的片段生成，请勿直接修改；改完片段后运行 python tools/build_frontend.py */
 /* 3D outing destinations for Room3D (bedroom-3d.js, "destination" mode).
    Every place has a street view (outdoor) and, where GarageDestinations has one, an interior.
    Scenes follow the art direction already written in DestinationArt.descriptions /

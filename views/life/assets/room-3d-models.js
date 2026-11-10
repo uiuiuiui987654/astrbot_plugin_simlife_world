@@ -1,3 +1,4 @@
+/* 由 views/life/src/room-3d-models/ 下的片段生成，请勿直接修改；改完片段后运行 python tools/build_frontend.py */
 /* 3D models for Room3D (bedroom-3d.js). Every builder works in a local frame:
    origin = centre of the footprint at its support height, +x = width (L), +z = front (Dd), +y = up.
    The engine rotates the frame by the item's facing (RoomModel.facing) and places it on its support.
