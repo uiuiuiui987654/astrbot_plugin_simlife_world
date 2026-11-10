@@ -1,4 +1,5 @@
-  function init() {
+  // 3D 脚本按需加载（见 05a-render-mode.js），加载完成后才接上拖放与点击回调。
+  function wire3D() {
     if (window.Room3D) {
       window.Room3D.onItemDrop = onRoom3DItemDrop;
       window.Room3D.onPropClick = function (info) {
@@ -17,6 +18,10 @@
         openGenericProp(info);
       };
     }
+  }
+
+  function init() {
+    wire3D();
     try {
       state.animations = localStorage.getItem('vl-anim') !== 'off';
     } catch (e) {
@@ -83,6 +88,9 @@
     ['click', 'keydown'].forEach(function(type) { $('scene-stage').addEventListener(type, function(event) { if (type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return; if (state.decorSuppressClick) { state.decorSuppressClick = false; event.preventDefault(); event.stopPropagation(); return; } var hit = event.target.closest('.furniture-hit'); if (hit) { event.preventDefault(); openItem(hit.getAttribute('data-id')); } }); });
     if (pageParams.get('item')) state.pendingItem = pageParams.get('item');
     applyAnimations();
+    applyRenderMode();
+    if (want3D()) ensure3DScripts();
+    if ($('render-toggle')) $('render-toggle').addEventListener('click', cycleRenderMode);
     $('anim-toggle').addEventListener('click', function () {
       state.animations = !state.animations;
       try { localStorage.setItem('vl-anim', state.animations ? 'on' : 'off'); } catch (e) {}

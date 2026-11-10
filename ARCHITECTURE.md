@@ -119,6 +119,18 @@ AstrBot 按**定义所在的模块**绑定指令、LLM 工具和事件钩子，�
 - `room-perspective.js`：2D 近景透视绘制
 - `bedroom-3d.js`：3D 房间引擎；`room-3d-outdoor.js`、`room-3d-atmosphere.js`：户外与光照
 
+### 3D 脚本按需加载
+
+`room-3d-models.js`、`room-3d-atmosphere.js`、`room-3d-outdoor.js`、`destination-3d.js`、`bedroom-3d.js` 在 `index.html` 里写成：
+
+```html
+<script type="text/x-lazy-3d" data-src="assets/bedroom-3d.js?v=…"></script>
+```
+
+浏览器不会执行这种标签。只有需要 3D 时，`src/app/05a-render-mode.js` 的 `ensure3DScripts()` 才按标签顺序注入真正的脚本，加载完成后调用 `wire3D()` 并重新渲染。改这几个文件时照常在这里更新 `?v=`；新增的 3D 脚本也用同样写法，放在 `bedroom-3d.js` 之前。
+
+渲染代码判断 3D 时用 `use3D()`（想要 3D 且脚本已就绪），不要直接判断 `window.Room3D`。画面模式（自动 / 3D / 2D）保存在 `localStorage` 的 `vl-render`；自动模式在无 WebGL、省流量、内存 ≤ 4 GB、CPU ≤ 4 核或非本机 / 局域网访问时选 2D。
+
 ## 重构校验
 
 `tools/plugin_snapshot.py` 用桩模块导入插件（不需要安装 AstrBot），导出：

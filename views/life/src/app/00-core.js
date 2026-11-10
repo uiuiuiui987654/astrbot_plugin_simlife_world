@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  window.__VIRTUAL_LIFE_UI_VERSION = '20261110-split1';
+  window.__VIRTUAL_LIFE_UI_VERSION = '20261110-perf1';
   console.log('[VirtualLife UI] ' + window.__VIRTUAL_LIFE_UI_VERSION);
 
   var $ = function (id) { return document.getElementById(id); };
@@ -32,6 +32,8 @@
     placement: null,
     indoorView: false,
     animations: true,
+    renderMode: '',
+    autoRenderReason: null,
     error: false,
     lastData: null,
     homeItems: [],

@@ -95,7 +95,7 @@
       return;
     }
     var keys = [
-      'vl-anim', 'vl-book-font', 'vl-book-theme', 'vl-shop-favorites',
+      'vl-anim', 'vl-render', 'vl-book-font', 'vl-book-theme', 'vl-shop-favorites',
       'vl-shelf-sort', 'vl-shop-sort', 'vl-weekly-days',
       'vl-weekly-metric', 'vl-weekly-theme', 'vl-trips-filter',
       'vl-status-trend-metric', 'vl-status-trend-range',
