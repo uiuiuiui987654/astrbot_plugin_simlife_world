@@ -19,6 +19,7 @@ from .. import (
     furniture_state,
     health_journal,
     item_effects,
+    life_memory,
     life_state,
     mood_history,
 )
@@ -90,6 +91,35 @@ class LifeContextMixin:
             return adjusted
         except (OSError, TypeError, ValueError):
             return {}
+
+    # 用户问到这些词时，再带上前几天的记忆
+    MEMORY_RECALL_WORDS = ("昨天", "前天", "最近", "上次", "那天", "之前", "前几天", "记得", "还记得", "这几天", "上周")
+
+    def _sync_life_memory(self, persona_id: str, now: datetime, *, days_back: int = 1) -> None:
+        """Remember what happened today so far, and finish the previous days."""
+        data_dir = getattr(self, "data_dir", None)
+        if data_dir is None or not persona_id:
+            return
+        for offset in range(days_back, -1, -1):
+            day = now.date() - timedelta(days=offset)
+            plan = self.storage.get_plan(day.isoformat(), persona_id)
+            try:
+                life_memory.sync_day(
+                    data_dir, persona_id, day, plan, now=now if offset == 0 else None
+                )
+            except Exception:
+                logger.debug("[虚拟人生] 生活记忆同步失败 %s", day, exc_info=True)
+
+    def _life_memory_context(self, persona_id: str, now: datetime, user_text: str = "") -> str:
+        """Today's real happenings, plus earlier days when the user asks about them."""
+        data_dir = getattr(self, "data_dir", None)
+        if data_dir is None or not persona_id:
+            return ""
+        self._sync_life_memory(persona_id, now)
+        parts = [life_memory.today_context(data_dir, persona_id, now.date())]
+        if any(word in str(user_text or "") for word in self.MEMORY_RECALL_WORDS):
+            parts.append(life_memory.recent_context(data_dir, persona_id, now.date()))
+        return "\n".join(part for part in parts if part)
 
     def _life_history_plans(self, plan) -> list:
         """Recent plans used for sleep-debt continuity."""

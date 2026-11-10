@@ -285,7 +285,7 @@
       state.activityQuery = '';
       $('activity-search').value = '';
     }
-    $('activity-sub').textContent = '最近发生的小事';
+    $('activity-sub').textContent = '最近一周发生的事';
     $('activity-body').innerHTML =
       '<p class="inventory-empty">正在整理最近的生活...</p>';
     $('activity-modal').classList.remove('hidden');
@@ -317,8 +317,9 @@
   function renderActivity() {
     var events = state.activityEvents || [];
     var filters = [
-      ['all', '全部'], ['diary', '日记'], ['world', '小世界'],
-      ['cooking', '下厨'], ['money', '钱包'],
+      ['all', '全部'], ['meal', '吃饭'], ['way', '路上'],
+      ['together', '和主人'], ['life', '日常'], ['diary', '日记'],
+      ['world', '小世界'], ['cooking', '下厨'], ['money', '钱包'],
       ['garage', '出车'], ['health', '健康']
     ];
     var kindCounts = { all: events.length };
@@ -375,12 +376,14 @@
       return '<div class="activity-date">' +
         escapeHtml(activityDayLabel(day)) + '</div>' +
         groupMap[day].map(function (event) {
+          var copy = event.detail
+            ? '<b>' + escapeHtml(event.title || '一件小事') + '</b><small>' + escapeHtml(event.detail) + '</small>'
+            : '<b class="activity-plain">' + escapeHtml(event.title || '一件小事') + '</b>';
           return '<div class="activity-row clickable" data-activity-kind="' +
             escapeHtml(event.kind || '') + '" role="button" tabindex="0" ' +
             'title="查看详情"><span class="activity-icon">' +
-            escapeHtml(event.icon || '·') + '</span><div class="activity-copy"><b>' +
-            escapeHtml(event.title || '一件小事') + '</b><small>' +
-            escapeHtml(event.detail || '') + '</small></div><em>' +
+            escapeHtml(event.icon || '·') + '</span><div class="activity-copy">' +
+            copy + '</div><em>' +
             escapeHtml(activityTimeText(event.at)) + '</em></div>';
         }).join('');
     }).join('');
@@ -396,6 +399,7 @@
       return;
     }
     var kindLabels = {
+      meal: '吃饭', way: '路上', together: '和主人', life: '日常',
       diary: '日记', world: '小世界', cooking: '下厨',
       money: '钱包', garage: '出车', health: '健康'
     };

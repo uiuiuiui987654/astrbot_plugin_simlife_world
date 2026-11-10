@@ -14,6 +14,7 @@ from astrbot.core.utils.session_lock import session_lock_manager
 
 from .. import (
     camera_photo,
+    life_memory,
     view_state,
 )
 from ..models import (
@@ -219,6 +220,21 @@ class ProactiveMixin:
                         "\n\n【观察窗待处理】主人之前在对话里提到要给月月东西，"
                         f"观察窗里还有「{labels}」按钮。可以在主动消息里自然提醒"
                         "主人去点一下，但不要说得像系统提示。"
+                    )
+                memory = self._life_memory_context(persona.id, now)
+                if memory:
+                    timeline_context += "\n\n" + memory
+                encounter = life_memory.unshared_encounter(
+                    self.data_dir, persona.id, now.date()
+                )
+                if encounter:
+                    timeline_context += (
+                        f"\n\n【刚才路上遇到的小事】{encounter['text']}。"
+                        "如果和这条主动消息搭得上，可以像随口分享一样提一句；"
+                        "搭不上就别硬说。"
+                    )
+                    life_memory.mark_shared(
+                        self.data_dir, persona.id, now.date(), encounter["key"]
                     )
                 recent_gifts = self.interactions.recent_gifts(2, hours=48)
                 if recent_gifts:

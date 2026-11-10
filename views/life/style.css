@@ -11647,6 +11647,7 @@ textarea:focus-visible,
 .activity-copy b { color: #dfe8f2; font-size: 9px; font-weight: 500; }
 .activity-copy small { color: #93a2b2; font-size: 8px; line-height: 1.5; }
 .activity-row em { flex: 0 0 auto; color: #7f8fa2; font-size: 7px; font-style: normal; }
+.activity-copy b.activity-plain { font-weight: 400; line-height: 1.55; white-space: normal; }
 
 .activity-filters { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
 .activity-filters button {

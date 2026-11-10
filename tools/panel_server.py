@@ -64,7 +64,8 @@ DEMO_DAY = [
     ("11:30", "12:30", "做午饭吃午饭", "厨房", "available", "normal"),
     ("12:30", "13:30", "午睡", "卧室", "sleep", "low"),
     ("13:30", "16:00", "窝在沙发看书", "客厅", "available", "normal"),
-    ("16:00", "17:00", "跑步机慢跑", "健身室", "busy", "low"),
+    ("16:00", "16:20", "步行去公园", "路上", "transit", "normal"),
+    ("16:20", "17:00", "在公园散步", "公园", "available", "normal"),
     ("17:00", "18:00", "泡澡", "浴室", "available", "normal"),
     ("18:00", "19:00", "吃晚饭", "餐厅", "available", "normal"),
     ("19:00", "21:30", "看电影", "影音室", "available", "high"),
@@ -103,7 +104,7 @@ def load_plugin_package():
     return sys.modules[PACKAGE]
 
 
-def seed_demo_day(data_dir: Path, day: datetime) -> None:
+def _demo_plan(day):
     from astrbot_plugin_simlife_world.core.models import DailyPlan
 
     timeline = [
@@ -118,9 +119,9 @@ def seed_demo_day(data_dir: Path, day: datetime) -> None:
         }
         for index, (start, end, activity, location, state, availability) in enumerate(DEMO_DAY)
     ]
-    plan = DailyPlan.from_dict(
+    return DailyPlan.from_dict(
         {
-            "date": day.date().isoformat(),
+            "date": day.isoformat(),
             "persona_id": PERSONA,
             "theme": "慢悠悠的居家日",
             "mood": "平静",
@@ -128,15 +129,33 @@ def seed_demo_day(data_dir: Path, day: datetime) -> None:
             "timeline": timeline,
         }
     )
-    path = data_dir / "plans.json"
-    path.write_text(
+
+
+def seed_demo_day(data_dir: Path, day: datetime) -> None:
+    """Today's plan plus a remembered yesterday (meals and a drive with the owner)."""
+    from datetime import timedelta
+
+    from astrbot_plugin_simlife_world.core import garage
+    from astrbot_plugin_simlife_world.core.food import FoodSystem
+
+    today = day.date()
+    yesterday = today - timedelta(days=1)
+    plans = {f"{d.isoformat()}::{PERSONA}": _demo_plan(d) for d in (yesterday, today)}
+    (data_dir / "plans.json").write_text(
         json.dumps(
-            {"schema_version": 3, "plans": {f"{plan.date}::{PERSONA}": plan.to_dict()}, "schedule_requirements": {}},
+            {"schema_version": 3, "plans": {key: plan.to_dict() for key, plan in plans.items()}, "schedule_requirements": {}},
             ensure_ascii=False,
             indent=2,
         ),
         encoding="utf-8",
     )
+    food = FoodSystem(data_dir, ROOT / "core" / "food_catalog.json")
+    for plan in plans.values():
+        target = datetime.fromisoformat(plan.date).date()
+        food.apply_plan(plan, PERSONA, food.plan_day(target, PERSONA, ""), {})
+    start = datetime.combine(yesterday, datetime.min.time()).replace(hour=15)
+    garage.start(data_dir, PERSONA, "海边", "master", now=start, minutes=90)
+    garage.return_home(data_dir, PERSONA, now=start + timedelta(minutes=90))
 
 
 def make_plugin(data_dir: Path):

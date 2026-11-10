@@ -75,6 +75,7 @@ SCHEMAS: dict[str, Schema] = {
     "trips.json": Schema(current=1),
     "chat_schedule_state.json": Schema(current=1),
     "platform_checks.json": Schema(current=1),
+    "life_memory.json": Schema(current=1),
     "interactions/history.json": Schema(current=1),
 }
 

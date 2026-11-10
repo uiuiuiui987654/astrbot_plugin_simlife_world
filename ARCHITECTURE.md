@@ -81,6 +81,19 @@ AstrBot 按**定义所在的模块**绑定指令、LLM 工具和事件钩子，�
 
 模块之间只允许单向依赖：`base` ← 主题模块 ← `compute`，避免循环导入。
 
+## 生活记忆：core/life_memory.py
+
+`life_memory.sync_day(data_dir, persona, day, plan, now=...)` 从各个存储（菜单与饮食记录、钱包、车库、面板互动、快递、主人下厨、拍照、世界事件、好感里程碑、日记）以及当天日程里的路程（`core/encounters.py` 生成路上见闻）汇总“那天真实发生的事”，按 `key` 合并进 `life_memory.json`，所以源数据滚动删除后仍然记得。今天只收已经发生的部分。
+
+使用的地方：
+
+- 聊天注入（`LifeContextMixin._life_memory_context`）：今天的事每次都带；用户提到“昨天 / 记得 / 前几天”等词时再带 `recent_context`（前几天重要度 ≥ 2 的事和昨天的一餐）。
+- 主动消息（`mixins/proactive.py`）：同上，再加一件没讲过的路上见闻（`unshared_encounter` / `mark_shared`）。
+- 生成日程（`mixins/planning.py`）：把 `recent_context` 作为补充要求交给生成器。
+- 面板「动态」（`view_routes/system.py` 的 `recent_activity`）：同步最近 7 天并并入动态列表。
+
+新增一种可记住的事：在 `life_memory._store_items`（或 `_meals` / `_timeline_items`）里产出 `_item(...)`，给它一个稳定的 `key` 和 1–3 的重要度，并在 `tests/test_life_memory.py` 里加用例。
+
 ## 面板接口：core/view_api.py 与 core/view_routes/
 
 `VirtualLifeViewAPI.dispatch` 只做两件事：按原顺序执行共用的检查（时间预览不能互动、POST 前要有今天的日程、家具和动作是否合法、角色在不在家），再把请求交给对应的处理函数。处理函数按领域放在 `core/view_routes/` 的 mixin 里：

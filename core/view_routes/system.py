@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import timedelta
 from pathlib import Path
 
 from astrbot.api import logger
@@ -15,6 +16,7 @@ from .. import (
     health_journal,
     holiday_calendar,
     integrations,
+    life_memory,
     money,
     privacy,
     travel,
@@ -175,6 +177,44 @@ class SystemRoutes:
         if not target_persona:
             return {"ok": False, "error": "缺少人格"}
         events = []
+        # 生活记忆：吃了什么、路上见闻、和主人的互动……按天同步后并入动态
+        memory_kinds = {
+            "meal": "meal",
+            "encounter": "way",
+            "outing": "way",
+            "interaction": "together",
+            "photo": "together",
+            "milestone": "together",
+            "delivery": "life",
+            "shopping": "life",
+        }
+        for offset in range(6, -1, -1):
+            day = now.date() - timedelta(days=offset)
+            storage = getattr(self.plugin, "storage", None)
+            plan = storage.get_plan(day.isoformat(), target_persona) if storage else None
+            try:
+                items = life_memory.sync_day(
+                    self.plans_path.parent,
+                    target_persona,
+                    day,
+                    plan,
+                    now=now if offset == 0 else None,
+                )
+            except Exception:
+                logger.debug("[虚拟人生] 动态读取生活记忆失败", exc_info=True)
+                items = []
+            for item in items:
+                kind = memory_kinds.get(str(item.get("kind") or ""))
+                if not kind:
+                    continue
+                time_text = str(item.get("time") or "") or "23:59"
+                events.append({
+                    "at": f"{day.isoformat()}T{time_text}:00",
+                    "kind": kind,
+                    "icon": str(item.get("icon") or "·"),
+                    "title": str(item.get("text") or ""),
+                    "detail": "",
+                })
         for entry in diary.list_entries(
             self.plans_path.parent, target_persona, limit=20
         ):
@@ -248,7 +288,9 @@ class SystemRoutes:
                 "detail": (
                     "主人带" if item.get("driver") == "master"
                     else "自己开"
-                ) + " · " + str(item.get("status") or ""),
+                ) + " · " + {"returned": "已回来", "out": "还在外面"}.get(
+                    str(item.get("status") or ""), str(item.get("status") or "")
+                ),
             })
         health = health_journal.persona_state(
             self.plans_path.parent, target_persona, today=now.date()
@@ -295,7 +337,7 @@ class SystemRoutes:
             key=lambda item: str(item.get("at") or ""),
             reverse=True,
         )
-        return {"ok": True, "events": events[:30]}
+        return {"ok": True, "events": events[:80]}
 
     def _get_memory(self, ctx: RouteContext) -> dict:
         """GET memory"""

@@ -730,6 +730,16 @@ class ProactiveVirtualDailyPlugin(
                     )
             except Exception:
                 logger.debug("[虚拟人生] inject_virtual_state 出错，已忽略", exc_info=True)
+        try:
+            memory = self._life_memory_context(
+                persona.id, now, event.get_message_str()
+            )
+            if memory:
+                req.extra_user_content_parts.append(
+                    TextPart(text=memory).mark_as_temp()
+                )
+        except Exception:
+            logger.debug("[虚拟人生] inject_virtual_state 出错，已忽略", exc_info=True)
         furniture_states, furniture_context = self._furniture_activity_context(now)
         health_summary = str(self._life_needs(plan, now).get("summary") or "")
         injection, modules, limit = self.smart_context_injector.build_details(

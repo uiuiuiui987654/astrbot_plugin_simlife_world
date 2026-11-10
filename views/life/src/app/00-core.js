@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  window.__VIRTUAL_LIFE_UI_VERSION = '20261110-privacy1';
+  window.__VIRTUAL_LIFE_UI_VERSION = '20261110-memory1';
   console.log('[VirtualLife UI] ' + window.__VIRTUAL_LIFE_UI_VERSION);
 
   var $ = function (id) { return document.getElementById(id); };

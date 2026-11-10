@@ -11,6 +11,7 @@ from datetime import date, timedelta
 from astrbot.api import logger
 from astrbot.api.event import AstrMessageEvent
 
+from .. import life_memory
 from ..models import (
     DailyPlan,
     ScheduleRequirement,
@@ -129,6 +130,19 @@ class PlanningMixin:
             )
         if new_character_hint:
             requirement_sections.append("新人物出现要求：\n" + new_character_hint)
+        if include_schedule:
+            try:
+                self._sync_life_memory(persona.id, self._now(), days_back=3)
+                memory = life_memory.recent_context(self.data_dir, persona.id, target)
+            except Exception:
+                logger.debug("[虚拟人生] 读取生活记忆失败", exc_info=True)
+                memory = ""
+            if memory:
+                requirement_sections.append(
+                    memory
+                    + "\n以上是真实发生过的事。新日程可以自然延续（比如接着读买来的书、"
+                    "再去路过的那家店、继续和主人约好的事），但不要照搬同样的安排。"
+                )
         plan = await self.plan_generator.generate(
             target,
             persona,
