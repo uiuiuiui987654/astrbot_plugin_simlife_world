@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  window.__SIMLIFE_UI_VERSION = '20261111-rename1';
+  window.__SIMLIFE_UI_VERSION = '20261111-rename2';
   console.log('[模拟人生 面板] ' + window.__SIMLIFE_UI_VERSION);
 
   var $ = function (id) { return document.getElementById(id); };

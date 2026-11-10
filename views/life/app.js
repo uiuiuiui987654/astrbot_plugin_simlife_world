@@ -2,7 +2,7 @@
 (function () {
   'use strict';
 
-  window.__SIMLIFE_UI_VERSION = '20261111-rename1';
+  window.__SIMLIFE_UI_VERSION = '20261111-rename2';
   console.log('[模拟人生 面板] ' + window.__SIMLIFE_UI_VERSION);
 
   var $ = function (id) { return document.getElementById(id); };
@@ -2124,7 +2124,7 @@
     var url = URL.createObjectURL(blob);
     var link = document.createElement('a');
     link.href = url;
-    link.download = '虚拟人生-' + labels[metric] + '-' + day + '.csv';
+    link.download = '模拟人生-' + labels[metric] + '-' + day + '.csv';
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -5547,7 +5547,7 @@
     var day = new Date().toISOString().slice(0, 10);
     var link = document.createElement('a');
     link.href = src;
-    link.download = '虚拟人生-拍立得-' + day + '.' + extension;
+    link.download = '模拟人生-拍立得-' + day + '.' + extension;
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -9264,7 +9264,7 @@
         var url = URL.createObjectURL(blob);
         var link = document.createElement('a');
         link.href = url;
-        link.download = '虚拟人生-数据备份-' + (safe ? '脱敏-' : '') + day + '.json';
+        link.download = '模拟人生-数据备份-' + (safe ? '脱敏-' : '') + day + '.json';
         document.body.appendChild(link);
         link.click();
         link.remove();
@@ -9364,7 +9364,7 @@
     var url = URL.createObjectURL(blob);
     var link = document.createElement('a');
     link.href = url;
-    link.download = '虚拟人生-系统诊断-' + day + '.json';
+    link.download = '模拟人生-系统诊断-' + day + '.json';
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -9871,7 +9871,7 @@
     var url = URL.createObjectURL(blob);
     var link = document.createElement('a');
     link.href = url;
-    link.download = '虚拟人生-关系年表-' + day + '.csv';
+    link.download = '模拟人生-关系年表-' + day + '.csv';
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -10028,7 +10028,7 @@
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = palette.title;
     ctx.font = '600 30px "Microsoft YaHei", sans-serif';
-    ctx.fillText('虚拟人生 · 生活周报', 56, 68);
+    ctx.fillText('模拟人生 · 生活周报', 56, 68);
     ctx.fillStyle = palette.sub;
     ctx.font = '18px "Microsoft YaHei", sans-serif';
     ctx.fillText(
@@ -10082,7 +10082,7 @@
     var download = function (href) {
       var link = document.createElement('a');
       link.href = href;
-      link.download = '虚拟人生-周报图表-' + day + '.png';
+      link.download = '模拟人生-周报图表-' + day + '.png';
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -10200,7 +10200,7 @@
     var url = URL.createObjectURL(blob);
     var link = document.createElement('a');
     link.href = url;
-    link.download = '虚拟人生-周报-' + String(report.end || new Date().toISOString().slice(0, 10)) + '.csv';
+    link.download = '模拟人生-周报-' + String(report.end || new Date().toISOString().slice(0, 10)) + '.csv';
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -11181,7 +11181,7 @@
     var url = URL.createObjectURL(blob);
     var link = document.createElement('a');
     link.href = url;
-    link.download = '虚拟人生-记忆-' + day + '.csv';
+    link.download = '模拟人生-记忆-' + day + '.csv';
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -11318,7 +11318,7 @@
         var url = URL.createObjectURL(blob);
         var link = document.createElement('a');
         link.href = url;
-        link.download = '虚拟人生-日记-' + day + '.csv';
+        link.download = '模拟人生-日记-' + day + '.csv';
         document.body.appendChild(link);
         link.click();
         link.remove();

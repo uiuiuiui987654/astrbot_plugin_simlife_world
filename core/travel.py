@@ -1031,7 +1031,7 @@ class TravelService:
             return "目的地库是空的。"
         domestic = [item for item in catalog if item.get("region") != "overseas"]
         overseas = [item for item in catalog if item.get("region") == "overseas"]
-        lines = ["✈️ 可选目的地（用「/虚拟日程 旅行 规划 <名字> <出发日期> <天数>」安排）"]
+        lines = ["✈️ 可选目的地（用「/日程 旅行 规划 <名字> <出发日期> <天数>」安排）"]
         if region != "overseas" and domestic:
             lines.append(
                 "国内："

@@ -9,7 +9,7 @@ The plugin sends three kinds of output:
 * images as a command reply through ``event.image_result`` (schedule images).
 
 ``send_image`` tries the image source variants in order so a platform that
-rejects one form still gets the picture. ``/虚拟人生 平台测试`` runs all three
+rejects one form still gets the picture. ``/模拟人生 平台测试`` runs all three
 paths in the current chat and stores the outcome in ``platform_checks.json``
 so README's support table can be filled from real results.
 """
@@ -186,7 +186,7 @@ def record_check(
 
 def format_checks(checks: dict[str, dict[str, Any]]) -> str:
     if not checks:
-        return "还没有平台测试记录。在要验证的平台上发送 /虚拟人生 平台测试。"
+        return "还没有平台测试记录。在要验证的平台上发送 /模拟人生 平台测试。"
     legend = "✅ 成功　📨 已交给平台（请确认是否收到）　❌ 失败　· 未测"
     lines = []
     for name, entry in sorted(checks.items()):

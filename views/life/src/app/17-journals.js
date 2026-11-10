@@ -782,7 +782,7 @@
     var url = URL.createObjectURL(blob);
     var link = document.createElement('a');
     link.href = url;
-    link.download = '虚拟人生-记忆-' + day + '.csv';
+    link.download = '模拟人生-记忆-' + day + '.csv';
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -919,7 +919,7 @@
         var url = URL.createObjectURL(blob);
         var link = document.createElement('a');
         link.href = url;
-        link.download = '虚拟人生-日记-' + day + '.csv';
+        link.download = '模拟人生-日记-' + day + '.csv';
         document.body.appendChild(link);
         link.click();
         link.remove();

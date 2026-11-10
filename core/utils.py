@@ -287,7 +287,7 @@ def format_timeline(
 ) -> str:
     day = long_term_day or {}
     lines = [
-        f"📅 {plan.date} 虚拟日程",
+        f"📅 {plan.date} 日程",
         f"💡 今日主题：{plan.theme}",
         f"💭 心情状态：{plan.mood}",
         f"🌤️ 今日天气：{_weather_text(plan)}",

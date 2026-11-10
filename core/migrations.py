@@ -11,7 +11,7 @@ writes and the functions that upgrade an older payload one step at a time.
 * files written by a *newer* plugin version are never touched — the plugin
   logs a warning instead of silently downgrading or corrupting them;
 * the outcome is stored in ``data_manifest.json`` and shown by
-  ``/虚拟人生 自检``.
+  ``/模拟人生 自检``.
 
 Adding a format change
 ----------------------

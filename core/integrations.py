@@ -1,4 +1,4 @@
-"""插件联动控制台：集中展示已安装插件与虚拟人生的接入状态。"""
+"""插件联动控制台：集中展示已安装插件与模拟人生的接入状态。"""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ logger = logging.getLogger("astrbot")
 # 只登记已知插件的展示信息；未知插件仍会自动出现在控制台里。
 INTEGRATION_CATALOG: dict[str, dict[str, Any]] = {
     "astrbot_plugin_simlife_world": {
-        "title": "虚拟人生",
+        "title": "模拟人生",
         "emoji": "🏠",
         "category": "核心",
         "capabilities": ["日程", "家具", "拍照", "互动"],
@@ -30,21 +30,21 @@ INTEGRATION_CATALOG: dict[str, dict[str, Any]] = {
         "emoji": "🎨",
         "category": "创作",
         "capabilities": ["绘图", "自拍", "视频"],
-        "note": "独立生图插件；虚拟人生相机已不再依赖它",
+        "note": "独立生图插件；模拟人生相机已不再依赖它",
     },
     "astrbot_plugin_livingmemory": {
         "title": "LivingMemory",
         "emoji": "🧠",
         "category": "记忆",
         "capabilities": ["长期记忆", "回忆检索"],
-        "note": "长期记忆能力，可与虚拟人生长期时间线配合",
+        "note": "长期记忆能力，可与模拟人生长期时间线配合",
     },
     "astrbot_plugin_proactive_chat": {
         "title": "Proactive Chat",
         "emoji": "💬",
         "category": "主动消息",
         "capabilities": ["主动问候", "定时消息"],
-        "note": "与虚拟人生主动消息并行；请避免两套日程同时打扰",
+        "note": "与模拟人生主动消息并行；请避免两套日程同时打扰",
     },
     "astrbot_plugin_bilibili_ai_bot": {
         "title": "B站 AI Bot",
@@ -58,7 +58,7 @@ INTEGRATION_CATALOG: dict[str, dict[str, Any]] = {
         "emoji": "👥",
         "category": "群聊",
         "capabilities": ["群聊增强", "上下文"],
-        "note": "群聊行为增强；虚拟人生仍有群聊隐私规则",
+        "note": "群聊行为增强；模拟人生仍有群聊隐私规则",
     },
     "astrbot_plugin_qqprofile": {
         "title": "QQ资料",

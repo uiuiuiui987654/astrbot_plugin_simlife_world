@@ -34,7 +34,7 @@ class ConversationDetection(unittest.TestCase):
         for name, ev in {
             "parsed command": event(handlers_parsed_params={"handler": {}}),
             "command": handled_by(CommandFilter(command_name="状态")),
-            "command group": handled_by(CommandGroupFilter(group_name="虚拟人生")),
+            "command group": handled_by(CommandGroupFilter(group_name="模拟人生")),
             "regex": handled_by(RegexFilter(r"签到")),
         }.items():
             with self.subTest(name):

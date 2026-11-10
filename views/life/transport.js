@@ -11,7 +11,7 @@
     }
     var endpoint = url.pathname.slice(5);
     var bridge = window.AstrBotPluginView || window.AstrBotPluginPage;
-    if (!bridge) throw new Error('请从 AstrBot 的虚拟人生插件视图打开此页');
+    if (!bridge) throw new Error('请从 AstrBot 的模拟人生插件视图打开此页');
     await bridge.ready();
     var params = Object.fromEntries(url.searchParams.entries());
     if (selectedPersona && !params.persona) params.persona = selectedPersona;

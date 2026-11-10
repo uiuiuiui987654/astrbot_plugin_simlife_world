@@ -116,7 +116,7 @@ AstrBot 按**定义所在的模块**绑定指令、LLM 工具和事件钩子，�
 - 已是最新的文件不会被重写；
 - 旧文件先复制到数据目录的 `backups/`（每个文件保留最近 5 份），再逐级升级；
 - 由更新版插件写出的文件不做改动，只在日志里警告；
-- 结果写入 `data_manifest.json`，`/虚拟人生 自检` 会显示摘要。
+- 结果写入 `data_manifest.json`，`/模拟人生 自检` 会显示摘要。
 
 改数据格式时：在写文件的模块和 `SCHEMAS` 里同时把版本加一，在 `steps[旧版本]` 注册升级函数，并在 `tests/test_migrations.py` 里用一份真实的旧数据做测试。`test_registered_versions_match_what_the_code_writes` 会提醒两边版本不一致。
 

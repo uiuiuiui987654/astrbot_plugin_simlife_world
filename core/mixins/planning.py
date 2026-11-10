@@ -281,8 +281,8 @@ class PlanningMixin:
         name = "".join(name_parts).strip()
         if not name:
             raise ValueError(
-                "格式：/虚拟日程 旅行 规划 <目的地> [出发日期] [天数]，"
-                "例如「/虚拟日程 旅行 规划 京都 2026-11-20 5」。"
+                "格式：/日程 旅行 规划 <目的地> [出发日期] [天数]，"
+                "例如「/日程 旅行 规划 京都 2026-11-20 5」。"
             )
         return name, depart, days
 
@@ -333,6 +333,6 @@ class PlanningMixin:
             return (
                 "现在没有安排旅行。\n"
                 + self.travel.destination_list_text()
-                + "\n\n用法：/虚拟日程 旅行 规划 <目的地> [出发日期] [天数]"
+                + "\n\n用法：/日程 旅行 规划 <目的地> [出发日期] [天数]"
             )
         return self.travel.describe(trip, today)

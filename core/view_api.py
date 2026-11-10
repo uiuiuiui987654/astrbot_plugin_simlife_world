@@ -304,7 +304,7 @@ class LifeViewAPI(SystemRoutes, HomeRoutes, MoneyRoutes, JournalRoutes):
                 return self._post_book_progress(ctx)
             actual = view_state.build_state(self.plans_path, persona, now=now)
             if not actual.get("ok") or not actual.get("is_today"):
-                return {"ok": False, "error": "请先生成所选人格今天的虚拟日程"}
+                return {"ok": False, "error": "请先生成所选人格今天的日程"}
             if endpoint == "wallet/goal":
                 return self._post_wallet_goal(replace(ctx, actual=actual))
             if endpoint == "affection/nickname":

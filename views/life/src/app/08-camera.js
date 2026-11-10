@@ -248,7 +248,7 @@
     var day = new Date().toISOString().slice(0, 10);
     var link = document.createElement('a');
     link.href = src;
-    link.download = '虚拟人生-拍立得-' + day + '.' + extension;
+    link.download = '模拟人生-拍立得-' + day + '.' + extension;
     document.body.appendChild(link);
     link.click();
     link.remove();

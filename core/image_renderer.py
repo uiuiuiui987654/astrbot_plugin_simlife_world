@@ -188,7 +188,7 @@ class ScheduleImageRenderer:
         same_day = plan.date == now.date().isoformat()
         current = timeline_item_at(plan, now) if same_day else None
         payload = {
-            "title": f"{plan.date} 虚拟日程",
+            "title": f"{plan.date} 日程",
             "subtitle": plan.persona_id,
             "status_label": f"当前时段 {current.start}–{current.end}" if current else "非今日计划",
             "theme_text": plan.theme,

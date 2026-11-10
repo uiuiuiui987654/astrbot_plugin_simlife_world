@@ -292,7 +292,7 @@
  [
   "command_group",
   [
-   "'虚拟人生'"
+   "'模拟人生'"
   ],
   [],
   "simlife_group"
@@ -306,7 +306,7 @@
   "subscribe_session"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'订阅会话'"
   ],
@@ -322,7 +322,7 @@
   "accept_pending_gift"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'递东西'"
   ],
@@ -338,7 +338,7 @@
   "clear_pending_gift"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'清空待处理'"
   ],
@@ -354,7 +354,7 @@
   "show_wallet"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'钱包'"
   ],
@@ -370,7 +370,7 @@
   "show_deliveries"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'快递'"
   ],
@@ -386,7 +386,7 @@
   "show_money_ledger"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'流水'"
   ],
@@ -402,7 +402,7 @@
   "set_savings_goal_command"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'存款目标'"
   ],
@@ -418,7 +418,7 @@
   "show_savings_goal"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'存款'"
   ],
@@ -434,7 +434,7 @@
   "show_goods"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'商品'"
   ],
@@ -450,7 +450,7 @@
   "show_possessions"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'物品'"
   ],
@@ -466,7 +466,7 @@
   "use_item_command"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'使用'"
   ],
@@ -482,7 +482,7 @@
   "place_item_command"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'摆放'"
   ],
@@ -498,7 +498,7 @@
   "show_affection"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'好感'"
   ],
@@ -514,7 +514,7 @@
   "set_nickname"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'称呼'"
   ],
@@ -530,7 +530,7 @@
   "show_weekly_report"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'周报'"
   ],
@@ -546,7 +546,7 @@
   "show_yearly_report"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'年总结'"
   ],
@@ -562,7 +562,7 @@
   "show_monthly_report"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'月报'"
   ],
@@ -578,7 +578,7 @@
   "show_diary"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'日记'"
   ],
@@ -594,7 +594,7 @@
   "read_book_command"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'读书'"
   ],
@@ -610,7 +610,7 @@
   "show_bookshelf"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'书架'"
   ],
@@ -626,7 +626,7 @@
   "show_reading_notes"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'笔记'"
   ],
@@ -642,7 +642,7 @@
   "give_money"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'给钱'"
   ],
@@ -658,7 +658,7 @@
   "create_test_pending_gift"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'测试按钮'"
   ],
@@ -674,7 +674,7 @@
   "platform_test"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'平台测试'"
   ],
@@ -690,7 +690,7 @@
   "self_check"
  ],
  [
-  "group:虚拟人生/command",
+  "group:模拟人生/command",
   [
    "'自检'"
   ],
@@ -716,7 +716,7 @@
  [
   "command_group",
   [
-   "'虚拟日程'"
+   "'日程'"
   ],
   [],
   "virtual_daily_group"
@@ -730,7 +730,7 @@
   "add_schedule_requirement_command"
  ],
  [
-  "group:虚拟日程/command",
+  "group:日程/command",
   [
    "'要求'"
   ],
@@ -738,7 +738,7 @@
   "add_schedule_requirement_command"
  ],
  [
-  "group:虚拟日程/command",
+  "group:日程/command",
   [
    "'查看'"
   ],
@@ -746,7 +746,7 @@
   "show_schedule"
  ],
  [
-  "group:虚拟日程/command",
+  "group:日程/command",
   [
    "'穿搭'"
   ],
@@ -754,7 +754,7 @@
   "show_outfit"
  ],
  [
-  "group:虚拟日程/command",
+  "group:日程/command",
   [
    "'菜单'"
   ],
@@ -762,7 +762,7 @@
   "show_food_menu"
  ],
  [
-  "group:虚拟日程/command",
+  "group:日程/command",
   [
    "'旅行'"
   ],
@@ -778,7 +778,7 @@
   "rewrite_schedule"
  ],
  [
-  "group:虚拟日程/command",
+  "group:日程/command",
   [
    "'重写'"
   ],
@@ -794,7 +794,7 @@
   "rewrite_daily_timeline"
  ],
  [
-  "group:虚拟日程/command",
+  "group:日程/command",
   [
    "'重写日程'"
   ],
@@ -810,7 +810,7 @@
   "rewrite_daily_outfit"
  ],
  [
-  "group:虚拟日程/command",
+  "group:日程/command",
   [
    "'重写穿搭'"
   ],

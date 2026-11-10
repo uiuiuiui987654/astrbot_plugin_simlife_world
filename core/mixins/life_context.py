@@ -261,7 +261,7 @@ class LifeContextMixin:
             return ""
 
     async def get_virtual_life_snapshot(self, umo: str) -> dict[str, Any]:
-        """供其他插件读取当前虚拟生活状态（只读，不触发日程生成）。
+        """供其他插件读取她当前的生活状态（只读，不触发日程生成）。
 
         This is a stable, read-only interface for other plugins (for example the
         image plugin that renders chat selfies). It only reads the in-memory

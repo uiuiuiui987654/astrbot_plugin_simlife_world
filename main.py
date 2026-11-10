@@ -890,7 +890,7 @@ class SimLifeWorldPlugin(
     async def get_virtual_daily_schedule(self, event: AstrMessageEvent) -> str:
         """取出她今天完整的日程、穿搭和此刻在做的事。"""
         if not self._schedule_available_for_umo(event.unified_msg_origin):
-            return "虚拟日程系统仅在私聊生效，群聊中不提供日程查询。"
+            return "日程功能只在私聊里用，群聊中不提供日程查询。"
         _, plan = await self._ensure_plan_for_umo(event.unified_msg_origin)
         if plan.status != "ok":
             return "今天还没有日程，也没有穿搭。"
@@ -1616,7 +1616,7 @@ class SimLifeWorldPlugin(
     async def get_long_term_timeline(self, event: AstrMessageEvent) -> str:
         """取出她所有已经确定的长期阶段（学期、项目等）。"""
         if not self._schedule_available_for_umo(event.unified_msg_origin):
-            return "虚拟日程系统仅在私聊生效，群聊中不提供大时间表查询。"
+            return "日程功能只在私聊里用，群聊中不提供大时间表查询。"
         persona = await self.personas.resolve(event.unified_msg_origin)
         stages = self.long_term.list_for_persona(persona.id)
         if not stages:
@@ -1642,14 +1642,14 @@ class SimLifeWorldPlugin(
             requirement(string): 这些天排日程时要照顾的要求，500 字以内。
         """
         if not self._schedule_available_for_umo(event.unified_msg_origin):
-            return "虚拟日程系统仅在私聊生效，群聊中不能修改日程要求。"
+            return "日程功能只在私聊里用，群聊中不能修改日程要求。"
         return await self._add_schedule_requirement(
             event,
             f"{str(start_date).strip()}..{str(end_date).strip()}",
             requirement,
         )
 
-    @filter.command_group("虚拟人生")
+    @filter.command_group("模拟人生")
     def simlife_group(self):
         """插件本身的设置与工具；只输入组名会列出可用的子命令。"""
         pass
@@ -1814,14 +1814,14 @@ class SimLifeWorldPlugin(
     @simlife_group.command("存款目标")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def set_savings_goal_command(self, event: AstrMessageEvent):
-        """设置存款目标：/虚拟人生 存款目标 相机 500"""
+        """设置存款目标：/模拟人生 存款目标 相机 500"""
         raw = str(event.get_message_str() or "")
         match = re.search(
             r"存款目标\s*(\S+)\s*([0-9]+(?:\.[0-9]+)?)\s*(.*)", raw
         )
         if not match:
             yield event.plain_result(
-                "用法：/虚拟人生 存款目标 相机 500 想拍照"
+                "用法：/模拟人生 存款目标 相机 500 想拍照"
             )
             return
         goal_name = match.group(1)
@@ -1877,7 +1877,7 @@ class SimLifeWorldPlugin(
         goal = snapshot.get("goal")
         if not goal:
             yield event.plain_result(
-                "还没有存款目标。可以发送：/虚拟人生 存款目标 相机 500"
+                "还没有存款目标。可以发送：/模拟人生 存款目标 相机 500"
             )
             return
         currency = str(self._money_settings().get("currency") or "元")
@@ -1909,7 +1909,7 @@ class SimLifeWorldPlugin(
     @simlife_group.command("商品")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def show_goods(self, event: AstrMessageEvent):
-        """查看商店商品：/虚拟人生 商品 书籍"""
+        """查看商店商品：/模拟人生 商品 书籍"""
         raw = str(event.get_message_str() or "")
         category = re.sub(r"^.*?商品\s*", "", raw, count=1).strip()
         items = goods.list_goods(category, limit=80)
@@ -1954,11 +1954,11 @@ class SimLifeWorldPlugin(
     @simlife_group.command("使用")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def use_item_command(self, event: AstrMessageEvent):
-        """使用物品：/虚拟人生 使用 奶茶"""
+        """使用物品：/模拟人生 使用 奶茶"""
         raw = str(event.get_message_str() or "")
         query = re.sub(r"^.*?使用\s*", "", raw, count=1).strip()
         if not query:
-            yield event.plain_result("用法：/虚拟人生 使用 奶茶")
+            yield event.plain_result("用法：/模拟人生 使用 奶茶")
             return
         try:
             persona = await self.personas.resolve(event.unified_msg_origin)
@@ -1989,11 +1989,11 @@ class SimLifeWorldPlugin(
     @simlife_group.command("摆放")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def place_item_command(self, event: AstrMessageEvent):
-        """摆放物品：/虚拟人生 摆放 相机 书房"""
+        """摆放物品：/模拟人生 摆放 相机 书房"""
         raw = str(event.get_message_str() or "")
         match = re.search(r"摆放\s*(\S+)\s+(\S+)", raw)
         if not match:
-            yield event.plain_result("用法：/虚拟人生 摆放 相机 书房")
+            yield event.plain_result("用法：/模拟人生 摆放 相机 书房")
             return
         item_name, room_name = match.group(1), match.group(2)
         try:
@@ -2032,7 +2032,7 @@ class SimLifeWorldPlugin(
     @simlife_group.command("称呼")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def set_nickname(self, event: AstrMessageEvent):
-        """设置月月对主人的称呼：/虚拟人生 称呼 老板"""
+        """设置月月对主人的称呼：/模拟人生 称呼 老板"""
         raw = str(event.get_message_str() or "")
         nickname = re.sub(r"^.*?称呼\s*", "", raw, count=1).strip()
         try:
@@ -2047,7 +2047,7 @@ class SimLifeWorldPlugin(
             )
             yield event.plain_result(
                 f"月月现在称呼你为：{info.get('nickname') or '主人'}。"
-                "修改用法：/虚拟人生 称呼 老板"
+                "修改用法：/模拟人生 称呼 老板"
             )
             return
         result = affection.set_nickname(
@@ -2124,7 +2124,7 @@ class SimLifeWorldPlugin(
     @simlife_group.command("读书")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def read_book_command(self, event: AstrMessageEvent):
-        """读书：/虚拟人生 读书 云层以下"""
+        """读书：/模拟人生 读书 云层以下"""
         raw = str(event.get_message_str() or "")
         query = re.sub(r"^.*?读书\s*", "", raw, count=1).strip()
         if not query:
@@ -2214,12 +2214,12 @@ class SimLifeWorldPlugin(
     @simlife_group.command("给钱")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def give_money(self, event: AstrMessageEvent):
-        """主人给当前人格一笔钱：/虚拟人生 给钱 100"""
+        """主人给当前人格一笔钱：/模拟人生 给钱 100"""
         raw = str(event.get_message_str() or "")
         match = re.search(r"(?:给钱|转账)\s*([0-9]+(?:\.[0-9]+)?)", raw)
         amount = float(match.group(1)) if match else 0.0
         if amount <= 0:
-            yield event.plain_result("用法：/虚拟人生 给钱 100")
+            yield event.plain_result("用法：/模拟人生 给钱 100")
             return
         if amount > 100000:
             yield event.plain_result("一次最多给 100000 元。")
@@ -2266,13 +2266,13 @@ class SimLifeWorldPlugin(
         yield event.plain_result(
             f"已创建测试按钮：{action.get('label')}。"
             "请完全关闭观察窗再打开并 Ctrl+Shift+R；"
-            "如果仍然看不到，发送 /虚拟人生 递东西 即可。"
+            "如果仍然看不到，发送 /模拟人生 递东西 即可。"
         )
 
     @simlife_group.command("平台测试")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def platform_test(self, event: AstrMessageEvent):
-        """在当前聊天测试文字和图片的几种发送方式，结果记入 /虚拟人生 自检。"""
+        """在当前聊天测试文字和图片的几种发送方式，结果记入 /模拟人生 自检。"""
         umo = event.unified_msg_origin
         try:
             platform = str(event.get_platform_name() or "")
@@ -2314,7 +2314,7 @@ class SimLifeWorldPlugin(
     @simlife_group.command("自检")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def self_check(self, event: AstrMessageEvent):
-        """查看当前会话的虚拟人生隐私与主动消息配置。"""
+        """查看当前会话的模拟人生隐私与主动消息配置。"""
         umo = event.unified_msg_origin
         kind = session_kind(umo)
         kind_text = "群聊" if kind == "group" else "私聊"
@@ -2408,7 +2408,7 @@ class SimLifeWorldPlugin(
                         for action in pending[:3]
                     )
                     lines.append(f"待处理动作：{len(pending)} 个（{labels}）")
-                    lines.append("可发送 /虚拟人生 递东西 直接接受，或 /虚拟人生 清空待处理 取消")
+                    lines.append("可发送 /模拟人生 递东西 直接接受，或 /模拟人生 清空待处理 取消")
             except Exception:
                 logger.debug("[模拟人生] self_check 出错，已忽略", exc_info=True)
         except Exception as exc:
@@ -2440,7 +2440,7 @@ class SimLifeWorldPlugin(
     async def reply_delay_command(self, event: AstrMessageEvent, action: str):
         yield event.plain_result(await self._cmd_reply_delay(event, action))
 
-    @filter.command_group("虚拟日程")
+    @filter.command_group("日程")
     def virtual_daily_group(self):
         """今天的日程与穿搭；只输入组名会列出可用的子命令。"""
         pass
@@ -2474,7 +2474,7 @@ class SimLifeWorldPlugin(
     async def show_food_menu(self, event: AstrMessageEvent):
         """查看今天的菜品、在家做饭/外食安排和采购清单。"""
         if not self._schedule_available_for_umo(event.unified_msg_origin):
-            yield event.plain_result("虚拟日程系统仅在私聊生效，群聊中不提供菜单查看。")
+            yield event.plain_result("日程功能只在私聊里用，群聊中不提供菜单查看。")
             return
         settings = self.config.get("food_settings", {}) or {}
         if not bool(settings.get("enable", True)):
@@ -2498,7 +2498,7 @@ class SimLifeWorldPlugin(
         不带参数时显示正在进行的旅行或下一趟行程；「目的地」列出可选城市。
         """
         if not self._schedule_available_for_umo(event.unified_msg_origin):
-            yield event.plain_result("虚拟日程系统仅在私聊生效，群聊中不提供旅行日程。")
+            yield event.plain_result("日程功能只在私聊里用，群聊中不提供旅行日程。")
             return
         yield event.plain_result(
             await self._handle_travel_command(event, action, str(target or ""))

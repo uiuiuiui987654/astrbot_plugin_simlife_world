@@ -1014,7 +1014,7 @@ def build_state(
     try:
         plans = load_plans(plans_path)
     except (OSError, ValueError, TypeError):
-        error = "日程暂不可用，请先生成虚拟日程"
+        error = "日程暂不可用，请先生成日程"
     now = now or datetime.now()
     today = now.date()
     plan, personas = select_plan(plans, persona, today)

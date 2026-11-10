@@ -28,7 +28,7 @@
         var url = URL.createObjectURL(blob);
         var link = document.createElement('a');
         link.href = url;
-        link.download = '虚拟人生-数据备份-' + (safe ? '脱敏-' : '') + day + '.json';
+        link.download = '模拟人生-数据备份-' + (safe ? '脱敏-' : '') + day + '.json';
         document.body.appendChild(link);
         link.click();
         link.remove();
@@ -128,7 +128,7 @@
     var url = URL.createObjectURL(blob);
     var link = document.createElement('a');
     link.href = url;
-    link.download = '虚拟人生-系统诊断-' + day + '.json';
+    link.download = '模拟人生-系统诊断-' + day + '.json';
     document.body.appendChild(link);
     link.click();
     link.remove();

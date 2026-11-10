@@ -1,4 +1,4 @@
-"""Bodies of the 虚拟日程 / 大时间表 / 主动消息 / 回复延迟 commands.
+"""Bodies of the 日程 / 大时间表 / 主动消息 / 回复延迟 commands.
 
 The decorated handlers in ``main.py`` stay thin: each awaits one of these and
 yields the returned results, so the command surface lives in one place and
@@ -22,7 +22,7 @@ DRAFT_HINT = "发 /大时间表 草稿 可以看"
 
 
 class AdminCommandsMixin:
-    # ------------------------------------------------------------------ 虚拟日程
+    # ------------------------------------------------------------------ 日程
 
     async def _cmd_show_schedule(self, event: AstrMessageEvent) -> list:
         if not self._schedule_available_for_umo(event.unified_msg_origin):
@@ -84,7 +84,7 @@ class AdminCommandsMixin:
         persona, current = await self._ensure_plan_for_umo(event.unified_msg_origin)
         if current.status != "ok":
             what = "日程" if part == "schedule" else "穿搭"
-            return f"今天还没有能单独重写的{what}，先用“虚拟日程 重写”整个排一遍。"
+            return f"今天还没有能单独重写的{what}，先用“日程 重写”整个排一遍。"
         try:
             if part == "schedule":
                 plan = await self.plan_generator.rewrite_schedule(
