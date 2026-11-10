@@ -1,6 +1,6 @@
 """Incoming message routing and hand-over (gift) requests.
 
-Mixin for ProactiveVirtualDailyPlugin; split out of main.py without behaviour changes.
+Mixin for SimLifeWorldPlugin; split out of main.py without behaviour changes.
 """
 
 from __future__ import annotations

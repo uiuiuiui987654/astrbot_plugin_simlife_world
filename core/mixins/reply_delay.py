@@ -14,7 +14,7 @@ from ..proactive import session_kind
 from ..reply_delay import QueuedMessage, format_delay_context, format_queued_messages
 from ..utils import timeline_item_at
 
-EXTRA = "virtual_life_reply_delay_"  # prefix of the event extras this mixin uses
+EXTRA = "simlife_reply_delay_"  # prefix of the event extras this mixin uses
 
 
 class ReplyDelayMixin:

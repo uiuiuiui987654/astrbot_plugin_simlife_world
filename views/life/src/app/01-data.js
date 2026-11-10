@@ -15,17 +15,17 @@
         try {
           checkDeliveryArrivals(data.deliveries || []);
         } catch (error) {
-          console.error('[VirtualLife] delivery check failed', error);
+          console.error('[模拟人生] delivery check failed', error);
         }
         try {
           checkAffectionLevel(data.affection || {});
         } catch (error) {
-          console.error('[VirtualLife] affection level check failed', error);
+          console.error('[模拟人生] affection level check failed', error);
         }
         try {
           renderPendingActions(data.pending_actions);
         } catch (error) {
-          console.error('[VirtualLife] pending actions render failed', error);
+          console.error('[模拟人生] pending actions render failed', error);
         }
         render();
       })

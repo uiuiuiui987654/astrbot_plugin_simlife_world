@@ -28,7 +28,7 @@ from .context import RouteContext
 
 
 class SystemRoutes:
-    """Mixin for VirtualLifeViewAPI; expects ``self.plugin`` and ``self.plans_path``."""
+    """Mixin for LifeViewAPI; expects ``self.plugin`` and ``self.plans_path``."""
 
     def _get_integrations(self, ctx: RouteContext) -> dict:
         """GET integrations"""

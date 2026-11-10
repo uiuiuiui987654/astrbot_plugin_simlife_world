@@ -1,7 +1,7 @@
 """Run the life panel locally without AstrBot.
 
 Serves ``views/life`` together with a fake ``bridge-sdk.js`` that forwards the
-panel's API calls to the plugin's real ``VirtualLifeViewAPI.dispatch`` running
+panel's API calls to the plugin's real ``LifeViewAPI.dispatch`` running
 on a throw-away data directory seeded with a demo day.
 
     python tools/panel_server.py                # http://127.0.0.1:8770/
@@ -188,12 +188,12 @@ def make_plugin(data_dir: Path):
 
 def make_api(data_dir: Path):
     load_plugin_package()
-    from astrbot_plugin_simlife_world.core.view_api import VirtualLifeViewAPI
+    from astrbot_plugin_simlife_world.core.view_api import LifeViewAPI
 
     data_dir.mkdir(parents=True, exist_ok=True)
     if not (data_dir / "plans.json").exists():
         seed_demo_day(data_dir, datetime.now())
-    return VirtualLifeViewAPI(make_plugin(data_dir))
+    return LifeViewAPI(make_plugin(data_dir))
 
 
 def make_handler(api):

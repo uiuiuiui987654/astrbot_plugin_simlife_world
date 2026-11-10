@@ -122,7 +122,7 @@ class PlatformTestCommandTests(unittest.IsolatedAsyncioTestCase):
     async def test_command_runs_every_check_and_records_it(self):
         from types import SimpleNamespace
 
-        from astrbot_plugin_simlife_world.main import ProactiveVirtualDailyPlugin
+        from astrbot_plugin_simlife_world.main import SimLifeWorldPlugin
 
         with tempfile.TemporaryDirectory() as tmp:
             sent = []
@@ -132,7 +132,7 @@ class PlatformTestCommandTests(unittest.IsolatedAsyncioTestCase):
                 # pretend this platform cannot take base64 images
                 return not any("base64" in vars(part) for part in chain)
 
-            plugin = object.__new__(ProactiveVirtualDailyPlugin)
+            plugin = object.__new__(SimLifeWorldPlugin)
             plugin.data_dir = Path(tmp)
             plugin.context = SimpleNamespace(send_message=send_message)
             plugin._now = lambda: datetime(2026, 11, 10, 9, 0)

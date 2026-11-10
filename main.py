@@ -71,7 +71,7 @@ from .core.utils import (
     format_plan,
     parse_schedule_date_range,
 )
-from .core.view_api import VirtualLifeViewAPI
+from .core.view_api import LifeViewAPI
 from .core.mixins.common import (
     _plugin_version,
     _migrate_legacy_data,
@@ -93,7 +93,7 @@ from .core.mixins.life_events import LifeEventsMixin
 from .core.mixins.admin_commands import AdminCommandsMixin
 
 
-class ProactiveVirtualDailyPlugin(
+class SimLifeWorldPlugin(
     RuntimeStateMixin,
     PersonalNetworkMixin,
     PlanningMixin,
@@ -144,7 +144,7 @@ class ProactiveVirtualDailyPlugin(
             self.config.get("image_settings", {}) or {},
         )
         self.timezone = self._resolve_timezone()
-        self.view_api = VirtualLifeViewAPI(self)
+        self.view_api = LifeViewAPI(self)
         self.view_api.register()
         self.policy = ProactivePolicy(config, self.storage, self.timezone)
         self.runtime = SchedulerRuntime(self.timezone)
@@ -372,9 +372,9 @@ class ProactiveVirtualDailyPlugin(
         if schedule_allowed:
             self._apply_reply_delay_batch(event, req)
             if self.reply_delay_policy.enabled and not event.get_extra(
-                "virtual_life_reply_delay_excluded", False
+                "simlife_reply_delay_excluded", False
             ):
-                event.set_extra("virtual_life_ordinary_llm_request", True)
+                event.set_extra("simlife_ordinary_llm_request", True)
             if pending_hint:
                 req.extra_user_content_parts.append(
                     TextPart(text=pending_hint).mark_as_temp()
@@ -806,7 +806,7 @@ class ProactiveVirtualDailyPlugin(
                     filtered = self._filter_group_reply(
                         reply_text,
                         extra_terms=event.get_extra(
-                            "virtual_life_group_terms", ()
+                            "simlife_group_terms", ()
                         ),
                     )
                     if filtered != reply_text:
@@ -830,11 +830,11 @@ class ProactiveVirtualDailyPlugin(
                     except Exception:
                         logger.debug("[模拟人生] track_delayed_llm_response 出错，已忽略", exc_info=True)
                     reply_text = humanized
-                event.set_extra("virtual_life_chat_reply_text", reply_text)
-        if not event.get_extra("virtual_life_ordinary_llm_request", False):
+                event.set_extra("simlife_chat_reply_text", reply_text)
+        if not event.get_extra("simlife_ordinary_llm_request", False):
             return
         if reply_text:
-            event.set_extra("virtual_life_ordinary_llm_succeeded", True)
+            event.set_extra("simlife_ordinary_llm_succeeded", True)
 
     @filter.after_message_sent()
     async def maybe_schedule_chat_activity(self, event: AstrMessageEvent) -> None:
@@ -846,9 +846,9 @@ class ProactiveVirtualDailyPlugin(
             return
         if not bool(settings.get("enable", True)):
             return
-        if event.get_extra("virtual_life_chat_activity_scheduled", False):
+        if event.get_extra("simlife_chat_activity_scheduled", False):
             return
-        event.set_extra("virtual_life_chat_activity_scheduled", True)
+        event.set_extra("simlife_chat_activity_scheduled", True)
         if not self._is_conversation_event(event):
             return
         umo = event.unified_msg_origin
@@ -860,7 +860,7 @@ class ProactiveVirtualDailyPlugin(
             return
         user_text = str(event.get_message_str() or "").strip()
         reply_text = str(
-            event.get_extra("virtual_life_chat_reply_text") or ""
+            event.get_extra("simlife_chat_reply_text") or ""
         ).strip()
         if not user_text or not reply_text:
             return
@@ -878,7 +878,7 @@ class ProactiveVirtualDailyPlugin(
     async def mark_active_conversation(self, event: AstrMessageEvent) -> None:
         if not self._schedule_available_for_umo(event.unified_msg_origin):
             return
-        if not event.get_extra("virtual_life_ordinary_llm_succeeded", False):
+        if not event.get_extra("simlife_ordinary_llm_succeeded", False):
             return
         self.reply_delay_coordinator.mark_replied(
             event.unified_msg_origin,
@@ -1650,17 +1650,17 @@ class ProactiveVirtualDailyPlugin(
         )
 
     @filter.command_group("虚拟人生")
-    def virtual_life_group(self):
+    def simlife_group(self):
         """插件本身的设置与工具；只输入组名会列出可用的子命令。"""
         pass
 
-    @virtual_life_group.command("订阅会话")
+    @simlife_group.command("订阅会话")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def subscribe_session(self, event: AstrMessageEvent):
         """让她在这个聊天里主动找你。"""
         yield event.plain_result(await self._cmd_subscribe(event))
 
-    @virtual_life_group.command("递东西")
+    @simlife_group.command("递东西")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def accept_pending_gift(self, event: AstrMessageEvent):
         """点击按钮失效时，用命令接受最近的递东西动作。"""
@@ -1712,7 +1712,7 @@ class ProactiveVirtualDailyPlugin(
             f"已{label}，月月正在回应；观察窗里也能看到互动结果。"
         )
 
-    @virtual_life_group.command("清空待处理")
+    @simlife_group.command("清空待处理")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def clear_pending_gift(self, event: AstrMessageEvent):
         """清空当前人格的待处理递东西动作。"""
@@ -1729,7 +1729,7 @@ class ProactiveVirtualDailyPlugin(
             f"已清空 {count} 个待处理动作。" if count else "当前没有待处理动作。"
         )
 
-    @virtual_life_group.command("钱包")
+    @simlife_group.command("钱包")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def show_wallet(self, event: AstrMessageEvent):
         """查看当前人格的钱包余额和最近收支。"""
@@ -1749,7 +1749,7 @@ class ProactiveVirtualDailyPlugin(
             return
         yield event.plain_result(text)
 
-    @virtual_life_group.command("快递")
+    @simlife_group.command("快递")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def show_deliveries(self, event: AstrMessageEvent):
         """查看正在配送的订单。"""
@@ -1773,7 +1773,7 @@ class ProactiveVirtualDailyPlugin(
             )
         yield event.plain_result("\n".join(lines))
 
-    @virtual_life_group.command("流水")
+    @simlife_group.command("流水")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def show_money_ledger(self, event: AstrMessageEvent):
         """查看最近 10 条收支记录。"""
@@ -1811,7 +1811,7 @@ class ProactiveVirtualDailyPlugin(
             )
         yield event.plain_result("\n".join(lines))
 
-    @virtual_life_group.command("存款目标")
+    @simlife_group.command("存款目标")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def set_savings_goal_command(self, event: AstrMessageEvent):
         """设置存款目标：/虚拟人生 存款目标 相机 500"""
@@ -1861,7 +1861,7 @@ class ProactiveVirtualDailyPlugin(
             + detail
         )
 
-    @virtual_life_group.command("存款")
+    @simlife_group.command("存款")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def show_savings_goal(self, event: AstrMessageEvent):
         """查看当前存款目标进度。"""
@@ -1906,7 +1906,7 @@ class ProactiveVirtualDailyPlugin(
             + wish_line
         )
 
-    @virtual_life_group.command("商品")
+    @simlife_group.command("商品")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def show_goods(self, event: AstrMessageEvent):
         """查看商店商品：/虚拟人生 商品 书籍"""
@@ -1924,7 +1924,7 @@ class ProactiveVirtualDailyPlugin(
             )
         yield event.plain_result("\n".join(lines))
 
-    @virtual_life_group.command("物品")
+    @simlife_group.command("物品")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def show_possessions(self, event: AstrMessageEvent):
         """查看月月已经拥有的东西。"""
@@ -1951,7 +1951,7 @@ class ProactiveVirtualDailyPlugin(
             )
         yield event.plain_result("\n".join(lines))
 
-    @virtual_life_group.command("使用")
+    @simlife_group.command("使用")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def use_item_command(self, event: AstrMessageEvent):
         """使用物品：/虚拟人生 使用 奶茶"""
@@ -1986,7 +1986,7 @@ class ProactiveVirtualDailyPlugin(
             + (f"效果：{effect_text}。" if effect_text else "")
         )
 
-    @virtual_life_group.command("摆放")
+    @simlife_group.command("摆放")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def place_item_command(self, event: AstrMessageEvent):
         """摆放物品：/虚拟人生 摆放 相机 书房"""
@@ -2016,7 +2016,7 @@ class ProactiveVirtualDailyPlugin(
             f"把{result['item'].get('name') or '物品'}摆到了{room_name}。"
         )
 
-    @virtual_life_group.command("好感")
+    @simlife_group.command("好感")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def show_affection(self, event: AstrMessageEvent):
         """查看当前人格与主人的好感度。"""
@@ -2029,7 +2029,7 @@ class ProactiveVirtualDailyPlugin(
             return
         yield event.plain_result(text)
 
-    @virtual_life_group.command("称呼")
+    @simlife_group.command("称呼")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def set_nickname(self, event: AstrMessageEvent):
         """设置月月对主人的称呼：/虚拟人生 称呼 老板"""
@@ -2063,7 +2063,7 @@ class ProactiveVirtualDailyPlugin(
             f"月月现在会称呼你为「{result.get('nickname')}」。"
         )
 
-    @virtual_life_group.command("周报")
+    @simlife_group.command("周报")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def show_weekly_report(self, event: AstrMessageEvent):
         """查看最近 7 天的生活周报。"""
@@ -2078,7 +2078,7 @@ class ProactiveVirtualDailyPlugin(
             return
         yield event.plain_result(weekly.format_report(report))
 
-    @virtual_life_group.command("年总结")
+    @simlife_group.command("年总结")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def show_yearly_report(self, event: AstrMessageEvent):
         """查看最近一年的生活总结。"""
@@ -2093,7 +2093,7 @@ class ProactiveVirtualDailyPlugin(
             return
         yield event.plain_result(weekly.format_report(report))
 
-    @virtual_life_group.command("月报")
+    @simlife_group.command("月报")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def show_monthly_report(self, event: AstrMessageEvent):
         """查看最近 30 天的生活月报。"""
@@ -2108,7 +2108,7 @@ class ProactiveVirtualDailyPlugin(
             return
         yield event.plain_result(weekly.format_report(report))
 
-    @virtual_life_group.command("日记")
+    @simlife_group.command("日记")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def show_diary(self, event: AstrMessageEvent):
         """查看最近的日记。"""
@@ -2121,7 +2121,7 @@ class ProactiveVirtualDailyPlugin(
             return
         yield event.plain_result(diary.format_entries(entries))
 
-    @virtual_life_group.command("读书")
+    @simlife_group.command("读书")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def read_book_command(self, event: AstrMessageEvent):
         """读书：/虚拟人生 读书 云层以下"""
@@ -2140,7 +2140,7 @@ class ProactiveVirtualDailyPlugin(
             return
         yield event.plain_result(books.render_book(book, 1))
 
-    @virtual_life_group.command("书架")
+    @simlife_group.command("书架")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def show_bookshelf(self, event: AstrMessageEvent):
         """查看月月拥有的书和阅读进度。"""
@@ -2180,7 +2180,7 @@ class ProactiveVirtualDailyPlugin(
             return
         yield event.plain_result("\n".join(lines))
 
-    @virtual_life_group.command("笔记")
+    @simlife_group.command("笔记")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def show_reading_notes(self, event: AstrMessageEvent):
         """查看读书笔记。"""
@@ -2211,7 +2211,7 @@ class ProactiveVirtualDailyPlugin(
             return
         yield event.plain_result("\n".join(lines[-12:]))
 
-    @virtual_life_group.command("给钱")
+    @simlife_group.command("给钱")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def give_money(self, event: AstrMessageEvent):
         """主人给当前人格一笔钱：/虚拟人生 给钱 100"""
@@ -2246,7 +2246,7 @@ class ProactiveVirtualDailyPlugin(
             f"当前余额 {money.format_money(result['balance'])} {currency}。"
         )
 
-    @virtual_life_group.command("测试按钮")
+    @simlife_group.command("测试按钮")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def create_test_pending_gift(self, event: AstrMessageEvent):
         """创建一个测试用待处理按钮，方便验证观察窗前端。"""
@@ -2269,7 +2269,7 @@ class ProactiveVirtualDailyPlugin(
             "如果仍然看不到，发送 /虚拟人生 递东西 即可。"
         )
 
-    @virtual_life_group.command("平台测试")
+    @simlife_group.command("平台测试")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def platform_test(self, event: AstrMessageEvent):
         """在当前聊天测试文字和图片的几种发送方式，结果记入 /虚拟人生 自检。"""
@@ -2311,7 +2311,7 @@ class ProactiveVirtualDailyPlugin(
         )
         yield event.image_result(str(path))
 
-    @virtual_life_group.command("自检")
+    @simlife_group.command("自检")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def self_check(self, event: AstrMessageEvent):
         """查看当前会话的虚拟人生隐私与主动消息配置。"""

@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, Mock
 from zoneinfo import ZoneInfo
 
 from astrbot_plugin_simlife_world.core.proactive import ProactivePolicy
-from astrbot_plugin_simlife_world.main import ProactiveVirtualDailyPlugin
+from astrbot_plugin_simlife_world.main import SimLifeWorldPlugin
 
 from tests.fixtures import nap_day
 
@@ -26,7 +26,7 @@ def host(now=HALF_PAST_NOON, **delivery):
         "group_settings": {"enable": False, "session_list": []},
         "delivery_settings": {"minimum_idle_for_window_minutes": 20, **delivery},
     }
-    plugin = object.__new__(ProactiveVirtualDailyPlugin)
+    plugin = object.__new__(SimLifeWorldPlugin)
     plugin.config = config
     plugin.timezone = TZ
     plugin.storage = SimpleNamespace(sessions={})

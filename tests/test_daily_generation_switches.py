@@ -6,14 +6,14 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
 
 from astrbot_plugin_simlife_world.core.models import DailyPlan
-from astrbot_plugin_simlife_world.main import ProactiveVirtualDailyPlugin
+from astrbot_plugin_simlife_world.main import SimLifeWorldPlugin
 
 EMPTY_DAY = DailyPlan(date="2026-08-14", persona_id="alice", theme="", mood="", outfit=None, timeline=())
 PERSONA = SimpleNamespace(id="alice", prompt="persona")
 
 
 def host(schedule=True, outfit=True):
-    plugin = object.__new__(ProactiveVirtualDailyPlugin)
+    plugin = object.__new__(SimLifeWorldPlugin)
     plugin.config = {
         "schedule_settings": {"daily_schedule_generation_enable": schedule, "daily_outfit_generation_enable": outfit},
         "long_term_settings": {"enable": True},
@@ -38,7 +38,7 @@ def host(schedule=True, outfit=True):
 
 class GenerationSwitches(unittest.IsolatedAsyncioTestCase):
     def test_both_on_by_default(self):
-        plugin = object.__new__(ProactiveVirtualDailyPlugin)
+        plugin = object.__new__(SimLifeWorldPlugin)
         plugin.config = {}
         self.assertEqual(plugin._daily_generation_flags(), (True, True))
 
@@ -64,7 +64,7 @@ class GenerationSwitches(unittest.IsolatedAsyncioTestCase):
         plugin._generate_new_character.assert_awaited_once()
 
     async def test_day_without_schedule_clears_proactive_jobs(self):
-        plugin = object.__new__(ProactiveVirtualDailyPlugin)
+        plugin = object.__new__(SimLifeWorldPlugin)
         plugin.runtime = SimpleNamespace(remove_prefix=Mock(), remove=Mock())
         plugin.policy = SimpleNamespace(ensure_state=Mock())
         plugin._schedule_available_umos = {"umo"}

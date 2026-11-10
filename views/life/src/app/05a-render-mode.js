@@ -117,7 +117,7 @@
         render();
       }).catch(function (error) {
         lazy3d.failed = true;
-        console.warn('[VirtualLife UI] 3D 场景加载失败，改用 2D', error);
+        console.warn('[模拟人生 面板] 3D 场景加载失败，改用 2D', error);
         showToast('3D 场景加载失败，已改用 2D');
         render();
       });
@@ -132,7 +132,7 @@
         });
       }).catch(function (error) {
         lazy3d.worldFailed = true;
-        console.warn('[VirtualLife UI] 户外 3D 场景加载失败，户外改用 2D', error);
+        console.warn('[模拟人生 面板] 户外 3D 场景加载失败，户外改用 2D', error);
         render();
       });
     }

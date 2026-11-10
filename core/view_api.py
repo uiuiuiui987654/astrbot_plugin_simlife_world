@@ -25,7 +25,7 @@ from .view_routes.money import MoneyRoutes
 from .view_routes.system import SystemRoutes
 
 
-class VirtualLifeViewAPI(SystemRoutes, HomeRoutes, MoneyRoutes, JournalRoutes):
+class LifeViewAPI(SystemRoutes, HomeRoutes, MoneyRoutes, JournalRoutes):
     """Connect the view to this plugin instance's state and interaction queue."""
 
     def __init__(self, plugin):

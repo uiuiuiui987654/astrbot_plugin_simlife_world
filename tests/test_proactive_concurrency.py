@@ -9,7 +9,7 @@ from zoneinfo import ZoneInfo
 
 from astrbot.core.utils.session_lock import session_lock_manager
 
-from astrbot_plugin_simlife_world.main import ProactiveVirtualDailyPlugin
+from astrbot_plugin_simlife_world.main import SimLifeWorldPlugin
 
 from tests.fixtures import nap_day
 
@@ -20,7 +20,7 @@ PLAN = nap_day()
 
 
 def host():
-    plugin = object.__new__(ProactiveVirtualDailyPlugin)
+    plugin = object.__new__(SimLifeWorldPlugin)
     plugin.config = {"delivery_settings": {"minimum_idle_for_window_minutes": 20, "proactive_timeline_context": False}}
     plugin._now = lambda: NOW
     plugin.delivery_locks = {}

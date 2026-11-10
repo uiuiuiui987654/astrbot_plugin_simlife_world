@@ -1,1 +1,1 @@
-"""Mixins that make up ProactiveVirtualDailyPlugin (see main.py)."""
+"""Mixins that make up SimLifeWorldPlugin (see main.py)."""

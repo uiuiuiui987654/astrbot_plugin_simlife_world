@@ -18,7 +18,7 @@
 </div>
 
 > [!NOTE]
-> 项目名：**模拟人生_世界**。市场插件标识为 `astrbot_plugin_simlife_world`；旧标识 `astrbot_plugin_virtual_life` 仅用于兼容旧数据。
+> 项目名：**模拟人生_世界**，插件标识为 `astrbot_plugin_simlife_world`。
 
 ---
 
@@ -128,7 +128,7 @@ astrbot_plugin_simlife_world/
 │  └─ life_state/             身体与心情状态计算
 ├─ templates/                 图片渲染模板
 ├─ tools/                     前端构建与重构校验脚本
-└─ views/life/                虚拟人生面板
+└─ views/life/                生活面板
    ├─ index.html
    ├─ app.js                  由 src/app/ 生成
    ├─ style.css               由 src/style/ 生成
@@ -350,7 +350,7 @@ AI 在聊天里想发自拍时会调用 `take_selfie` 工具，生成后直接�
 
 <br>
 
-不建议。请不要与 **private_companion**，或 **虚拟人生**（`astrbot_plugin_virtual_life`）插件同时启用：它们同样会在每次聊天请求里注入角色状态、按日程主动发消息，同时启用会出现重复注入、重复主动消息；与虚拟人生插件还会争用同名指令（如 `/虚拟日程`）。从虚拟人生插件换过来时，停用它即可，本插件会兼容读取旧数据。
+不建议。请不要与 **private_companion** 这类同样会在聊天请求里注入角色状态、按日程主动发消息的插件同时启用，否则会出现重复注入和重复的主动消息，指令名相同时还会互相抢指令。
 
 </details>
 

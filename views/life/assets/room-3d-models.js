@@ -485,7 +485,7 @@
   // ------------------------------------------------------------------ decor (non-item props)
   var decor={
     // 1F garage: the house's own garage room; contents shared with the garage interior builder (cars, bays, workbench...)
-    车库:function(k,c){var D3=root.Destination3DModels;if(D3&&D3.garageRoom){var garage=root.VirtualLifeGarage||{};D3.garageRoom(k,{W:c.W,D:c.D,H:c.H,doorZ:c.Z(98),doorSide:'right',mode:garage.mode||'',vehicles:garage.vehicles||[]});}},
+    车库:function(k,c){var D3=root.Destination3DModels;if(D3&&D3.garageRoom){var garage=root.SimLifeGarage||{};D3.garageRoom(k,{W:c.W,D:c.D,H:c.H,doorZ:c.Z(98),doorSide:'right',mode:garage.mode||'',vehicles:garage.vehicles||[]});}},
     卧室:function(k,c){var ns=c.fixtures[0];if(ns){var g=wallProp(k,'back','clock','时钟',c.X(ns.x+ns.w/2),1.86);if(g)clock(k,g);}
       var wd=c.plan.wardrobe,vm=c.plan.vanity_mirror,az=c.Z(vm[1]+vm[3]/2),pic=wallProp(k,'right','moon_art','月亮挂画',c.wallU('right',c.W,az),2.03);if(pic)frameArt(k,pic,.42,.4,function(cx,w,h){cx.fillStyle='#f4ead9';cx.fillRect(0,0,w,h);cx.fillStyle='#beacc6';cx.beginPath();cx.arc(w*.54,h*.42,w*.27,0,PI*2);cx.fill();cx.fillStyle='#f4ead9';cx.beginPath();cx.arc(w*.68,h*.34,w*.25,0,PI*2);cx.fill();});
       var bed=c.plan.bed,sl=floorProp(k,'slippers','拖鞋',c.X(bed[0]+bed[2])+.22,c.Z(bed[1]+bed[3])-.55,.2),pink=k.mat('#e9c9cf',.9);[-.06,.06].forEach(function(x,i){var s1=k.bx(sl,x,.04,i*.05,.1,.04,.25,pink,.018);k.bx(sl,x,.05,i*.05+.05,.09,.03,.12,k.mat('#fbf3ee',1),.012);});

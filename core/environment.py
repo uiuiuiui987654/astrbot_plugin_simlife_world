@@ -15,7 +15,7 @@ if __package__:
 else:
     # The interaction regression suite loads this module directly from a file.
     import importlib.util
-    _wardrobe_spec = importlib.util.spec_from_file_location("virtual_life_wardrobe", Path(__file__).with_name("wardrobe.py"))
+    _wardrobe_spec = importlib.util.spec_from_file_location("simlife_wardrobe", Path(__file__).with_name("wardrobe.py"))
     _wardrobe = importlib.util.module_from_spec(_wardrobe_spec)
     _wardrobe_spec.loader.exec_module(_wardrobe)
     appearance_context = _wardrobe.appearance_context

@@ -1,7 +1,7 @@
 """Headless-browser smoke test for the life panel (2D and 3D).
 
 The panel is served by ``tools/panel_server.py``: real static files plus the
-plugin's real ``VirtualLifeViewAPI.dispatch`` on a temp data dir with a demo
+plugin's real ``LifeViewAPI.dispatch`` on a temp data dir with a demo
 day. Needs Playwright with Chromium; skipped otherwise.
 
     pip install playwright && python -m playwright install --with-deps chromium

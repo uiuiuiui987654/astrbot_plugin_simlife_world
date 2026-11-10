@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, MagicMock
 from zoneinfo import ZoneInfo
 
 from astrbot_plugin_simlife_world.core.models import DailyPlan
-from astrbot_plugin_simlife_world.main import ProactiveVirtualDailyPlugin
+from astrbot_plugin_simlife_world.main import SimLifeWorldPlugin
 
 from tests.fixtures import outfit_payload
 
@@ -23,7 +23,7 @@ def network_plugin():
 
 
 def host(enabled, network=None):
-    plugin = object.__new__(ProactiveVirtualDailyPlugin)
+    plugin = object.__new__(SimLifeWorldPlugin)
     plugin.config = {"personal_network_integration": {"enable": enabled, "max_context_chars": 2500}}
     plugin.context = MagicMock()
     plugin.context.get_registered_star.return_value = SimpleNamespace(activated=True, star_cls=network) if network else None

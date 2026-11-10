@@ -109,7 +109,7 @@ def main():
     sys.meta_path.insert(0, _Finder())
     sys.path.insert(0, str(repo.parent))
     mod = importlib.import_module(repo.name + ".main")
-    cls = getattr(mod, "ProactiveVirtualDailyPlugin")
+    cls = getattr(mod, "SimLifeWorldPlugin")
     attrs = {}
     for name in dir(cls):
         if name.startswith("__") and name.endswith("__") and name != "__init__":

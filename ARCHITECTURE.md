@@ -96,7 +96,7 @@ AstrBot 按**定义所在的模块**绑定指令、LLM 工具和事件钩子，�
 
 ## 面板接口：core/view_api.py 与 core/view_routes/
 
-`VirtualLifeViewAPI.dispatch` 只做两件事：按原顺序执行共用的检查（时间预览不能互动、POST 前要有今天的日程、家具和动作是否合法、角色在不在家），再把请求交给对应的处理函数。处理函数按领域放在 `core/view_routes/` 的 mixin 里：
+`LifeViewAPI.dispatch` 只做两件事：按原顺序执行共用的检查（时间预览不能互动、POST 前要有今天的日程、家具和动作是否合法、角色在不在家），再把请求交给对应的处理函数。处理函数按领域放在 `core/view_routes/` 的 mixin 里：
 
 | 文件 | 内容 |
 | --- | --- |
@@ -144,7 +144,7 @@ AstrBot 按**定义所在的模块**绑定指令、LLM 工具和事件钩子，�
    python tools/build_frontend.py
    ```
 
-3. 更新 `views/life/index.html` 中对应资源的 `?v=` 版本号；改了 `app.js` 时同步改 `src/app/00-core.js` 里的 `__VIRTUAL_LIFE_UI_VERSION`。
+3. 更新 `views/life/index.html` 中对应资源的 `?v=` 版本号；改了 `app.js` 时同步改 `src/app/00-core.js` 里的 `__SIMLIFE_UI_VERSION`。
 4. 提交前可以用 `python tools/build_frontend.py --check` 确认生成文件是最新的。
 
 片段按文件名顺序拼接；新增片段时用编号前缀放到正确位置。CSS 的顺序就是层叠顺序，不要随意调整。
@@ -160,7 +160,7 @@ AstrBot 按**定义所在的模块**绑定指令、LLM 工具和事件钩子，�
 
 ### 本地预览面板
 
-`python tools/panel_server.py` 会在 http://127.0.0.1:8770/ 打开生活面板：静态文件来自 `views/life/`，接口直接调用插件的 `VirtualLifeViewAPI.dispatch`，数据放在临时目录里并预置一天示例日程（`--data-dir` 可指定目录）。`tests/test_panel_smoke.py` 也用它跑无头浏览器测试。
+`python tools/panel_server.py` 会在 http://127.0.0.1:8770/ 打开生活面板：静态文件来自 `views/life/`，接口直接调用插件的 `LifeViewAPI.dispatch`，数据放在临时目录里并预置一天示例日程（`--data-dir` 可指定目录）。`tests/test_panel_smoke.py` 也用它跑无头浏览器测试。
 
 ### 3D 脚本按需加载
 

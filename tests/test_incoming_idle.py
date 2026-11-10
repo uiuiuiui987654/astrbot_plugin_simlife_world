@@ -7,7 +7,7 @@ from astrbot.core.star.filter.command import CommandFilter
 from astrbot.core.star.filter.command_group import CommandGroupFilter
 from astrbot.core.star.filter.regex import RegexFilter
 
-from astrbot_plugin_simlife_world.main import ProactiveVirtualDailyPlugin
+from astrbot_plugin_simlife_world.main import SimLifeWorldPlugin
 
 
 def event(**extras):
@@ -19,7 +19,7 @@ def handled_by(*filters):
 
 
 class ConversationDetection(unittest.TestCase):
-    plugin = object.__new__(ProactiveVirtualDailyPlugin)
+    plugin = object.__new__(SimLifeWorldPlugin)
 
     def test_conversation(self):
         for name, ev in {

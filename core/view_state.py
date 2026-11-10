@@ -339,14 +339,14 @@ def load_fridge(plans_path: Path) -> dict:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
-        return {"ingredients": [], "updated_at": "", "source": "virtual_life"}
+        return {"ingredients": [], "updated_at": "", "source": "simlife"}
     ingredients = payload.get("ingredients", []) if isinstance(payload, dict) else []
     return {
         "ingredients": [item for item in ingredients if isinstance(item, dict)],
         "updated_at": str(payload.get("updated_at") or "")
         if isinstance(payload, dict)
         else "",
-        "source": "virtual_life",
+        "source": "simlife",
     }
 
 

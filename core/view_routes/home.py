@@ -24,7 +24,7 @@ from .context import RouteContext
 
 
 class HomeRoutes:
-    """Mixin for VirtualLifeViewAPI; expects ``self.plugin`` and ``self.plans_path``."""
+    """Mixin for LifeViewAPI; expects ``self.plugin`` and ``self.plans_path``."""
 
     def _get_cooking_history(self, ctx: RouteContext) -> dict:
         """GET cooking/history"""

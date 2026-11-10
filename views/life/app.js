@@ -2,8 +2,8 @@
 (function () {
   'use strict';
 
-  window.__VIRTUAL_LIFE_UI_VERSION = '20261110-memory1';
-  console.log('[VirtualLife UI] ' + window.__VIRTUAL_LIFE_UI_VERSION);
+  window.__SIMLIFE_UI_VERSION = '20261111-rename1';
+  console.log('[模拟人生 面板] ' + window.__SIMLIFE_UI_VERSION);
 
   var $ = function (id) { return document.getElementById(id); };
 
@@ -489,17 +489,17 @@
         try {
           checkDeliveryArrivals(data.deliveries || []);
         } catch (error) {
-          console.error('[VirtualLife] delivery check failed', error);
+          console.error('[模拟人生] delivery check failed', error);
         }
         try {
           checkAffectionLevel(data.affection || {});
         } catch (error) {
-          console.error('[VirtualLife] affection level check failed', error);
+          console.error('[模拟人生] affection level check failed', error);
         }
         try {
           renderPendingActions(data.pending_actions);
         } catch (error) {
-          console.error('[VirtualLife] pending actions render failed', error);
+          console.error('[模拟人生] pending actions render failed', error);
         }
         render();
       })
@@ -3285,7 +3285,7 @@
   function renderGarageRoom() {
     // Share the car's parked/out state with the 1F garage room (2D plan, close-up and 3D).
     var shared = (state.data && state.data.garage) || {}, sharedVehicle = shared.vehicle || {};
-    window.VirtualLifeGarage = {
+    window.SimLifeGarage = {
       mode: sharedVehicle.status === 'out' ? 'out' : 'parked|' + (sharedVehicle.plate || ''),
       plate: sharedVehicle.plate || '',
       vehicles: (shared.vehicles || []).map(function (item) {
@@ -3601,7 +3601,7 @@
         render();
       }).catch(function (error) {
         lazy3d.failed = true;
-        console.warn('[VirtualLife UI] 3D 场景加载失败，改用 2D', error);
+        console.warn('[模拟人生 面板] 3D 场景加载失败，改用 2D', error);
         showToast('3D 场景加载失败，已改用 2D');
         render();
       });
@@ -3616,7 +3616,7 @@
         });
       }).catch(function (error) {
         lazy3d.worldFailed = true;
-        console.warn('[VirtualLife UI] 户外 3D 场景加载失败，户外改用 2D', error);
+        console.warn('[模拟人生 面板] 户外 3D 场景加载失败，户外改用 2D', error);
         render();
       });
     }

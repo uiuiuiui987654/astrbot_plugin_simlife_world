@@ -21,7 +21,7 @@
   // Garage bays (room plan units, nose north): A1 jeep, A2 the family car, A3 sports car. Shared by plan + close-up.
   S.garageBays = [{x:90,type:'jeep',paint:'#6f7f5c',label:'吉普'},{x:220,type:'sedan',paint:'#eef2ef',label:'白色小车',home:true},{x:350,type:'sports',paint:'#c8423a',label:'跑车'}];
   S.garageOut = function(type){
-    var g=root.VirtualLifeGarage||{};
+    var g=root.SimLifeGarage||{};
     var carType=String(type||'');
     var carId=carType==='jeep'?'car_jeep':carType==='sports'?'car_sports':'car_white';
     var vehicles=g.vehicles||[];

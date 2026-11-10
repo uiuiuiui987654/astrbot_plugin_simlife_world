@@ -191,9 +191,9 @@ class ContextTests(MemoryTestCase):
 
 class PluginIntegrationTests(MemoryTestCase):
     def plugin(self):
-        from astrbot_plugin_simlife_world.main import ProactiveVirtualDailyPlugin
+        from astrbot_plugin_simlife_world.main import SimLifeWorldPlugin
 
-        plugin = object.__new__(ProactiveVirtualDailyPlugin)
+        plugin = object.__new__(SimLifeWorldPlugin)
         plugin.data_dir = self.data_dir
         plans = {DAY.isoformat(): self.plan}
         plugin.storage = SimpleNamespace(get_plan=lambda day, persona: plans.get(day))

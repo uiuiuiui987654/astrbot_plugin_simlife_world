@@ -1,6 +1,6 @@
 """Group-chat privacy filtering and reply humanizing.
 
-Mixin for ProactiveVirtualDailyPlugin; split out of main.py without behaviour changes.
+Mixin for SimLifeWorldPlugin; split out of main.py without behaviour changes.
 """
 
 from __future__ import annotations
@@ -90,7 +90,7 @@ class GroupChatMixin:
             if plan is not None:
                 terms.update(_group_plan_terms(plan))
             if event is not None:
-                event.set_extra("virtual_life_group_terms", terms)
+                event.set_extra("simlife_group_terms", terms)
             prompt = str(getattr(req, "system_prompt", "") or "")
             if GROUP_PRIVACY_RULE not in prompt:
                 req.system_prompt = (prompt + "\n\n" + GROUP_PRIVACY_RULE).strip()

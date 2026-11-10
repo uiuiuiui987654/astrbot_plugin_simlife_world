@@ -17,7 +17,7 @@ from .context import RouteContext
 
 
 class JournalRoutes:
-    """Mixin for VirtualLifeViewAPI; expects ``self.plugin`` and ``self.plans_path``."""
+    """Mixin for LifeViewAPI; expects ``self.plugin`` and ``self.plans_path``."""
 
     def _get_weekly(self, ctx: RouteContext) -> dict:
         """GET weekly"""

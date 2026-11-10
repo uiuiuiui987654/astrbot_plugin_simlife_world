@@ -1,6 +1,6 @@
 """Detecting activities mentioned in chat and writing them into the schedule.
 
-Mixin for ProactiveVirtualDailyPlugin; split out of main.py without behaviour changes.
+Mixin for SimLifeWorldPlugin; split out of main.py without behaviour changes.
 """
 
 from __future__ import annotations

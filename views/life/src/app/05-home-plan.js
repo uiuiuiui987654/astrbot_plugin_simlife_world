@@ -529,7 +529,7 @@
   function renderGarageRoom() {
     // Share the car's parked/out state with the 1F garage room (2D plan, close-up and 3D).
     var shared = (state.data && state.data.garage) || {}, sharedVehicle = shared.vehicle || {};
-    window.VirtualLifeGarage = {
+    window.SimLifeGarage = {
       mode: sharedVehicle.status === 'out' ? 'out' : 'parked|' + (sharedVehicle.plate || ''),
       plate: sharedVehicle.plate || '',
       vehicles: (shared.vehicles || []).map(function (item) {
