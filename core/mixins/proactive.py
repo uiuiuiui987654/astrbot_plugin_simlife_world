@@ -38,17 +38,17 @@ class ProactiveMixin:
         """Every few minutes give her the chance to say something; the model decides whether to."""
         settings = self._decision_settings()
         if not settings.get("decision_loop_enable", True):
-            logger.info("[虚拟人生] 发言决策循环未启用")
+            logger.info("[模拟人生] 发言决策循环未启用")
             return
         minutes = max(5, int(settings.get("decision_interval_minutes", 20)))
-        logger.info("[虚拟人生] 发言决策循环已启动，间隔=%s 分钟", minutes)
+        logger.info("[模拟人生] 发言决策循环已启动，间隔=%s 分钟", minutes)
         while True:
             try:
                 await self._run_decision_opportunities()
             except asyncio.CancelledError:
                 raise
             except Exception as exc:  # pragma: no cover - defensive
-                logger.warning("[虚拟人生] 发言决策失败: %s", exc)
+                logger.warning("[模拟人生] 发言决策失败: %s", exc)
             await asyncio.sleep(minutes * 60)
 
     async def _run_decision_opportunities(self) -> None:
@@ -82,7 +82,7 @@ class ProactiveMixin:
             except asyncio.CancelledError:
                 raise
             except Exception as exc:  # pragma: no cover - defensive
-                logger.warning("[虚拟人生] 发言决策异常 umo=%s: %s", umo, exc)
+                logger.warning("[模拟人生] 发言决策异常 umo=%s: %s", umo, exc)
 
     # ------------------------------------------------------------------ gate
 
@@ -115,7 +115,7 @@ class ProactiveMixin:
                 needs=self._life_needs(plan, now),
             )
             if not verdict.allowed:
-                logger.info("[虚拟人生] %s 这次不发：%s", umo, verdict.reason)
+                logger.info("[模拟人生] %s 这次不发：%s", umo, verdict.reason)
                 return False, verdict.reason
             sent = await self._deliver(
                 umo,
@@ -144,13 +144,13 @@ class ProactiveMixin:
     def _quick_refusal(self, umo: str, trigger: str, now) -> str:
         """Reasons to stay quiet that don't need the policy at all."""
         if self._agent_is_active(umo):
-            logger.info("[虚拟人生] %s 正在跑 Agent 任务，先不打扰", umo)
+            logger.info("[模拟人生] %s 正在跑 Agent 任务，先不打扰", umo)
             return "agent running"
         if self.user_states.is_sleeping(now):
-            logger.info("[虚拟人生] 跳过 %s: 主人在睡觉", umo)
+            logger.info("[模拟人生] 跳过 %s: 主人在睡觉", umo)
             return "user sleeping"
         if trigger == "window" and not self._window_is_idle_enough(umo, now):
-            logger.info("[虚拟人生] %s 刚刚还在聊，窗口先不发", umo)
+            logger.info("[模拟人生] %s 刚刚还在聊，窗口先不发", umo)
             return "chat not quiet yet"
         return ""
 
@@ -208,7 +208,7 @@ class ProactiveMixin:
                 )
                 extras += f"\n\n【最近收到的东西】{names}。如果和当前主动消息自然相关，可以顺口提一句；不要每条都提，也不要像在报清单。"
         except Exception:
-            logger.debug("[虚拟人生] 主动消息附加信息读取失败", exc_info=True)
+            logger.debug("[模拟人生] 主动消息附加信息读取失败", exc_info=True)
         return extras
 
     def _group_break_chance(self) -> float:
@@ -294,7 +294,7 @@ class ProactiveMixin:
             chance = self._group_break_chance() if group else 0.0
             if chance > 0 and random.random() < chance:
                 logger.info(
-                    "[虚拟人生] 群聊冷场，按概率 %s 改口主动发言 umo=%s", chance, umo
+                    "[模拟人生] 群聊冷场，按概率 %s 改口主动发言 umo=%s", chance, umo
                 )
                 text = await write(
                     relationship_context="",
@@ -305,7 +305,7 @@ class ProactiveMixin:
                     retry_note=BREAK_SILENCE_NOTE,
                 )
             if not text:
-                logger.info("[虚拟人生] %s 这一次决定不开口", umo)
+                logger.info("[模拟人生] %s 这一次决定不开口", umo)
                 return False
         if group:
             text = tidy_for_group(text)
@@ -315,7 +315,7 @@ class ProactiveMixin:
             wrong_room = self._current_room_conflict(text, current)
             if wrong_room:
                 logger.info(
-                    "[虚拟人生] 主动消息场景不一致，重写一次 umo=%s wrong=%s text=%s",
+                    "[模拟人生] 主动消息场景不一致，重写一次 umo=%s wrong=%s text=%s",
                     umo,
                     wrong_room,
                     text,
@@ -332,12 +332,12 @@ class ProactiveMixin:
                 )
                 if self._current_room_conflict(text, current):
                     logger.info(
-                        "[虚拟人生] 重写后场景仍不一致，放弃本次主动消息 umo=%s", umo
+                        "[模拟人生] 重写后场景仍不一致，放弃本次主动消息 umo=%s", umo
                     )
                     return False
         if said_lately and self.interactions.is_repetitive(text, said_lately):
             logger.info(
-                "[虚拟人生] 主动消息与最近内容重复，重写一次 umo=%s text=%s", umo, text
+                "[模拟人生] 主动消息与最近内容重复，重写一次 umo=%s text=%s", umo, text
             )
             rewrite = await write(
                 recent_sent=said_lately + [text],
@@ -345,7 +345,7 @@ class ProactiveMixin:
                 retry_note=REPEAT_NOTE,
             )
             if self.interactions.is_repetitive(rewrite, said_lately):
-                logger.info("[虚拟人生] 重写后仍然重复，放弃本次主动消息 umo=%s", umo)
+                logger.info("[模拟人生] 重写后仍然重复，放弃本次主动消息 umo=%s", umo)
                 return False
             if group:
                 rewrite = tidy_for_group(rewrite)
@@ -359,11 +359,11 @@ class ProactiveMixin:
     ) -> bool:
         """Send unless the user spoke while we were writing (checked again under the session lock)."""
         if not self._proactive_context_is_current(umo, generation):
-            logger.info("[虚拟人生] %s 写消息时对方说话了，这条作废", umo)
+            logger.info("[模拟人生] %s 写消息时对方说话了，这条作废", umo)
             return False
         async with session_lock_manager.acquire_lock(umo):
             if not self._proactive_context_is_current(umo, generation):
-                logger.info("[虚拟人生] %s 发送前对方说话了，这条作废", umo)
+                logger.info("[模拟人生] %s 发送前对方说话了，这条作废", umo)
                 return False
             await self._send_text(umo, text)
             await self.message_generator.record_conversation(
@@ -375,7 +375,7 @@ class ProactiveMixin:
         """Send in human-sized pieces with typing pauses; raises when the platform refuses."""
         split = self.message_segmenter.split(text)
         logger.info(
-            "[虚拟人生] 拆分发送 umo=%s 方式=%s 字数=%s 条数=%s 阈值=%s 说明=%s",
+            "[模拟人生] 拆分发送 umo=%s 方式=%s 字数=%s 条数=%s 阈值=%s 说明=%s",
             umo,
             split.mode,
             split.source_length,
@@ -430,11 +430,11 @@ class ProactiveMixin:
                 decide=True,
             )
             logger.info(
-                "[虚拟人生] 拍照后主动反应 persona=%s sent=%s", persona_id, sent
+                "[模拟人生] 拍照后主动反应 persona=%s sent=%s", persona_id, sent
             )
             return bool(sent)
         except asyncio.CancelledError:
             raise
         except Exception as exc:  # pragma: no cover - defensive
-            logger.warning("[虚拟人生] 拍照后主动反应失败: %s", exc)
+            logger.warning("[模拟人生] 拍照后主动反应失败: %s", exc)
             return False

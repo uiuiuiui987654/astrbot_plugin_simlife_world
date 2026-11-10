@@ -177,7 +177,7 @@ class PlanningMixin:
             self._sync_life_memory(persona_id, self._now(), days_back=3)
             return life_memory.recent_context(self.data_dir, persona_id, target)
         except Exception:
-            logger.debug("[虚拟人生] 读取生活记忆失败", exc_info=True)
+            logger.debug("[模拟人生] 读取生活记忆失败", exc_info=True)
             return ""
 
     async def _add_schedule_requirement(
@@ -210,7 +210,7 @@ class PlanningMixin:
         except Exception as exc:
             self.storage.schedule_requirements.pop(item.id, None)
             logger.warning(
-                "[虚拟人生] 日程要求保存失败 persona=%s: %s", persona.id, exc
+                "[模拟人生] 日程要求保存失败 persona=%s: %s", persona.id, exc
             )
             return "要求没存上，看看日志再试一次。"
         span = (

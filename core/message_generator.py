@@ -128,7 +128,7 @@ class ProactiveMessageGenerator:
         if not verdict:
             return raw
         if verdict["decision"] != "send":
-            logger.info("[虚拟人生] 这次决定不开口 umo=%s 理由=%s", umo, verdict["reason"] or "无")
+            logger.info("[模拟人生] 这次决定不开口 umo=%s 理由=%s", umo, verdict["reason"] or "无")
             return ""
         return verdict["text"].strip()
 
@@ -220,7 +220,7 @@ class ProactiveMessageGenerator:
             ]
             return "\n".join(lines) or NO_HISTORY
         except Exception as exc:
-            logger.debug("[虚拟人生] 读不到聊天记录 %s: %s", umo, exc)
+            logger.debug("[模拟人生] 读不到聊天记录 %s: %s", umo, exc)
             return NO_HISTORY
 
     async def recent_proactive_texts(self, umo: str, limit: int = 5) -> list[str]:
@@ -230,7 +230,7 @@ class ProactiveMessageGenerator:
         try:
             history = await self._load_history(umo)
         except Exception as exc:  # pragma: no cover - defensive
-            logger.debug("[虚拟人生] 读取主动消息历史失败 %s: %s", umo, exc)
+            logger.debug("[模拟人生] 读取主动消息历史失败 %s: %s", umo, exc)
             return []
         texts: list[str] = []
         prompt_before = ""
@@ -265,15 +265,15 @@ class ProactiveMessageGenerator:
                 umo, persona_id=persona_id
             )
             if not conversation_id:
-                logger.warning("[虚拟人生] 主动消息没记入聊天记录：新建对话失败 umo=%s", umo)
+                logger.warning("[模拟人生] 主动消息没记入聊天记录：新建对话失败 umo=%s", umo)
                 return False
             await manager.add_message_pair(
                 cid=conversation_id,
                 user_message=UserMessageSegment(content=[TextPart(text=self._history_note(intent))]),
                 assistant_message=AssistantMessageSegment(content=[TextPart(text=assistant_text)]),
             )
-            logger.info("[虚拟人生] 主动消息记入聊天记录 umo=%s conversation=%s", umo, conversation_id)
+            logger.info("[模拟人生] 主动消息记入聊天记录 umo=%s conversation=%s", umo, conversation_id)
             return True
         except Exception as exc:
-            logger.error("[虚拟人生] 主动消息没能记入聊天记录 umo=%s: %s", umo, exc)
+            logger.error("[模拟人生] 主动消息没能记入聊天记录 umo=%s: %s", umo, exc)
             return False

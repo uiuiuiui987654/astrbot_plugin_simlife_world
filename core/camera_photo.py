@@ -127,7 +127,7 @@ async def _materialize_image(image: str) -> str:
                     )
         except Exception:
             # 下载失败时退回原地址，至少给页面一次机会直接加载。
-            logger.debug("[虚拟人生] _materialize_image 出错，已忽略", exc_info=True)
+            logger.debug("[模拟人生] _materialize_image 出错，已忽略", exc_info=True)
             return image
     path = Path(image)
     try:
@@ -188,7 +188,7 @@ async def _generate_via_proxy(
                     if image:
                         return image
         except Exception:
-            logger.debug("[虚拟人生] _generate_via_proxy 出错，已忽略", exc_info=True)
+            logger.debug("[模拟人生] _generate_via_proxy 出错，已忽略", exc_info=True)
             continue
     return ""
 

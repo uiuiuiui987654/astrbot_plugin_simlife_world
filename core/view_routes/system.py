@@ -201,7 +201,7 @@ class SystemRoutes:
                     now=now if offset == 0 else None,
                 )
             except Exception:
-                logger.debug("[虚拟人生] 动态读取生活记忆失败", exc_info=True)
+                logger.debug("[模拟人生] 动态读取生活记忆失败", exc_info=True)
                 items = []
             for item in items:
                 kind = memory_kinds.get(str(item.get("kind") or ""))
@@ -361,7 +361,7 @@ class SystemRoutes:
                 self.plugin._now().date().isoformat(),
             )
         except Exception:
-            logger.debug("[虚拟人生] dispatch 出错，已忽略", exc_info=True)
+            logger.debug("[模拟人生] dispatch 出错，已忽略", exc_info=True)
             current_event = None
         long_term = [
             entry

@@ -60,12 +60,12 @@ def build(
     try:
         home_items, _ = view_state.load_home_items(plans_path)
     except Exception:
-        logger.debug("[虚拟人生] build 出错，已忽略", exc_info=True)
+        logger.debug("[模拟人生] build 出错，已忽略", exc_info=True)
         home_items = []
     try:
         state = view_state.build_state(plans_path, persona, now=moment)
     except Exception as exc:
-        logger.warning("[虚拟人生] build 失败: %s", exc, exc_info=True)
+        logger.warning("[模拟人生] build 失败: %s", exc, exc_info=True)
         state = {"ok": False, "error": str(exc)}
     wallet = money.snapshot(plans_path.parent, persona, limit=1)
     garage_state = garage.snapshot(plans_path.parent, persona, now=moment)

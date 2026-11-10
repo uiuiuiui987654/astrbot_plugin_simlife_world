@@ -173,7 +173,7 @@ def format_schedule_text(plan: Any, now: datetime, limit: int = 20) -> str:
     try:
         items = list(getattr(plan, "timeline", ()) or ())
     except Exception:
-        logger.debug("[虚拟人生] format_schedule_text 出错，已忽略", exc_info=True)
+        logger.debug("[模拟人生] format_schedule_text 出错，已忽略", exc_info=True)
         return ""
     if not items:
         return ""
@@ -189,7 +189,7 @@ def format_schedule_text(plan: Any, now: datetime, limit: int = 20) -> str:
             if start <= current_min < end:
                 line += " ← 现在"
         except Exception:
-            logger.debug("[虚拟人生] format_schedule_text 出错，已忽略", exc_info=True)
+            logger.debug("[模拟人生] format_schedule_text 出错，已忽略", exc_info=True)
         lines.append(line)
     return "\n".join(lines)
 
@@ -289,7 +289,7 @@ def parse_detection(
     try:
         payload = extract_json_object(str(raw or ""))
     except Exception:
-        logger.debug("[虚拟人生] parse_detection 出错，已忽略", exc_info=True)
+        logger.debug("[模拟人生] parse_detection 出错，已忽略", exc_info=True)
         payload = {}
     if not isinstance(payload, dict):
         payload = {}
@@ -403,7 +403,7 @@ def schedule_has_similar(
             item_start = int(str(item.start).split(":")[0]) * 60 + int(str(item.start).split(":")[1])
             item_end = 24 * 60 if item.end == "24:00" else int(str(item.end).split(":")[0]) * 60 + int(str(item.end).split(":")[1])
         except Exception:
-            logger.debug("[虚拟人生] schedule_has_similar 出错，已忽略", exc_info=True)
+            logger.debug("[模拟人生] schedule_has_similar 出错，已忽略", exc_info=True)
             continue
         if item_end <= start or item_start >= end:
             continue
@@ -446,7 +446,7 @@ def replace_dish_in_timeline(
     try:
         return replace(plan, timeline=tuple(items)), True
     except Exception:
-        logger.debug("[虚拟人生] replace_dish_in_timeline 出错，已忽略", exc_info=True)
+        logger.debug("[模拟人生] replace_dish_in_timeline 出错，已忽略", exc_info=True)
         return plan, False
 
 
@@ -528,7 +528,7 @@ class ChatScheduleState:
                 if isinstance(parsed, dict):
                     payload = parsed
         except Exception:
-            logger.debug("[虚拟人生] load 出错，已忽略", exc_info=True)
+            logger.debug("[模拟人生] load 出错，已忽略", exc_info=True)
             payload = {}
         if not isinstance(payload, dict):
             payload = {}
@@ -544,7 +544,7 @@ class ChatScheduleState:
             self.path.parent.mkdir(parents=True, exist_ok=True)
             atomic_write_json(self.path, data)
         except Exception:
-            logger.debug("[虚拟人生] save 出错，已忽略", exc_info=True)
+            logger.debug("[模拟人生] save 出错，已忽略", exc_info=True)
 
 
 def allow_check(

@@ -40,7 +40,7 @@ class ChatActivityMixin:
             except asyncio.CancelledError:
                 raise
             except Exception as exc:
-                logger.warning("[虚拟人生] 聊天日程判定失败 umo=%s: %s", umo, exc)
+                logger.warning("[模拟人生] 聊天日程判定失败 umo=%s: %s", umo, exc)
 
     async def _run_chat_activity_detection(
         self,
@@ -152,7 +152,7 @@ class ChatActivityMixin:
                 )
             ):
                 logger.info(
-                    "[虚拟人生] 聊天日程：今日插入已达上限 %s，跳过 activity=%s",
+                    "[模拟人生] 聊天日程：今日插入已达上限 %s，跳过 activity=%s",
                     max_inserts,
                     activity,
                 )
@@ -160,7 +160,7 @@ class ChatActivityMixin:
                 state, umo, activity, now
             ):
                 logger.info(
-                    "[虚拟人生] 聊天日程：近期已插入过相近活动，跳过 activity=%s",
+                    "[模拟人生] 聊天日程：近期已插入过相近活动，跳过 activity=%s",
                     activity,
                 )
             elif activity:
@@ -171,7 +171,7 @@ class ChatActivityMixin:
                     plan, activity, moment, minutes
                 ):
                     logger.info(
-                        "[虚拟人生] 聊天日程：当前日程已有相近活动，跳过 activity=%s",
+                        "[模拟人生] 聊天日程：当前日程已有相近活动，跳过 activity=%s",
                         activity,
                     )
                 else:
@@ -185,7 +185,7 @@ class ChatActivityMixin:
                         )
                     except Exception as exc:
                         logger.warning(
-                            "[虚拟人生] 聊天日程写入失败 activity=%s: %s",
+                            "[模拟人生] 聊天日程写入失败 activity=%s: %s",
                             activity,
                             exc,
                         )
@@ -204,7 +204,7 @@ class ChatActivityMixin:
             await self.storage.save_plans()
         self.chat_schedule_state.save(state)
         logger.info(
-            "[虚拟人生] 聊天日程判定 umo=%s insert=%s food=%s activity=%s "
+            "[模拟人生] 聊天日程判定 umo=%s insert=%s food=%s activity=%s "
             "start=%s meal=%s dish=%s reason=%s",
             umo,
             schedule_inserted,

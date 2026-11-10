@@ -76,7 +76,7 @@ class IncomingMixin:
                 if str(item.get("name") or "").strip()
             )
         except Exception:
-            logger.debug("[虚拟人生] _known_gift_item_names 出错，已忽略", exc_info=True)
+            logger.debug("[模拟人生] _known_gift_item_names 出错，已忽略", exc_info=True)
         if persona_id:
             try:
                 snapshot = money.snapshot(self.data_dir, persona_id)
@@ -86,7 +86,7 @@ class IncomingMixin:
                     if str(item.get("name") or "").strip()
                 )
             except Exception:
-                logger.debug("[虚拟人生] _known_gift_item_names 出错，已忽略", exc_info=True)
+                logger.debug("[模拟人生] _known_gift_item_names 出错，已忽略", exc_info=True)
         return sorted(names, key=len, reverse=True)
 
     def _maybe_queue_give_request(
@@ -107,10 +107,10 @@ class IncomingMixin:
                 source=f"月月请求：{text[:120]}",
                 now=now,
             )
-            logger.info("[虚拟人生] 月月请求递东西，已准备观察窗按钮 label=%s", label)
+            logger.info("[模拟人生] 月月请求递东西，已准备观察窗按钮 label=%s", label)
             return action
         except Exception as exc:
-            logger.warning("[虚拟人生] 准备月月请求按钮失败: %s", exc)
+            logger.warning("[模拟人生] 准备月月请求按钮失败: %s", exc)
             return None
 
     async def _maybe_queue_give_action(
@@ -135,19 +135,19 @@ class IncomingMixin:
                 now=now,
             )
             logger.info(
-                "[虚拟人生] 已准备观察窗递东西按钮 umo=%s label=%s",
+                "[模拟人生] 已准备观察窗递东西按钮 umo=%s label=%s",
                 event.unified_msg_origin,
                 label,
             )
         except Exception as exc:
-            logger.warning("[虚拟人生] 准备递东西按钮失败: %s", exc)
+            logger.warning("[模拟人生] 准备递东西按钮失败: %s", exc)
 
     async def _handle_incoming(self, event: AstrMessageEvent) -> None:
         umo = event.unified_msg_origin
         if not self.policy.is_enabled(umo):
             return
         if not self._is_conversation_event(event):
-            logger.debug("[虚拟人生] 指令不算聊天，不重置安静计时 umo=%s", umo)
+            logger.debug("[模拟人生] 指令不算聊天，不重置安静计时 umo=%s", umo)
             return
         now = self._now()
         if session_kind(umo) == "friend":

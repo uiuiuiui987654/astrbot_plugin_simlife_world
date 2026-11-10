@@ -1102,7 +1102,7 @@ def build_state(
                     now=now,
                 )
             except Exception:
-                logger.debug("[虚拟人生] build_state 出错，已忽略", exc_info=True)
+                logger.debug("[模拟人生] build_state 出错，已忽略", exc_info=True)
     except (OSError, TypeError, ValueError):
         needs = {}
     persona_id = plan_persona(plan) if plan else "未连接"

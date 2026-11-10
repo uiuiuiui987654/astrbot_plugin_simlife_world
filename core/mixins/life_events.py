@@ -30,7 +30,7 @@ class LifeEventsMixin:
         try:
             trips = garage.recent_returns(self.data_dir, persona.id, now=now, hours=36)
         except Exception as exc:
-            logger.warning("[虚拟人生] 检查回车记录失败: %s", exc)
+            logger.warning("[模拟人生] 检查回车记录失败: %s", exc)
             return
         for trip in trips:
             try:
@@ -57,7 +57,7 @@ class LifeEventsMixin:
                     )
                 garage.mark_noted(self.data_dir, persona.id, str(trip.get("id") or ""))
             except Exception as exc:
-                logger.warning("[虚拟人生] 记录回车失败: %s", exc)
+                logger.warning("[模拟人生] 记录回车失败: %s", exc)
 
     async def _ensure_world_event(self, persona, day) -> dict | None:
         try:
@@ -65,7 +65,7 @@ class LifeEventsMixin:
                 self.data_dir, persona.id, day.isoformat()
             )
         except Exception as exc:
-            logger.warning("[虚拟人生] 生成今日小事失败: %s", exc)
+            logger.warning("[模拟人生] 生成今日小事失败: %s", exc)
             return None
         if event.get("created") and int(event.get("mood") or 0) != 0:
             try:
@@ -78,9 +78,9 @@ class LifeEventsMixin:
                     ttl_minutes=12 * 60,
                 )
             except Exception:
-                logger.debug("[虚拟人生] _ensure_world_event 出错，已忽略", exc_info=True)
+                logger.debug("[模拟人生] _ensure_world_event 出错，已忽略", exc_info=True)
             logger.info(
-                "[虚拟人生] 今日小事 persona=%s title=%s mood=%s",
+                "[模拟人生] 今日小事 persona=%s title=%s mood=%s",
                 persona.id,
                 event.get("title"),
                 event.get("mood"),
@@ -96,7 +96,7 @@ class LifeEventsMixin:
                 now or self._now(),
             )
         except Exception as exc:
-            logger.warning("[虚拟人生] 处理送货失败: %s", exc)
+            logger.warning("[模拟人生] 处理送货失败: %s", exc)
             return []
         if delivered:
             names = "、".join(
@@ -104,7 +104,7 @@ class LifeEventsMixin:
                 for order in delivered
             )
             logger.info(
-                "[虚拟人生] 送货到达 persona=%s items=%s",
+                "[模拟人生] 送货到达 persona=%s items=%s",
                 persona.id,
                 names,
             )
@@ -136,7 +136,7 @@ class LifeEventsMixin:
             )
             if float(result.get("amount") or 0) > 0:
                 logger.info(
-                    "[虚拟人生] 工作收入结算 persona=%s date=%s minutes=%s amount=%s",
+                    "[模拟人生] 工作收入结算 persona=%s date=%s minutes=%s amount=%s",
                     persona.id,
                     day.isoformat(),
                     result.get("minutes"),
@@ -146,7 +146,7 @@ class LifeEventsMixin:
             await self._maybe_queue_goal_wish(persona)
         except Exception as exc:
             logger.warning(
-                "[虚拟人生] 工作收入结算失败 persona=%s: %s", persona.id, exc
+                "[模拟人生] 工作收入结算失败 persona=%s: %s", persona.id, exc
             )
 
     async def _settle_living_costs(
@@ -175,7 +175,7 @@ class LifeEventsMixin:
             )
             if float(result.get("amount") or 0) > 0:
                 logger.info(
-                    "[虚拟人生] 生活开销结算 persona=%s date=%s amount=%s balance=%s",
+                    "[模拟人生] 生活开销结算 persona=%s date=%s amount=%s balance=%s",
                     persona.id,
                     day.isoformat(),
                     result.get("amount"),
@@ -183,7 +183,7 @@ class LifeEventsMixin:
                 )
         except Exception as exc:
             logger.warning(
-                "[虚拟人生] 生活开销结算失败 persona=%s: %s", persona.id, exc
+                "[模拟人生] 生活开销结算失败 persona=%s: %s", persona.id, exc
             )
 
     async def _write_yearly_diary(self, persona, now) -> None:
@@ -214,12 +214,12 @@ class LifeEventsMixin:
                 now=now,
             )
             logger.info(
-                "[虚拟人生] 已生成年记 persona=%s end=%s",
+                "[模拟人生] 已生成年记 persona=%s end=%s",
                 persona.id,
                 end_day.isoformat(),
             )
         except Exception as exc:
-            logger.warning("[虚拟人生] 生成年记失败: %s", exc)
+            logger.warning("[模拟人生] 生成年记失败: %s", exc)
 
     async def _write_monthly_diary(self, persona, now) -> None:
         if now.day != 1:
@@ -249,12 +249,12 @@ class LifeEventsMixin:
                 now=now,
             )
             logger.info(
-                "[虚拟人生] 已生成月记 persona=%s end=%s",
+                "[模拟人生] 已生成月记 persona=%s end=%s",
                 persona.id,
                 end_day.isoformat(),
             )
         except Exception as exc:
-            logger.warning("[虚拟人生] 生成月记失败: %s", exc)
+            logger.warning("[模拟人生] 生成月记失败: %s", exc)
 
     async def _write_weekly_diary(self, persona, now) -> None:
         if now.weekday() != 0:
@@ -285,12 +285,12 @@ class LifeEventsMixin:
                 now=now,
             )
             logger.info(
-                "[虚拟人生] 已生成周记 persona=%s end=%s",
+                "[模拟人生] 已生成周记 persona=%s end=%s",
                 persona.id,
                 end_day.isoformat(),
             )
         except Exception as exc:
-            logger.warning("[虚拟人生] 生成周记失败: %s", exc)
+            logger.warning("[模拟人生] 生成周记失败: %s", exc)
 
     async def _record_anniversary(self, persona, now) -> None:
         try:
@@ -315,12 +315,12 @@ class LifeEventsMixin:
                 now=now,
             )
             logger.info(
-                "[虚拟人生] 关系纪念日 persona=%s days=%s",
+                "[模拟人生] 关系纪念日 persona=%s days=%s",
                 persona.id,
                 days,
             )
         except Exception as exc:
-            logger.warning("[虚拟人生] 记录关系纪念日失败: %s", exc)
+            logger.warning("[模拟人生] 记录关系纪念日失败: %s", exc)
 
     @staticmethod
     def _diary_weather_text(plan) -> str:
@@ -430,19 +430,19 @@ class LifeEventsMixin:
                 now=self._now(),
             )
             logger.info(
-                "[虚拟人生] 已生成日记 persona=%s date=%s",
+                "[模拟人生] 已生成日记 persona=%s date=%s",
                 persona.id,
                 day_text,
             )
         except Exception as exc:
-            logger.warning("[虚拟人生] 生成日记失败 persona=%s: %s", persona.id, exc)
+            logger.warning("[模拟人生] 生成日记失败 persona=%s: %s", persona.id, exc)
 
     async def _maybe_queue_goal_wish(self, persona) -> None:
         """When a savings goal is reached, queue a wish request for the master."""
         try:
             snapshot = money.snapshot(self.data_dir, persona.id, limit=1)
         except Exception:
-            logger.debug("[虚拟人生] _maybe_queue_goal_wish 出错，已忽略", exc_info=True)
+            logger.debug("[模拟人生] _maybe_queue_goal_wish 出错，已忽略", exc_info=True)
             return
         goal = snapshot.get("goal")
         if not goal or goal.get("fulfilled") or not goal.get("achieved"):
@@ -460,7 +460,7 @@ class LifeEventsMixin:
                 self.data_dir / "plans.json", persona.id
             )
         except Exception:
-            logger.debug("[虚拟人生] _maybe_queue_goal_wish 出错，已忽略", exc_info=True)
+            logger.debug("[模拟人生] _maybe_queue_goal_wish 出错，已忽略", exc_info=True)
             pending = []
         if any(str(action.get("kind") or "") == "wish" for action in pending):
             return
@@ -482,12 +482,12 @@ class LifeEventsMixin:
             )
             money.mark_goal_requested(self.data_dir, persona.id, at=self._now())
             logger.info(
-                "[虚拟人生] 已生成愿望请求 persona=%s goal=%s",
+                "[模拟人生] 已生成愿望请求 persona=%s goal=%s",
                 persona.id,
                 goal.get("name"),
             )
         except Exception as exc:
-            logger.warning("[虚拟人生] 生成愿望请求失败: %s", exc)
+            logger.warning("[模拟人生] 生成愿望请求失败: %s", exc)
 
     def _wallet_text(self, persona_id: str, limit: int = 3) -> str:
         settings = self._money_settings()

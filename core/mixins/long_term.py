@@ -73,7 +73,7 @@ class LongTermMixin:
             )
         except Exception as exc:
             logger.warning(
-                "[虚拟人生] 大时间表自动续期失败 persona=%s: %s",
+                "[模拟人生] 大时间表自动续期失败 persona=%s: %s",
                 persona_id,
                 exc,
                 exc_info=True,
@@ -96,7 +96,7 @@ class LongTermMixin:
         try:
             await self.context.send_message(umo, MessageChain().message(text))
         except Exception as exc:
-            logger.error("[虚拟人生] 没能通知管理员 %s: %s", umo, exc)
+            logger.error("[模拟人生] 没能通知管理员 %s: %s", umo, exc)
 
     def _scheduled_proactive_entries(
         self, umo: str, plan: DailyPlan
@@ -177,7 +177,7 @@ class LongTermMixin:
         try:
             paths = [await job() for job in jobs]
         except Exception:
-            logger.exception("[虚拟人生] 卡片没画出来，改发文字")
+            logger.exception("[模拟人生] 卡片没画出来，改发文字")
             return [event.plain_result("卡片没画出来，先看文字版：\n" + fallback)]
         return [event.plain_result(title), *map(event.image_result, paths)]
 

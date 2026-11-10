@@ -87,7 +87,7 @@ class LifeContextMixin:
                     now=now,
                 )
             except Exception:
-                logger.debug("[虚拟人生] _life_needs 出错，已忽略", exc_info=True)
+                logger.debug("[模拟人生] _life_needs 出错，已忽略", exc_info=True)
             return adjusted
         except (OSError, TypeError, ValueError):
             return {}
@@ -108,7 +108,7 @@ class LifeContextMixin:
                     data_dir, persona_id, day, plan, now=now if offset == 0 else None
                 )
             except Exception:
-                logger.debug("[虚拟人生] 生活记忆同步失败 %s", day, exc_info=True)
+                logger.debug("[模拟人生] 生活记忆同步失败 %s", day, exc_info=True)
 
     def _life_memory_context(self, persona_id: str, now: datetime, user_text: str = "") -> str:
         """Today's real happenings, plus earlier days when the user asks about them."""
@@ -191,7 +191,7 @@ class LifeContextMixin:
             text += f"\n\n【刚才的互动】\n{interaction_recap}"
         req.extra_user_content_parts.append(TextPart(text=text).mark_as_temp())
         logger.info(
-            "[虚拟人生] 对话回顾注入 umo=%s 行数=%s 字数=%s 互动=%s",
+            "[模拟人生] 对话回顾注入 umo=%s 行数=%s 字数=%s 互动=%s",
             event.unified_msg_origin,
             recap.count("\n") + 1,
             len(text),
@@ -204,7 +204,7 @@ class LifeContextMixin:
             items = self.interactions.recent(limit)
             now = self._now()
         except Exception:
-            logger.debug("[虚拟人生] _recent_interaction_lines 出错，已忽略", exc_info=True)
+            logger.debug("[模拟人生] _recent_interaction_lines 出错，已忽略", exc_info=True)
             return ""
         cutoff = now - timedelta(minutes=45)
         lines = []
@@ -257,7 +257,7 @@ class LifeContextMixin:
                 },
             )
         except Exception as exc:
-            logger.debug("[虚拟人生] 读取对话回顾失败 umo=%s: %s", umo, exc)
+            logger.debug("[模拟人生] 读取对话回顾失败 umo=%s: %s", umo, exc)
             return ""
 
     async def get_virtual_life_snapshot(self, umo: str) -> dict[str, Any]:
@@ -281,7 +281,7 @@ class LifeContextMixin:
         try:
             persona = await self.personas.resolve(umo)
         except Exception as exc:
-            logger.warning("[虚拟人生] 状态快照人格解析失败 umo=%s: %s", umo, exc)
+            logger.warning("[模拟人生] 状态快照人格解析失败 umo=%s: %s", umo, exc)
             return {
                 "ok": False,
                 "reason": "persona_unavailable",
@@ -308,7 +308,7 @@ class LifeContextMixin:
             if pose_hint:
                 snapshot["pose_hint"] = pose_hint
         except Exception:
-            logger.debug("[虚拟人生] get_virtual_life_snapshot 出错，已忽略", exc_info=True)
+            logger.debug("[模拟人生] get_virtual_life_snapshot 出错，已忽略", exc_info=True)
         snapshot.update(
             {
                 "ok": True,

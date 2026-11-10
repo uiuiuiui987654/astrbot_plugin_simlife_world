@@ -39,7 +39,7 @@ class RuntimeStateMixin:
             stale.append(task)
         if stale:
             await asyncio.gather(*stale, return_exceptions=True)
-            logger.info("[虚拟人生] 清理旧实例遗留循环 %s 个", len(stale))
+            logger.info("[模拟人生] 清理旧实例遗留循环 %s 个", len(stale))
 
     async def _normalize_loaded_timelines(self) -> None:
         """启动时修正历史数据：多站行程、旧版强制女仆装、旧摆位坐标。"""
@@ -59,7 +59,7 @@ class RuntimeStateMixin:
             changed += 1
         if changed:
             await self.storage.save_plans()
-            logger.info("[虚拟人生] 启动时规范化历史日程/穿搭 %s 条", changed)
+            logger.info("[模拟人生] 启动时规范化历史日程/穿搭 %s 条", changed)
 
     @staticmethod
     def _umo_hash(umo: str) -> str:

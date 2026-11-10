@@ -367,7 +367,7 @@ class InteractionService:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(str(time.time()), encoding="utf-8")
         except OSError:
-            logger.warning("[虚拟人生] 无法记录已处理互动 id=%s", request_id)
+            logger.warning("[模拟人生] 无法记录已处理互动 id=%s", request_id)
 
     def _sent_path(self, request_id: str) -> Path | None:
         root = self.root()
@@ -387,7 +387,7 @@ class InteractionService:
         except FileExistsError:
             return False
         except OSError:
-            logger.warning("[虚拟人生] 无法创建互动发送标记 id=%s", request_id)
+            logger.warning("[模拟人生] 无法创建互动发送标记 id=%s", request_id)
             return True
         os.close(descriptor)
         return True
@@ -416,7 +416,7 @@ class InteractionService:
                 continue
             if self._is_handled(request_id):
                 logger.warning(
-                    "[虚拟人生] 丢弃已处理过的重复互动请求 id=%s file=%s",
+                    "[模拟人生] 丢弃已处理过的重复互动请求 id=%s file=%s",
                     request_id,
                     path.name,
                 )
@@ -425,7 +425,7 @@ class InteractionService:
             if request_id in seen_ids:
                 # 同一请求被重复写入（例如窗口重试）时只处理一次。
                 logger.warning(
-                    "[虚拟人生] 丢弃重复互动请求文件 id=%s file=%s",
+                    "[模拟人生] 丢弃重复互动请求文件 id=%s file=%s",
                     request_id,
                     path.name,
                 )
@@ -470,7 +470,7 @@ class InteractionService:
             return False
         if self._is_handled(request_id):
             logger.info(
-                "[虚拟人生] 互动已处理过，忽略重复认领 id=%s", request_id
+                "[模拟人生] 互动已处理过，忽略重复认领 id=%s", request_id
             )
             return False
         processing = directory / ".processing"

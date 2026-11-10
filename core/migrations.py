@@ -123,7 +123,7 @@ def _backup(data_dir: Path, name: str, version: int, now: datetime) -> Path:
         try:
             path.unlink()
         except OSError:
-            logger.debug("[虚拟人生] 清理旧备份失败 %s", path, exc_info=True)
+            logger.debug("[模拟人生] 清理旧备份失败 %s", path, exc_info=True)
     return target
 
 
@@ -142,7 +142,7 @@ def migrate_file(data_dir: Path, name: str, schema: Schema, *, now: datetime | N
         return FileReport(name, "unreadable", detail="schema_version 不是数字")
     if version > schema.current:
         logger.warning(
-            "[虚拟人生] %s 的数据版本 v%s 比当前插件支持的 v%s 新，已保持原样；请升级插件。",
+            "[模拟人生] %s 的数据版本 v%s 比当前插件支持的 v%s 新，已保持原样；请升级插件。",
             name,
             version,
             schema.current,
@@ -164,7 +164,7 @@ def migrate_file(data_dir: Path, name: str, schema: Schema, *, now: datetime | N
         version += 1
     upgraded["schema_version"] = schema.current
     atomic_write_json(path, upgraded)
-    logger.info("[虚拟人生] 已把 %s 从 v%s 升级到 v%s（原文件已备份）", name, original, schema.current)
+    logger.info("[模拟人生] 已把 %s 从 v%s 升级到 v%s（原文件已备份）", name, original, schema.current)
     return FileReport(name, "upgraded", version=schema.current, from_version=original)
 
 
@@ -183,7 +183,7 @@ def migrate_all(
         try:
             reports[name] = migrate_file(Path(data_dir), name, schema, now=moment)
         except Exception as exc:  # one broken file must not block the others
-            logger.warning("[虚拟人生] 迁移 %s 失败，已保持原样: %s", name, exc, exc_info=True)
+            logger.warning("[模拟人生] 迁移 %s 失败，已保持原样: %s", name, exc, exc_info=True)
             reports[name] = FileReport(name, "unreadable", detail=f"迁移失败：{type(exc).__name__}")
     manifest = {
         "schema_version": 1,

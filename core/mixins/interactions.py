@@ -31,14 +31,14 @@ class InteractionsMixin:
     async def _interaction_loop(self) -> None:
         config = self.interactions.settings(self._interaction_settings())
         interval = max(1, int(config["poll_seconds"]))
-        logger.info("[虚拟人生] 即时互动已启动，轮询间隔=%ss", interval)
+        logger.info("[模拟人生] 即时互动已启动，轮询间隔=%ss", interval)
         while True:
             try:
                 await self._process_interactions()
             except asyncio.CancelledError:
                 raise
             except Exception as exc:  # pragma: no cover - defensive
-                logger.warning("[虚拟人生] 即时互动处理失败: %s", exc)
+                logger.warning("[模拟人生] 即时互动处理失败: %s", exc)
             await asyncio.sleep(interval)
 
     async def _process_interactions(self) -> None:
@@ -49,7 +49,7 @@ class InteractionsMixin:
             for request in self.interactions.pending(limit=3):
                 if not self.interactions.claim(request):
                     logger.info(
-                        "[虚拟人生] 互动请求已被认领或存在重复，跳过 id=%s",
+                        "[模拟人生] 互动请求已被认领或存在重复，跳过 id=%s",
                         request.get("id"),
                     )
                     continue
@@ -57,7 +57,7 @@ class InteractionsMixin:
                     await self._handle_interaction(request, config)
                 except Exception as exc:
                     logger.warning(
-                        "[虚拟人生] 互动失败 id=%s: %s", request.get("id"), exc
+                        "[模拟人生] 互动失败 id=%s: %s", request.get("id"), exc
                     )
                     self.interactions.write_response(
                         request,
@@ -154,7 +154,7 @@ class InteractionsMixin:
                 qq = await self._sync_interaction_qq(request, result, config)
                 self.interactions.write_response(request, result, qq=qq)
                 logger.info(
-                    "[虚拟人生] 关系动作被拒绝 action=%s score=%s required=%s",
+                    "[模拟人生] 关系动作被拒绝 action=%s score=%s required=%s",
                     affection_action,
                     relation.get("score"),
                     required,
@@ -184,7 +184,7 @@ class InteractionsMixin:
             qq = await self._sync_interaction_qq(request, result, config)
             self.interactions.write_response(request, result, qq=qq)
             logger.info(
-                "[虚拟人生] 互动被拒绝：她不在家 location=%s item=%s",
+                "[模拟人生] 互动被拒绝：她不在家 location=%s item=%s",
                 where,
                 request.get("item_id"),
             )
@@ -193,7 +193,7 @@ class InteractionsMixin:
         if not user_sleeping and self.user_states.is_sleeping(now):
             # 主人在观察窗里点了别的东西（或打字说话），说明已经起来活动了。
             self.user_states.clear()
-            logger.info("[虚拟人生] 主人在观察窗活动，清除睡眠状态")
+            logger.info("[模拟人生] 主人在观察窗活动，清除睡眠状态")
         history_text, history_items = await self._interaction_history(config)
         avoid_lines = (
             self.interactions.recent_assistant_texts(history_items, 4)
@@ -224,7 +224,7 @@ class InteractionsMixin:
             result.get("speech", ""), avoid_lines
         ):
             logger.info(
-                "[虚拟人生] 互动回复与前文重复，重写一次 id=%s speech=%s",
+                "[模拟人生] 互动回复与前文重复，重写一次 id=%s speech=%s",
                 request.get("id"),
                 result.get("speech"),
             )
@@ -257,7 +257,7 @@ class InteractionsMixin:
                 result["used"] = usage["used"]
                 result["missing"] = usage["missing"]
                 logger.info(
-                    "[虚拟人生] 互动做菜扣减库存 dish=%s used=%s missing=%s",
+                    "[模拟人生] 互动做菜扣减库存 dish=%s used=%s missing=%s",
                     (result.get("dish") or {}).get("name"),
                     [f"{item['name']}x{item['amount']}" for item in usage["used"]],
                     usage["missing"],
@@ -306,9 +306,9 @@ class InteractionsMixin:
                 now=self._now(),
             )
         except Exception as exc:
-            logger.debug("[虚拟人生] 增加好感失败: %s", exc)
+            logger.debug("[模拟人生] 增加好感失败: %s", exc)
         logger.info(
-            "[虚拟人生] 互动完成 id=%s kind=%s qq=%s speech=%s",
+            "[模拟人生] 互动完成 id=%s kind=%s qq=%s speech=%s",
             payload.get("id"),
             payload.get("kind"),
             qq.get("sent"),
@@ -355,9 +355,9 @@ class InteractionsMixin:
                 {"role": "user", "content": [{"type": "text", "text": user_text}]},
                 {"role": "assistant", "content": [{"type": "text", "text": speech}]},
             )
-            logger.debug("[虚拟人生] 互动已写入对话历史 umo=%s", umo)
+            logger.debug("[模拟人生] 互动已写入对话历史 umo=%s", umo)
         except Exception as exc:
-            logger.warning("[虚拟人生] 写入互动历史失败 umo=%s: %s", umo, exc)
+            logger.warning("[模拟人生] 写入互动历史失败 umo=%s: %s", umo, exc)
 
     USER_SLEEP_PATTERN = (
         "晚安",
@@ -384,11 +384,11 @@ class InteractionsMixin:
         if wants_wake:
             if self.user_states.is_sleeping(now):
                 self.user_states.clear()
-                logger.info("[虚拟人生] 主人醒了，清除睡眠状态")
+                logger.info("[模拟人生] 主人醒了，清除睡眠状态")
             return False
         if is_bed and wants_sleep:
             self.user_states.set_sleeping(now, place="卧室的床上", source="window")
-            logger.info("[虚拟人生] 记录主人在床上睡觉 text=%s", text[:40])
+            logger.info("[模拟人生] 记录主人在床上睡觉 text=%s", text[:40])
             return True
         return False
 
@@ -399,7 +399,7 @@ class InteractionsMixin:
         if any(word in message for word in self.USER_WAKE_PATTERN):
             if self.user_states.is_sleeping(now):
                 self.user_states.clear()
-                logger.info("[虚拟人生] 主人在聊天里说自己醒了，清除睡眠状态")
+                logger.info("[模拟人生] 主人在聊天里说自己醒了，清除睡眠状态")
             return
         sleep_hint = re.search(
             r"(我(要|去|先|准备|该|得)?去?睡|我去睡|准备睡|睡觉了|晚安|困了)",
@@ -410,7 +410,7 @@ class InteractionsMixin:
                 self.user_states.set_sleeping(
                     now, place="QQ 聊天里说要去睡", source="chat"
                 )
-                logger.info("[虚拟人生] 主人在聊天里说要去睡，记录睡眠状态")
+                logger.info("[模拟人生] 主人在聊天里说要去睡，记录睡眠状态")
 
     async def _inject_user_state(
         self, event: AstrMessageEvent, req: ProviderRequest
@@ -420,7 +420,7 @@ class InteractionsMixin:
         if not text:
             return
         req.extra_user_content_parts.append(TextPart(text=text).mark_as_temp())
-        logger.info("[虚拟人生] 注入主人睡眠状态 umo=%s", event.unified_msg_origin)
+        logger.info("[模拟人生] 注入主人睡眠状态 umo=%s", event.unified_msg_origin)
 
     async def _insert_interaction_activity(
         self, request: dict, result: dict, config: dict
@@ -431,7 +431,7 @@ class InteractionsMixin:
         if str(request.get("item_id") or "") == "bed" and any(
             word in str(request.get("text") or "") for word in self.USER_SLEEP_PATTERN
         ):
-            logger.info("[虚拟人生] 主人在睡觉，跳过日程插入")
+            logger.info("[模拟人生] 主人在睡觉，跳过日程插入")
             return
         persona = await self.personas.resolve(None)
         now = self._now()
@@ -484,7 +484,7 @@ class InteractionsMixin:
                     raw, default_minutes=default_minutes
                 )
             except Exception as exc:
-                logger.warning("[虚拟人生] 日程插入判定失败: %s", exc)
+                logger.warning("[模拟人生] 日程插入判定失败: %s", exc)
                 decision = {}
             if decision:
                 insert = bool(decision["insert"])
@@ -498,7 +498,7 @@ class InteractionsMixin:
                 insert = bool(dish)
                 reason = "fallback"
             logger.info(
-                "[虚拟人生] 日程插入判定 insert=%s reason=%s activity=%s minutes=%s",
+                "[模拟人生] 日程插入判定 insert=%s reason=%s activity=%s minutes=%s",
                 insert,
                 reason,
                 activity,
@@ -510,17 +510,17 @@ class InteractionsMixin:
         try:
             updated = insert_activity(plan, now, minutes, activity, place)
         except Exception as exc:
-            logger.warning("[虚拟人生] 互动活动写入日程失败: %s", exc)
+            logger.warning("[模拟人生] 互动活动写入日程失败: %s", exc)
             return
         try:
             key = self.storage.plan_key(date_str, persona.id)
             self.storage.plans[key] = updated
             await self.storage.save_plans()
         except Exception as exc:
-            logger.warning("[虚拟人生] 保存互动日程失败: %s", exc)
+            logger.warning("[模拟人生] 保存互动日程失败: %s", exc)
             return
         logger.info(
-            "[虚拟人生] 已把互动写入今日日程 activity=%s location=%s 时长=%s分钟 (reason=%s)",
+            "[模拟人生] 已把互动写入今日日程 activity=%s location=%s 时长=%s分钟 (reason=%s)",
             activity,
             place or "-",
             minutes,
@@ -552,11 +552,11 @@ class InteractionsMixin:
             )
             if text:
                 logger.debug(
-                    "[虚拟人生] 互动参考历史 umo=%s 行数=%s", umo, text.count("\n") + 1
+                    "[模拟人生] 互动参考历史 umo=%s 行数=%s", umo, text.count("\n") + 1
                 )
             return text, history
         except Exception as exc:
-            logger.warning("[虚拟人生] 读取互动历史失败 umo=%s: %s", umo, exc)
+            logger.warning("[模拟人生] 读取互动历史失败 umo=%s: %s", umo, exc)
             return "", []
 
     def _interaction_ingredients(self) -> list[str]:
@@ -605,7 +605,7 @@ class InteractionsMixin:
         request_id = str(request.get("id") or "")
         if not self.interactions.claim_sent(request_id):
             logger.warning(
-                "[虚拟人生] 互动已发送过，跳过重复 QQ 消息 id=%s", request_id
+                "[模拟人生] 互动已发送过，跳过重复 QQ 消息 id=%s", request_id
             )
             record["error"] = "duplicate"
             return record
@@ -615,7 +615,7 @@ class InteractionsMixin:
         except Exception as exc:
             self.interactions.release_sent(request_id)
             record["error"] = f"{type(exc).__name__}: {exc}"
-            logger.warning("[虚拟人生] 互动同步 QQ 失败 umo=%s: %s", umo, exc)
+            logger.warning("[模拟人生] 互动同步 QQ 失败 umo=%s: %s", umo, exc)
             return record
         if not sent:
             self.interactions.release_sent(request_id)

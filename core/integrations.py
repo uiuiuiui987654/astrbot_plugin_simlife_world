@@ -196,7 +196,7 @@ def collect_integrations(plugin: Any) -> dict[str, Any]:
         try:
             metas = list(context.get_all_stars() or [])
         except Exception:
-            logger.debug("[虚拟人生] collect_integrations 出错，已忽略", exc_info=True)
+            logger.debug("[模拟人生] collect_integrations 出错，已忽略", exc_info=True)
             metas = []
 
     data_dir = Path(getattr(plugin, "data_dir", "."))

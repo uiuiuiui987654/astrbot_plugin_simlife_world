@@ -46,7 +46,7 @@ def _inventory_by_name(food: Any) -> dict[str, dict[str, Any]]:
     try:
         inventory = food.load_inventory()
     except Exception:
-        logger.debug("[虚拟人生] _inventory_by_name 出错，已忽略", exc_info=True)
+        logger.debug("[模拟人生] _inventory_by_name 出错，已忽略", exc_info=True)
         return {}
     result: dict[str, dict[str, Any]] = {}
     for name, item in (inventory or {}).items():
@@ -86,7 +86,7 @@ def makeable_dishes(food: Any, limit: int = 40) -> list[dict[str, Any]]:
     try:
         catalog = food.load_catalog()
     except Exception:
-        logger.debug("[虚拟人生] makeable_dishes 出错，已忽略", exc_info=True)
+        logger.debug("[模拟人生] makeable_dishes 出错，已忽略", exc_info=True)
         catalog = {}
     meals = catalog.get("meals") if isinstance(catalog, dict) else {}
     if not isinstance(meals, dict):
@@ -197,7 +197,7 @@ def consume_ingredients(plugin: Any, dish: dict[str, Any]) -> dict[str, Any]:
     try:
         settings = plugin.config.get("interaction_settings", {}) or {}
     except Exception:
-        logger.debug("[虚拟人生] consume_ingredients 出错，已忽略", exc_info=True)
+        logger.debug("[模拟人生] consume_ingredients 出错，已忽略", exc_info=True)
         settings = {}
     if service is None:
         return {"used": [], "missing": list(dish.get("ingredients") or [])}
@@ -210,7 +210,7 @@ def consume_ingredients(plugin: Any, dish: dict[str, Any]) -> dict[str, Any]:
             settings,
         )
     except Exception:
-        logger.debug("[虚拟人生] consume_ingredients 出错，已忽略", exc_info=True)
+        logger.debug("[模拟人生] consume_ingredients 出错，已忽略", exc_info=True)
         return {"used": [], "missing": list(dish.get("ingredients") or [])}
 
 

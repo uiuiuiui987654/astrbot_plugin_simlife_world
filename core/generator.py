@@ -485,7 +485,7 @@ class DailyPlanGenerator:
             )
         except Exception as exc:  # pragma: no cover - defensive
             logger.warning(
-                "[Virtual Life] Travel planning failed persona=%s: %s", persona.id, exc
+                "[模拟人生] Travel planning failed persona=%s: %s", persona.id, exc
             )
             return "", None, "none"
         if found is None:
@@ -495,7 +495,7 @@ class DailyPlanGenerator:
             block = self.travel.prompt_block(trip, phase, target, settings)
         except Exception as exc:  # pragma: no cover - defensive
             logger.warning(
-                "[Virtual Life] Travel prompt failed persona=%s: %s", persona.id, exc
+                "[模拟人生] Travel prompt failed persona=%s: %s", persona.id, exc
             )
             return "", None, "none"
         return block, trip, phase
@@ -512,14 +512,14 @@ class DailyPlanGenerator:
             )
         except Exception as exc:  # pragma: no cover - defensive
             logger.warning(
-                "[Virtual Life] Travel location normalisation failed persona=%s: %s",
+                "[模拟人生] Travel location normalisation failed persona=%s: %s",
                 plan.persona_id,
                 exc,
             )
             return plan
         if changes:
             logger.info(
-                "[Virtual Life] Travel locations normalised persona=%s date=%s city=%s changes=%s",
+                "[模拟人生] Travel locations normalised persona=%s date=%s city=%s changes=%s",
                 plan.persona_id,
                 plan.date,
                 trip.city,
@@ -1242,7 +1242,7 @@ class DailyPlanGenerator:
             return self.food.format_day_prompt(menu, settings), menu
         except Exception as exc:
             logger.warning(
-                "[Virtual Life] Dynamic menu planning failed persona=%s: %s",
+                "[模拟人生] Dynamic menu planning failed persona=%s: %s",
                 persona.id,
                 exc,
             )
@@ -1261,7 +1261,7 @@ class DailyPlanGenerator:
             result = self.food.apply_plan(plan, persona.id, menu, self._food_settings())
             if result.get("status") == "applied":
                 logger.info(
-                    "[Virtual Life] Food updated persona=%s date=%s consumed=%s purchased=%s",
+                    "[模拟人生] Food updated persona=%s date=%s consumed=%s purchased=%s",
                     persona.id,
                     plan.date,
                     result.get("consumed"),
@@ -1269,7 +1269,7 @@ class DailyPlanGenerator:
                 )
         except Exception as exc:
             logger.warning(
-                "[Virtual Life] Food inventory update failed persona=%s: %s",
+                "[模拟人生] Food inventory update failed persona=%s: %s",
                 persona.id,
                 exc,
             )
@@ -1283,7 +1283,7 @@ class DailyPlanGenerator:
         try:
             return str(holidays.country_holidays("CN").get(target, ORDINARY_DAY))
         except Exception:
-            logger.debug("[虚拟人生] 节假日查询失败，按普通日期处理", exc_info=True)
+            logger.debug("[模拟人生] 节假日查询失败，按普通日期处理", exc_info=True)
             return ORDINARY_DAY
 
     def _window_budget_caps(self) -> tuple[int | None, int | None]:
@@ -1511,10 +1511,10 @@ class DailyPlanGenerator:
                     return self._accept(job, raw)
                 except Exception as exc:
                     error = str(exc)
-                    logger.warning("[虚拟人生] 日程生成第 %s 次校验未通过 mode=%s persona=%s: %s", attempt, mode, persona.id, exc)
+                    logger.warning("[模拟人生] 日程生成第 %s 次校验未通过 mode=%s persona=%s: %s", attempt, mode, persona.id, exc)
                     if raw and "JSON" in error:
                         logger.warning(
-                            "[虚拟人生] 模型输出无法解析 mode=%s persona=%s attempt=%s 长度=%s 预览=%r",
+                            "[模拟人生] 模型输出无法解析 mode=%s persona=%s attempt=%s 长度=%s 预览=%r",
                             mode,
                             persona.id,
                             attempt,

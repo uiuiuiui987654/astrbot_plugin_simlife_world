@@ -32,7 +32,7 @@ class PersonalNetworkMixin:
         if plugin is None or not all(hasattr(plugin, name) for name in NETWORK_API):
             if not self._personal_network_unavailable_logged:
                 logger.warning(
-                    "[虚拟人生] 已启用人际关系联动，但没有找到可用的 personal_network 插件"
+                    "[模拟人生] 已启用人际关系联动，但没有找到可用的 personal_network 插件"
                 )
                 self._personal_network_unavailable_logged = True
             return None
@@ -45,7 +45,7 @@ class PersonalNetworkMixin:
         try:
             connected = bool(self._personal_network_plugin())
         except Exception:
-            logger.debug("[虚拟人生] 查询人际关系插件状态失败", exc_info=True)
+            logger.debug("[模拟人生] 查询人际关系插件状态失败", exc_info=True)
             connected = False
         return "已连接" if connected else "已启用但插件不可用"
 
@@ -71,7 +71,7 @@ class PersonalNetworkMixin:
         try:
             person = await self.plan_generator.generate_new_character(persona)
         except Exception:
-            logger.exception("[虚拟人生] 新人物生成失败 persona=%s", persona.id)
+            logger.exception("[模拟人生] 新人物生成失败 persona=%s", persona.id)
             return ""
         try:
             result = await plugin.upsert_batch_for_plugin(
@@ -105,19 +105,19 @@ class PersonalNetworkMixin:
             )
             if not result.get("updated"):
                 logger.warning(
-                    "[虚拟人生] 人际关系插件拒绝写入新人物 persona=%s: %s",
+                    "[模拟人生] 人际关系插件拒绝写入新人物 persona=%s: %s",
                     persona.id,
                     result.get("reason", "unknown"),
                 )
                 return ""
             logger.info(
-                "[虚拟人生] 新人物已写入人际关系 persona=%s name=%s uuid=%s",
+                "[模拟人生] 新人物已写入人际关系 persona=%s name=%s uuid=%s",
                 persona.id,
                 person["name"],
                 result.get("refs", {}).get(NEW_CHARACTER_REF, ""),
             )
         except Exception:
-            logger.exception("[虚拟人生] 新人物写入人际关系失败 persona=%s", persona.id)
+            logger.exception("[模拟人生] 新人物写入人际关系失败 persona=%s", persona.id)
             return ""
         return (
             f"今天她会碰到 {person['name']}（{person['relationship_type']}，{person['relationship_description']}）。"
@@ -139,7 +139,7 @@ class PersonalNetworkMixin:
         try:
             network = await plugin.get_network_for_plugin(persona_id)
         except Exception:
-            logger.exception("[虚拟人生] 读取当前参与人物失败 persona=%s", persona_id)
+            logger.exception("[模拟人生] 读取当前参与人物失败 persona=%s", persona_id)
             return ""
         wanted = set(participant_ids)
         present = [
@@ -175,7 +175,7 @@ class PersonalNetworkMixin:
         try:
             return await plugin.get_context_for_plugin(persona_id, max_chars=limit)
         except Exception:
-            logger.exception("[虚拟人生] 读取人际关系上下文失败 persona=%s", persona_id)
+            logger.exception("[模拟人生] 读取人际关系上下文失败 persona=%s", persona_id)
             return ""
 
     async def _record_completed_personal_network_events(
@@ -211,14 +211,14 @@ class PersonalNetworkMixin:
                     )
                 except ValueError as exc:
                     logger.warning(
-                        "[虚拟人生] 跳过人际关系事件 persona=%s item=%s: %s",
+                        "[模拟人生] 跳过人际关系事件 persona=%s item=%s: %s",
                         persona_id,
                         item.id,
                         exc,
                     )
                 except Exception:
                     logger.exception(
-                        "[虚拟人生] 记录人际关系事件失败 persona=%s item=%s",
+                        "[模拟人生] 记录人际关系事件失败 persona=%s item=%s",
                         persona_id,
                         item.id,
                     )

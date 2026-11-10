@@ -313,7 +313,7 @@ def sync_day(
         try:
             collected.extend(source())
         except Exception:
-            logger.debug("[虚拟人生] 生活记忆 %s 读取失败", name, exc_info=True)
+            logger.debug("[模拟人生] 生活记忆 %s 读取失败", name, exc_info=True)
     if now is not None and now.date() == day:
         limit = now.strftime("%H:%M")
         collected = [item for item in collected if not item["time"] or item["time"] <= limit or item["kind"] != "meal"]

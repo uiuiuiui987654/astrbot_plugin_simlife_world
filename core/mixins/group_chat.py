@@ -117,7 +117,7 @@ class GroupChatMixin:
                     try:
                         tool_set.remove_tool(name)
                     except Exception:
-                        logger.debug("[虚拟人生] _sanitize_group_request 出错，已忽略", exc_info=True)
+                        logger.debug("[模拟人生] _sanitize_group_request 出错，已忽略", exc_info=True)
             contexts = getattr(req, "contexts", None)
             if isinstance(contexts, list):
                 for message in contexts:
@@ -129,7 +129,7 @@ class GroupChatMixin:
                     if any(term in text for term in terms):
                         message["content"] = "（群聊中已省略旧内容）"
         except Exception as exc:
-            logger.debug("[虚拟人生] 群聊请求隔离失败: %s", exc)
+            logger.debug("[模拟人生] 群聊请求隔离失败: %s", exc)
 
     @staticmethod
     def _filter_group_recap(text: str) -> str:
@@ -264,7 +264,7 @@ class GroupChatMixin:
         try:
             persona = await self.personas.resolve(event.unified_msg_origin)
         except Exception:
-            logger.debug("[虚拟人生] _inject_group_life_state 出错，已忽略", exc_info=True)
+            logger.debug("[模拟人生] _inject_group_life_state 出错，已忽略", exc_info=True)
             return
         now = self._now()
         plan = self.storage.get_plan(now.date().isoformat(), persona.id)
@@ -275,14 +275,14 @@ class GroupChatMixin:
         if not text:
             return
         req.extra_user_content_parts.append(TextPart(text=text).mark_as_temp())
-        logger.info("[虚拟人生] 群聊仅注入生理心情 umo=%s", event.unified_msg_origin)
+        logger.info("[模拟人生] 群聊仅注入生理心情 umo=%s", event.unified_msg_origin)
 
     async def _camera_awareness_context(self, event: AstrMessageEvent) -> str:
         """Tell the character about recent observer-window photos on the next turn."""
         try:
             message_text = str(event.get_message_str() or "").strip()
         except Exception:
-            logger.debug("[虚拟人生] _camera_awareness_context 出错，已忽略", exc_info=True)
+            logger.debug("[模拟人生] _camera_awareness_context 出错，已忽略", exc_info=True)
             message_text = ""
         if not message_text or message_text.startswith(("/", "／")):
             return ""
@@ -292,7 +292,7 @@ class GroupChatMixin:
                 self.data_dir, persona.id, now=self._now(), limit=2
             )
         except Exception:
-            logger.debug("[虚拟人生] _camera_awareness_context 出错，已忽略", exc_info=True)
+            logger.debug("[模拟人生] _camera_awareness_context 出错，已忽略", exc_info=True)
             return ""
         if not events:
             return ""
@@ -313,7 +313,7 @@ class GroupChatMixin:
             "要能自然接上；不要说自己没看见、不知道被拍，也不要主动复述这段提示。"
         )
         logger.info(
-            "[虚拟人生] 注入拍照感知 persona=%s 数量=%s",
+            "[模拟人生] 注入拍照感知 persona=%s 数量=%s",
             persona.id,
             len(events),
         )

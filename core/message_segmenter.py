@@ -89,12 +89,12 @@ class ProactiveMessageSegmenter:
         self.regex = _compile(
             settings.get("regex"),
             re.DOTALL | re.MULTILINE,
-            "[虚拟人生] 拆分正则写错了，这次不拆：%s",
+            "[模拟人生] 拆分正则写错了，这次不拆：%s",
         )
         self.split_words = _to_words(settings.get("split_words"))
         self.words_pattern = _words_pattern(self.split_words)
         cleanup = str(settings.get("content_cleanup_rule") or "") if settings.get("enable_content_cleanup") else ""
-        self.cleanup_pattern = _compile(cleanup, 0, "[虚拟人生] 清理正则写错了，这次不清理：%s")
+        self.cleanup_pattern = _compile(cleanup, 0, "[模拟人生] 清理正则写错了，这次不清理：%s")
         self.interval_method = str(settings.get("interval_method") or "").strip().lower()
         self.random_interval = _interval_range(settings.get("interval"))
         self.log_base = _log_base(settings.get("log_base"))

@@ -86,7 +86,7 @@ def spool_image(data_dir: Path, payload: bytes, suffix: str = ".png") -> Path:
         try:
             old.unlink()
         except OSError:
-            logger.debug("[虚拟人生] 清理旧图片失败 %s", old, exc_info=True)
+            logger.debug("[模拟人生] 清理旧图片失败 %s", old, exc_info=True)
     path = directory / f"{datetime.now():%Y%m%d%H%M%S}-{uuid.uuid4().hex[:6]}{suffix}"
     path.write_bytes(payload)
     return path
@@ -108,7 +108,7 @@ def image_variants(image: str, data_dir: Path | None) -> list[tuple[str, str]]:
             try:
                 variants.append(("file", str(spool_image(data_dir, base64.b64decode(encoded)))))
             except (ValueError, OSError):
-                logger.debug("[虚拟人生] base64 图片落盘失败", exc_info=True)
+                logger.debug("[模拟人生] base64 图片落盘失败", exc_info=True)
         return variants
     if text.startswith(("http://", "https://")):
         return [("url", text)]
@@ -141,7 +141,7 @@ async def send_image(
                 return True, kind
             last_error = f"{kind}: 平台返回发送失败"
         except Exception as exc:  # adapters raise many different errors
-            logger.warning("[虚拟人生] 以 %s 方式发送图片失败: %s", kind, exc)
+            logger.warning("[模拟人生] 以 %s 方式发送图片失败: %s", kind, exc)
             last_error = f"{kind}: {type(exc).__name__}"
     return False, last_error
 

@@ -108,7 +108,7 @@ def _copy_to_view(source: Path, target_dir: Path, slot: str) -> tuple[str, str] 
         if not target.is_file():
             target.write_bytes(payload)
     except OSError as exc:
-        logger.warning("[虚拟人生] 角色图片写入失败 %s: %s", target, exc)
+        logger.warning("[模拟人生] 角色图片写入失败 %s: %s", target, exc)
         return None
     # Use a per-load token so a browser that cached a transient 404 cannot keep
     # showing a broken image after the plugin has reloaded with valid artwork.
@@ -151,7 +151,7 @@ def sync_character_assets(
                 continue
             if _png_size(candidate) is None:
                 logger.warning(
-                    "[虚拟人生] 角色图片无效或尺寸不符合要求，已忽略：%s", candidate
+                    "[模拟人生] 角色图片无效或尺寸不符合要求，已忽略：%s", candidate
                 )
                 continue
             copied = _copy_to_view(candidate, target_dir, slot)

@@ -28,7 +28,7 @@ class PersonaResolver:
                 return None
             conversation = await manager.get_conversation(umo, conversation_id)
         except Exception as exc:
-            logger.warning("[虚拟人生] 读不到这个会话的人格 %s: %s", umo, exc)
+            logger.warning("[模拟人生] 读不到这个会话的人格 %s: %s", umo, exc)
             return None
         return getattr(conversation, "persona_id", None)
 
@@ -37,7 +37,7 @@ class PersonaResolver:
         try:
             persona = await self.context.persona_manager.get_persona(persona_id)
         except Exception:
-            logger.debug("[虚拟人生] 读取人格 %s 失败", persona_id, exc_info=True)
+            logger.debug("[模拟人生] 读取人格 %s 失败", persona_id, exc_info=True)
             return ""
         return str(getattr(persona, "system_prompt", "") or "").strip()
 
@@ -51,7 +51,7 @@ class PersonaResolver:
         try:
             default = await self.context.persona_manager.get_default_persona_v3(umo=umo)
         except Exception as exc:
-            logger.warning("[虚拟人生] 改用默认人格：%s", exc)
+            logger.warning("[模拟人生] 改用默认人格：%s", exc)
             return PersonaContext("default", FALLBACK_PROMPT)
         return PersonaContext(str(default.get("name", "default")), str(default.get("prompt", "") or FALLBACK_PROMPT))
 
@@ -63,7 +63,7 @@ class PersonaResolver:
         try:
             legacy = self.context.persona_manager.get_persona_v3_by_id(persona_id)
         except Exception:
-            logger.debug("[虚拟人生] 读取人格 %s 失败", persona_id, exc_info=True)
+            logger.debug("[模拟人生] 读取人格 %s 失败", persona_id, exc_info=True)
             legacy = None
         if legacy:
             return PersonaContext(persona_id, str(legacy.get("prompt", "") or ""))

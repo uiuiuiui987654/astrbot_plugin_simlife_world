@@ -341,7 +341,7 @@ def _plugin_version() -> str:
         match = re.search(r"(?m)^version:\s*(\S+)", text)
         return match.group(1).strip() if match else "未知"
     except Exception:
-        logger.debug("[虚拟人生] _plugin_version 出错，已忽略", exc_info=True)
+        logger.debug("[模拟人生] _plugin_version 出错，已忽略", exc_info=True)
         return "未知"
 
 
@@ -359,12 +359,12 @@ def _migrate_legacy_data(data_dir: Path) -> None:
             return
         shutil.copytree(legacy_dir, data_dir, dirs_exist_ok=True)
         logger.info(
-            "[虚拟人生] 已从旧插件标识迁移数据目录 %s -> %s",
+            "[模拟人生] 已从旧插件标识迁移数据目录 %s -> %s",
             legacy_dir,
             data_dir,
         )
     except Exception as exc:
-        logger.warning("[虚拟人生] 旧插件数据迁移失败: %s", exc)
+        logger.warning("[模拟人生] 旧插件数据迁移失败: %s", exc)
 
 
 def _frontend_ui_version() -> str:
@@ -377,5 +377,5 @@ def _frontend_ui_version() -> str:
         match = re.search(r"app\.js\?v=([^\"'&<>]+)", text)
         return match.group(1).strip() if match else "未知"
     except Exception:
-        logger.debug("[虚拟人生] _frontend_ui_version 出错，已忽略", exc_info=True)
+        logger.debug("[模拟人生] _frontend_ui_version 出错，已忽略", exc_info=True)
         return "未知"

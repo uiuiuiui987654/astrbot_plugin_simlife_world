@@ -125,7 +125,7 @@ class VirtualLifeViewAPI(SystemRoutes, HomeRoutes, MoneyRoutes, JournalRoutes):
                 str(getattr(resolved, "prompt", "") or "")
             )
         except Exception:
-            logger.debug("[虚拟人生] _camera_photo 出错，已忽略", exc_info=True)
+            logger.debug("[模拟人生] _camera_photo 出错，已忽略", exc_info=True)
             persona_visual = ""
         result = await camera_photo.generate(
             self.plugin,
@@ -143,7 +143,7 @@ class VirtualLifeViewAPI(SystemRoutes, HomeRoutes, MoneyRoutes, JournalRoutes):
                 try:
                     resolved_persona = (await self.plugin.personas.resolve(None)).id
                 except Exception:
-                    logger.debug("[虚拟人生] _camera_photo 出错，已忽略", exc_info=True)
+                    logger.debug("[模拟人生] _camera_photo 出错，已忽略", exc_info=True)
                     resolved_persona = ""
             if resolved_persona:
                 event = None
@@ -157,7 +157,7 @@ class VirtualLifeViewAPI(SystemRoutes, HomeRoutes, MoneyRoutes, JournalRoutes):
                         now=now,
                     )
                 except Exception:
-                    logger.debug("[虚拟人生] _camera_photo 出错，已忽略", exc_info=True)
+                    logger.debug("[模拟人生] _camera_photo 出错，已忽略", exc_info=True)
                     event = None
                 if event:
                     handler = getattr(self.plugin, "react_to_camera", None)
@@ -167,7 +167,7 @@ class VirtualLifeViewAPI(SystemRoutes, HomeRoutes, MoneyRoutes, JournalRoutes):
                                 handler(resolved_persona, event)
                             )
                         except Exception:
-                            logger.debug("[虚拟人生] _camera_photo 出错，已忽略", exc_info=True)
+                            logger.debug("[模拟人生] _camera_photo 出错，已忽略", exc_info=True)
         return result
 
     async def _apply_garage_schedule(
@@ -187,7 +187,7 @@ class VirtualLifeViewAPI(SystemRoutes, HomeRoutes, MoneyRoutes, JournalRoutes):
             plan = self.plugin.storage.get_plan(date_str, persona)
             if plan is None:
                 logger.info(
-                    "[虚拟人生] 车库行程未写入日程：%s 当天没有日程", persona
+                    "[模拟人生] 车库行程未写入日程：%s 当天没有日程", persona
                 )
                 return
             if endpoint == "garage/drive":
@@ -213,9 +213,9 @@ class VirtualLifeViewAPI(SystemRoutes, HomeRoutes, MoneyRoutes, JournalRoutes):
             self.plugin.storage.plans[key] = updated
             await self.plugin.storage.save_plans()
         except (OSError, ValueError, TypeError) as exc:
-            logger.warning("[虚拟人生] 车库行程写入日程失败: %s", exc)
+            logger.warning("[模拟人生] 车库行程写入日程失败: %s", exc)
         except Exception as exc:
-            logger.warning("[虚拟人生] 车库行程写入日程异常: %s", exc)
+            logger.warning("[模拟人生] 车库行程写入日程异常: %s", exc)
 
     def dispatch(self, endpoint: str, method: str, params: dict, payload: dict) -> dict:
         """Read only this instance and enqueue explicitly requested interactions.

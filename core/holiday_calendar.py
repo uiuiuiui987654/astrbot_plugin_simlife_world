@@ -25,7 +25,7 @@ def _public_holidays(year: int) -> dict[date, str]:
     try:
         return dict(holidays.country_holidays("CN", years=[year], language="zh_CN"))
     except Exception:
-        logger.debug("[虚拟人生] 读取 %s 年法定节假日失败", year, exc_info=True)
+        logger.debug("[模拟人生] 读取 %s 年法定节假日失败", year, exc_info=True)
         return {}
 
 
@@ -41,7 +41,7 @@ def _festival_names(day: date) -> list[str]:
     try:
         festivals = Solar.fromYmd(day.year, day.month, day.day).getLunar().getFestivals()
     except Exception:
-        logger.debug("[虚拟人生] 计算 %s 的农历节日失败", day, exc_info=True)
+        logger.debug("[模拟人生] 计算 %s 的农历节日失败", day, exc_info=True)
         return []
     return [name for name in festivals if name in FESTIVALS]
 

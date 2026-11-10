@@ -104,14 +104,14 @@ class AdminCommandsMixin:
                 )
         except Exception as exc:
             logger.warning(
-                "[虚拟人生] %s重写失败 persona=%s: %s", label, persona.id, exc
+                "[模拟人生] %s重写失败 persona=%s: %s", label, persona.id, exc
             )
             return f"{label}没重写成功，原来的{label}保持不变；详情看日志。"
         try:
             await self._store_plan(persona, plan)
         except Exception as exc:
             logger.warning(
-                "[虚拟人生] %s重写后保存或调度失败 persona=%s: %s",
+                "[模拟人生] %s重写后保存或调度失败 persona=%s: %s",
                 label,
                 persona.id,
                 exc,
@@ -178,7 +178,7 @@ class AdminCommandsMixin:
             )
         except Exception as exc:
             logger.warning(
-                "[虚拟人生] 大时间表草稿生成失败 source=%s: %s",
+                "[模拟人生] 大时间表草稿生成失败 source=%s: %s",
                 source,
                 exc,
                 exc_info=True,
@@ -200,7 +200,7 @@ class AdminCommandsMixin:
             )
             self.image_renderer.invalidate_persona(persona.id)
         except Exception as exc:
-            logger.warning("[虚拟人生] 大时间表导入失败: %s", exc, exc_info=True)
+            logger.warning("[模拟人生] 大时间表导入失败: %s", exc, exc_info=True)
             return f"导入失败：{exc}"
         return "已存成草稿；确认没问题就发 /大时间表 批准。"
 
@@ -232,7 +232,7 @@ class AdminCommandsMixin:
             self.image_renderer.invalidate_persona(persona.id)
             plan = await self._refresh_persona_daily_plan(persona)
         except Exception as exc:
-            logger.warning("[虚拟人生] 大时间表批准失败: %s", exc, exc_info=True)
+            logger.warning("[模拟人生] 大时间表批准失败: %s", exc, exc_info=True)
             return f"采用失败：{exc}"
         made = [
             name
@@ -395,13 +395,13 @@ class AdminCommandsMixin:
         self.config.save_config()
         verb = "已开启" if added else "已重新开启"
         where = f"这个{'群' if session_kind(umo) == 'group' else '私聊'}里的主动消息"
-        logger.info("[虚拟人生] %s umo=%s", verb, umo)
+        logger.info("[模拟人生] %s umo=%s", verb, umo)
         try:
             persona, plan = await self._ensure_plan_for_umo(umo)
             await self._schedule_session(umo, persona, plan)
             await self.storage.save_sessions()
         except Exception as exc:
-            logger.warning("[虚拟人生] 已订阅，但今天的安排没排上 umo=%s: %s", umo, exc)
+            logger.warning("[模拟人生] 已订阅，但今天的安排没排上 umo=%s: %s", umo, exc)
             return f"{verb}{where}，不过今天的主动消息没排上，看看日志或稍后再试。"
         return f"{verb}{where}；之后她会按日程和发送规则主动找你。"
 
@@ -415,7 +415,7 @@ class AdminCommandsMixin:
             if batch is None:
                 return "这里没有在等待中的消息。"
             logger.info(
-                "[虚拟人生] 手动放行等待中的消息 umo=%s 条数=%s",
+                "[模拟人生] 手动放行等待中的消息 umo=%s 条数=%s",
                 umo,
                 len(batch.messages),
             )
@@ -435,7 +435,7 @@ class AdminCommandsMixin:
             0 if enabled else len(await self.reply_delay_coordinator.settle_all_now())
         )
         logger.info(
-            "[虚拟人生] 晚点回复已%s 配置有变=%s 放行批次=%s",
+            "[模拟人生] 晚点回复已%s 配置有变=%s 放行批次=%s",
             action,
             changed,
             settled,

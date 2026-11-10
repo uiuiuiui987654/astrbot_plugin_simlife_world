@@ -238,7 +238,7 @@ class MoneyRoutes:
                 now=self.plugin._now(),
             )
         except Exception as exc:
-            logger.warning("[虚拟人生] dispatch 失败: %s", exc, exc_info=True)
+            logger.warning("[模拟人生] dispatch 失败: %s", exc, exc_info=True)
             return {"ok": False, "error": f"给钱失败：{exc}"}
         return {
             "ok": True,
