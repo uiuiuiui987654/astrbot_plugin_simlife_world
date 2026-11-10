@@ -1,41 +1,38 @@
-"""Bridge to the personal-network plugin (new characters, shared events).
+"""Optional link to the personal-network plugin: who she knows, who was there, what happened.
 
-Mixin for ProactiveVirtualDailyPlugin; split out of main.py without behaviour changes.
+Everything here degrades to "no context" when the plugin is missing or fails.
 """
 
 from __future__ import annotations
 
-from datetime import date, datetime, time, timedelta
+import random
+from datetime import datetime
 
 from astrbot.api import logger
 
 from ..persona import PersonaContext
 
+NETWORK_PLUGIN = "astrbot_plugin_personal_network"
+SOURCE = "astrbot_plugin_simlife_world"
+NETWORK_API = ("get_context_for_plugin", "record_life_event_from_plugin")
+NEW_CHARACTER_REF = "new_char"
+
 
 class PersonalNetworkMixin:
+    def _network_settings(self) -> dict:
+        return self.config.get("personal_network_integration", {}) or {}
+
     def _personal_network_plugin(self):
-        settings = self.config.get("personal_network_integration", {}) or {}
-        if not settings.get("enable", False):
+        """The network plugin instance when enabled, loaded and new enough; warns once otherwise."""
+        if not self._network_settings().get("enable", False):
             return None
-        getter = getattr(self.context, "get_registered_star", None)
-        metadata = (
-            getter("astrbot_plugin_personal_network") if callable(getter) else None
-        )
-        plugin = (
-            metadata.star_cls
-            if metadata and metadata.activated and metadata.star_cls
-            else None
-        )
-        required_methods = {
-            "get_context_for_plugin",
-            "record_life_event_from_plugin",
-        }
-        if plugin is None or any(
-            not hasattr(plugin, method) for method in required_methods
-        ):
+        lookup = getattr(self.context, "get_registered_star", None)
+        meta = lookup(NETWORK_PLUGIN) if callable(lookup) else None
+        plugin = meta.star_cls if meta and meta.activated and meta.star_cls else None
+        if plugin is None or not all(hasattr(plugin, name) for name in NETWORK_API):
             if not self._personal_network_unavailable_logged:
                 logger.warning(
-                    "[Virtual Life] Personal Network integration is enabled but a compatible plugin is unavailable."
+                    "[虚拟人生] 已启用人际关系联动，但没有找到可用的 personal_network 插件"
                 )
                 self._personal_network_unavailable_logged = True
             return None
@@ -43,168 +40,150 @@ class PersonalNetworkMixin:
         return plugin
 
     def _personal_network_status(self) -> str:
-        settings = self.config.get("personal_network_integration", {}) or {}
-        if not settings.get("enable", False):
+        if not self._network_settings().get("enable", False):
             return "未启用"
         try:
-            available = bool(self._personal_network_plugin())
+            connected = bool(self._personal_network_plugin())
         except Exception:
-            logger.debug("[虚拟人生] _personal_network_status 出错，已忽略", exc_info=True)
-            available = False
-        return "已连接" if available else "已启用但插件不可用"
+            logger.debug("[虚拟人生] 查询人际关系插件状态失败", exc_info=True)
+            connected = False
+        return "已连接" if connected else "已启用但插件不可用"
 
     async def _generate_new_character(self, persona: PersonaContext) -> str:
-        """Possibly generate a new virtual character and write it to Personal Network.
-
-        Returns a non-empty hint string to append to schedule requirements when a
-        character is successfully created, or an empty string otherwise.
-        """
-        settings = self.config.get("personal_network_integration", {}) or {}
+        """Sometimes invent a new acquaintance, store it in the network and return a schedule hint ("" otherwise)."""
         try:
-            probability = max(
-                0.0, min(1.0, float(settings.get("new_character_probability", 0.0)))
+            chance = max(
+                0.0,
+                min(
+                    1.0,
+                    float(
+                        self._network_settings().get("new_character_probability", 0.0)
+                    ),
+                ),
             )
         except (TypeError, ValueError):
-            probability = 0.0
-        if probability <= 0.0:
-            return ""
-        import random as _random
-
-        if _random.random() >= probability:
+            chance = 0.0
+        if chance <= 0.0 or random.random() >= chance:
             return ""
         plugin = self._personal_network_plugin()
         if plugin is None or not hasattr(plugin, "upsert_batch_for_plugin"):
             return ""
         try:
-            char = await self.plan_generator.generate_new_character(persona)
+            person = await self.plan_generator.generate_new_character(persona)
         except Exception:
-            logger.exception(
-                "[Virtual Life] New character generation failed persona=%s", persona.id
-            )
+            logger.exception("[虚拟人生] 新人物生成失败 persona=%s", persona.id)
             return ""
-        ref = "new_char"
         try:
             result = await plugin.upsert_batch_for_plugin(
                 persona.id,
                 characters=[
                     {
-                        "ref": ref,
-                        "name": char["name"],
-                        "bio": char["bio"],
-                        "personality": char["personality"],
-                        "preferences": char["preferences"],
-                        "facts": char["facts"],
+                        "ref": NEW_CHARACTER_REF,
+                        **{
+                            key: person[key]
+                            for key in (
+                                "name",
+                                "bio",
+                                "personality",
+                                "preferences",
+                                "facts",
+                            )
+                        },
                     }
                 ],
                 relationships=[
                     {
                         "source": "persona",
-                        "target": ref,
-                        "type": char["relationship_type"],
+                        "target": NEW_CHARACTER_REF,
+                        "type": person["relationship_type"],
                         "strength": 30,
                         "status": "active",
-                        "description": char["relationship_description"],
+                        "description": person["relationship_description"],
                     }
                 ],
-                source="astrbot_plugin_simlife_world",
+                source=SOURCE,
             )
             if not result.get("updated"):
                 logger.warning(
-                    "[Virtual Life] New character write rejected persona=%s: %s",
+                    "[虚拟人生] 人际关系插件拒绝写入新人物 persona=%s: %s",
                     persona.id,
                     result.get("reason", "unknown"),
                 )
                 return ""
-            char_uuid = result.get("refs", {}).get(ref, "")
             logger.info(
-                "[Virtual Life] New character written to Personal Network persona=%s name=%s uuid=%s",
+                "[虚拟人生] 新人物已写入人际关系 persona=%s name=%s uuid=%s",
                 persona.id,
-                char["name"],
-                char_uuid,
+                person["name"],
+                result.get("refs", {}).get(NEW_CHARACTER_REF, ""),
             )
         except Exception:
-            logger.exception(
-                "[Virtual Life] Failed to write new character to Personal Network persona=%s",
-                persona.id,
-            )
+            logger.exception("[虚拟人生] 新人物写入人际关系失败 persona=%s", persona.id)
             return ""
         return (
-            f"今天日程中应安排与 {char['name']}（{char['relationship_type']}）的相遇或互动。"
-            f"关系说明：{char['relationship_description']}。"
-            f"人物简介：{char['bio']}。"
+            f"今天日程中应安排与 {person['name']}（{person['relationship_type']}）的相遇或互动。"
+            f"关系说明：{person['relationship_description']}。"
+            f"人物简介：{person['bio']}。"
             "请在时间线中自然地加入这次会面，并在对应 timeline 项目的 participant_ids 中填入该人物的 ID（从关系数据中获取）。"
         )
 
     async def _personal_network_participants_context(
         self, persona_id: str, participant_ids: tuple[str, ...]
     ) -> str:
-        """Return a brief context string for the given participant UUIDs.
-
-        Fetches the full network snapshot and filters by the provided IDs,
-        returning a formatted string suitable for injection into the LLM prompt.
-        Returns an empty string on any failure or if the feature is disabled.
-        """
-        if not participant_ids:
-            return ""
-        settings = self.config.get("personal_network_integration", {}) or {}
-        if not settings.get("inject_current_participants", True):
+        """ "Who is with her right now" lines for the chat prompt."""
+        if not participant_ids or not self._network_settings().get(
+            "inject_current_participants", True
+        ):
             return ""
         plugin = self._personal_network_plugin()
         if plugin is None or not hasattr(plugin, "get_network_for_plugin"):
             return ""
         try:
-            data = await plugin.get_network_for_plugin(persona_id)
+            network = await plugin.get_network_for_plugin(persona_id)
         except Exception:
-            logger.exception(
-                "[Virtual Life] Failed to fetch network for participant injection persona=%s",
-                persona_id,
-            )
+            logger.exception("[虚拟人生] 读取当前参与人物失败 persona=%s", persona_id)
             return ""
-        id_set = set(participant_ids)
-        characters = [
-            c for c in (data.get("characters") or []) if c.get("id") in id_set
+        wanted = set(participant_ids)
+        present = [
+            person
+            for person in network.get("characters") or []
+            if person.get("id") in wanted
         ]
-        if not characters:
+        if not present:
             return ""
-        lines = ["当前时段参与人物："]
-        for c in characters:
-            name = c.get("name", "（未知）")
-            bio = c.get("bio", "")
-            personality = c.get("personality", "")
-            parts = [name]
-            if bio:
-                parts.append(bio)
-            if personality:
-                parts.append(f"性格：{personality}")
-            lines.append("- " + "；".join(parts))
-        return "\n".join(lines)
+
+        def describe(person: dict) -> str:
+            bio, personality = person.get("bio", ""), person.get("personality", "")
+            extra = [bio, f"性格：{personality}" if personality else ""]
+            return "- " + "；".join(
+                [person.get("name", "（未知）"), *(part for part in extra if part)]
+            )
+
+        return "\n".join(["当前时段参与人物：", *map(describe, present)])
 
     async def _personal_network_context(self, persona_id: str) -> str:
         plugin = self._personal_network_plugin()
         if plugin is None:
             return ""
-        settings = self.config.get("personal_network_integration", {}) or {}
         try:
-            max_chars = max(
+            limit = max(
                 500,
-                min(12000, int(settings.get("max_context_chars", 4000))),
+                min(
+                    12000, int(self._network_settings().get("max_context_chars", 4000))
+                ),
             )
         except (TypeError, ValueError):
-            max_chars = 4000
+            limit = 4000
         try:
-            return await plugin.get_context_for_plugin(persona_id, max_chars=max_chars)
+            return await plugin.get_context_for_plugin(persona_id, max_chars=limit)
         except Exception:
-            logger.exception(
-                "[Virtual Life] Failed to read Personal Network context: persona=%s",
-                persona_id,
-            )
+            logger.exception("[虚拟人生] 读取人际关系上下文失败 persona=%s", persona_id)
             return ""
 
     async def _record_completed_personal_network_events(
         self, persona_id: str, now: datetime
     ) -> None:
-        settings = self.config.get("personal_network_integration", {}) or {}
-        if not settings.get("record_completed_events", True):
+        """Log finished timeline items that had participants as shared life events (idempotent per item)."""
+        if not self._network_settings().get("record_completed_events", True):
             return
         plugin = self._personal_network_plugin()
         if plugin is None:
@@ -212,47 +191,35 @@ class PersonalNetworkMixin:
         for plan in self.storage.plans.values():
             if plan.persona_id != persona_id or plan.status != "ok":
                 continue
-            plan_date = date.fromisoformat(plan.date)
             for item in plan.timeline:
                 if not item.participant_ids:
                     continue
-                if item.end == "24:00":
-                    ended_at = datetime.combine(
-                        plan_date + timedelta(days=1), time.min, self.timezone
-                    )
-                else:
-                    ended_at = datetime.combine(
-                        plan_date,
-                        time.fromisoformat(item.end),
-                        self.timezone,
-                    )
+                ended_at = self._end_time(plan.date, item.end)
                 if ended_at > now:
                     continue
-                summary = item.activity
-                if item.location:
-                    summary += f"（地点：{item.location}）"
                 try:
                     await plugin.record_life_event_from_plugin(
                         persona_id,
                         participant_ids=list(item.participant_ids),
                         event_type="virtual_schedule",
-                        summary=summary,
+                        summary=item.activity
+                        + (f"（地点：{item.location}）" if item.location else ""),
                         occurred_at=ended_at.isoformat(),
                         importance=50,
                         emotional_tone=plan.mood,
-                        source="astrbot_plugin_simlife_world",
+                        source=SOURCE,
                         source_key=f"{plan.date}:{item.id}",
                     )
                 except ValueError as exc:
                     logger.warning(
-                        "[Virtual Life] Skipped Personal Network event: persona=%s item=%s error=%s",
+                        "[虚拟人生] 跳过人际关系事件 persona=%s item=%s: %s",
                         persona_id,
                         item.id,
                         exc,
                     )
                 except Exception:
                     logger.exception(
-                        "[Virtual Life] Failed to record Personal Network event: persona=%s item=%s",
+                        "[虚拟人生] 记录人际关系事件失败 persona=%s item=%s",
                         persona_id,
                         item.id,
                     )

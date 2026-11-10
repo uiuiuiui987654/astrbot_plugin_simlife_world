@@ -1,7 +1,4 @@
-"""Reply-delay batching of incoming messages.
-
-Mixin for ProactiveVirtualDailyPlugin; split out of main.py without behaviour changes.
-"""
+"""Reply delays on incoming chat: hold the message, collect follow-ups, then answer the batch."""
 
 from __future__ import annotations
 
@@ -14,67 +11,64 @@ from astrbot.core.agent.message import TextPart
 from astrbot.core.provider.entities import ProviderRequest
 
 from ..proactive import session_kind
-from ..reply_delay import (
-    QueuedMessage,
-    format_delay_context,
-    format_queued_messages,
-)
-from ..utils import (
-    timeline_item_at,
-)
+from ..reply_delay import QueuedMessage, format_delay_context, format_queued_messages
+from ..utils import timeline_item_at
+
+EXTRA = "virtual_life_reply_delay_"  # prefix of the event extras this mixin uses
 
 
 class ReplyDelayMixin:
-    async def _prepare_reply_delay(
-        self,
-        event: AstrMessageEvent,
-    ) -> None:
-        if not self._schedule_available_for_umo(event.unified_msg_origin):
-            event.set_extra("virtual_life_reply_delay_excluded", True)
-            return
-        excluded = event.get_extra("provider_request") is not None
-        event.set_extra("virtual_life_reply_delay_excluded", excluded)
-        if excluded:
-            return
-        if not self.reply_delay_policy.enabled:
-            return
+    def _arrival_time(self, event: AstrMessageEvent) -> datetime:
         try:
-            received_at = datetime.fromtimestamp(float(event.created_at), self.timezone)
+            return datetime.fromtimestamp(float(event.created_at), self.timezone)
         except (AttributeError, TypeError, ValueError, OSError):
-            received_at = self._now()
+            return self._now()
+
+    async def _prepare_reply_delay(self, event: AstrMessageEvent) -> None:
+        """Runs before the LLM request: either waits out the delay (first message) or parks the message."""
+        umo = event.unified_msg_origin
+        excluded = (
+            not self._schedule_available_for_umo(umo)
+            or event.get_extra("provider_request") is not None
+        )
+        event.set_extra(EXTRA + "excluded", excluded)
+        policy = self.reply_delay_policy
+        if excluded or not policy.enabled:
+            return
+        received_at = self._arrival_time(event)
         try:
-            persona = await self.personas.resolve(event.unified_msg_origin)
+            persona = await self.personas.resolve(umo)
         except Exception:
             logger.exception("[虚拟人生] 回复延迟跳过：人格解析失败")
             return
-        plan = self.storage.get_plan(received_at.date().isoformat(), persona.id)
+        day = received_at.date().isoformat()
+        plan = self.storage.get_plan(day, persona.id)
         if not plan or not plan.has_schedule:
             logger.info(
                 "[虚拟人生] 回复延迟跳过：内存中没有有效日程 persona=%s date=%s",
                 persona.id,
-                received_at.date().isoformat(),
+                day,
             )
             return
         arrival_item = timeline_item_at(plan, received_at)
         if arrival_item is None:
             return
 
-        active = self.reply_delay_coordinator.is_active(
-            event.unified_msg_origin,
-            received_at,
-        )
-        decision = self.reply_delay_policy.decide(
+        text = event.get_message_str()
+        decision = policy.decide(
             arrival_item,
             received_at,
-            len(event.get_message_str()),
-            active_conversation=active,
+            len(text),
+            active_conversation=self.reply_delay_coordinator.is_active(
+                umo, received_at
+            ),
             needs=self._life_needs(plan, received_at),
         )
-        queued = QueuedMessage(
+        message = QueuedMessage(
             received_at=received_at,
             sender_id=event.get_sender_id(),
             sender_name=event.get_sender_name(),
-            prompt=str(event.get_message_str() or ""),
+            prompt=str(text or ""),
             image_urls=self._message_media_urls(event, Image),
             audio_urls=self._message_media_urls(event, Record),
             temporary_files=tuple(
@@ -83,51 +77,51 @@ class ReplyDelayMixin:
                 if path
             ),
         )
-        batch, primary = await self.reply_delay_coordinator.enqueue(
-            event.unified_msg_origin,
-            queued,
+        batch, first = await self.reply_delay_coordinator.enqueue(
+            umo,
+            message,
             decision,
             arrival_item,
-            extend_seconds=(
-                self.reply_delay_policy.merge_window_seconds
-                if self.reply_delay_policy.merge_extend
-                else 0
-            ),
-            max_total_seconds=self.reply_delay_policy.max_merge_seconds,
+            extend_seconds=policy.merge_window_seconds if policy.merge_extend else 0,
+            max_total_seconds=policy.max_merge_seconds,
         )
         if batch is None:
             return
-        if not primary:
-            self._detach_temporary_files(event, queued.temporary_files)
+        if not first:
+            # The first message of the batch answers for this one; its files now belong to that request.
+            self._detach_temporary_files(event, message.temporary_files)
             event.stop_event()
             logger.info(
                 "[虚拟人生] 消息已加入回复延迟批次 umo=%s queued=%s deadline=%s",
-                event.unified_msg_origin,
+                umo,
                 len(batch.messages),
                 batch.deadline.isoformat(),
             )
             return
 
-        if decision.delay_seconds > 0 and self.reply_delay_policy.notify_user:
-            notification = self.reply_delay_policy.notification(decision)
-            if notification:
-                try:
-                    await self.context.send_message(
-                        event.unified_msg_origin,
-                        MessageChain().message(notification),
-                    )
-                except Exception:
-                    logger.exception("[虚拟人生] 回复延迟提示发送失败")
+        notice = (
+            policy.notification(decision)
+            if decision.delay_seconds > 0 and policy.notify_user
+            else ""
+        )
+        if notice:
+            try:
+                await self.context.send_message(umo, MessageChain().message(notice))
+            except Exception:
+                logger.exception("[虚拟人生] 回复延迟提示发送失败")
 
         messages = await self.reply_delay_coordinator.settle(batch, self._now())
         settled_at = self._now()
-        event.set_extra("virtual_life_reply_delay_batch", batch)
-        event.set_extra("virtual_life_reply_delay_messages", messages)
-        event.set_extra("virtual_life_reply_delay_persona_id", persona.id)
-        event.set_extra("virtual_life_reply_delay_settled_at", settled_at)
+        for key, value in (
+            ("batch", batch),
+            ("messages", messages),
+            ("persona_id", persona.id),
+            ("settled_at", settled_at),
+        ):
+            event.set_extra(EXTRA + key, value)
         logger.info(
             "[虚拟人生] 回复延迟批次开始结算 umo=%s availability=%s planned=%ss actual=%ss queued=%s",
-            event.unified_msg_origin,
+            umo,
             decision.availability,
             decision.delay_seconds,
             max(0, int((settled_at - batch.created_at).total_seconds())),
@@ -138,60 +132,52 @@ class ReplyDelayMixin:
     def _message_media_urls(
         event: AstrMessageEvent, media_type: type
     ) -> tuple[str, ...]:
-        components = []
-        for component in event.get_messages():
-            components.append(component)
-            if isinstance(component, Reply) and component.chain:
-                components.extend(component.chain)
-        urls = []
-        for component in components:
-            if not isinstance(component, media_type):
-                continue
-            value = component.path or component.url or component.file
-            if value and str(value) not in urls:
-                urls.append(str(value))
-        return tuple(urls)
+        """Unique paths/urls of ``media_type`` parts, including those inside a quoted reply."""
+        parts = []
+        for part in event.get_messages():
+            parts.append(part)
+            if isinstance(part, Reply) and part.chain:
+                parts += part.chain
+        found = (
+            str(part.path or part.url or part.file)
+            for part in parts
+            if isinstance(part, media_type) and (part.path or part.url or part.file)
+        )
+        return tuple(dict.fromkeys(found))
 
     @staticmethod
     def _detach_temporary_files(
-        event: AstrMessageEvent,
-        temporary_files: tuple[str, ...],
+        event: AstrMessageEvent, temporary_files: tuple[str, ...]
     ) -> None:
         tracked = getattr(event, "_temporary_local_files", None)
-        if not isinstance(tracked, list):
-            return
-        for path in temporary_files:
-            while path in tracked:
-                tracked.remove(path)
+        if isinstance(tracked, list):
+            tracked[:] = [path for path in tracked if path not in temporary_files]
 
     def _apply_reply_delay_batch(
-        self,
-        event: AstrMessageEvent,
-        req: ProviderRequest,
+        self, event: AstrMessageEvent, req: ProviderRequest
     ) -> None:
-        batch = event.get_extra("virtual_life_reply_delay_batch")
-        messages = event.get_extra("virtual_life_reply_delay_messages")
-        settled_at = event.get_extra("virtual_life_reply_delay_settled_at")
-        persona_id = event.get_extra("virtual_life_reply_delay_persona_id")
+        """Swap the request's prompt for the whole batch and add what happened while she waited."""
+        batch = event.get_extra(EXTRA + "batch")
+        messages = event.get_extra(EXTRA + "messages")
+        settled_at = event.get_extra(EXTRA + "settled_at")
         if not batch or not messages or not isinstance(settled_at, datetime):
             return
         req.prompt = format_queued_messages(
-            messages,
-            group=session_kind(event.unified_msg_origin) == "group",
+            messages, group=session_kind(event.unified_msg_origin) == "group"
         )
         req.image_urls = [url for message in messages for url in message.image_urls]
         req.audio_urls = [url for message in messages for url in message.audio_urls]
         for message in messages:
             for path in message.temporary_files:
                 event.track_temporary_local_file(path)
-        current_plan = self.storage.get_plan(
-            settled_at.date().isoformat(),
-            str(persona_id),
+        plan = self.storage.get_plan(
+            settled_at.date().isoformat(), str(event.get_extra(EXTRA + "persona_id"))
         )
-        current_item = (
-            timeline_item_at(current_plan, settled_at)
-            if current_plan and current_plan.has_schedule
-            else None
+        now_item = (
+            timeline_item_at(plan, settled_at) if plan and plan.has_schedule else None
         )
-        delay_context = format_delay_context(batch, settled_at, current_item)
-        req.extra_user_content_parts.append(TextPart(text=delay_context).mark_as_temp())
+        req.extra_user_content_parts.append(
+            TextPart(
+                text=format_delay_context(batch, settled_at, now_item)
+            ).mark_as_temp()
+        )

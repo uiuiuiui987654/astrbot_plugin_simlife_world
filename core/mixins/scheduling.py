@@ -12,7 +12,12 @@ from datetime import date, datetime, time, timedelta
 from ..models import DailyPlan, ProactiveWindow, minute_of_day
 from ..persona import PersonaContext
 from ..proactive import session_kind
-from ..utils import deterministic_int, deterministic_probability, next_available_at, parse_datetime
+from ..utils import (
+    deterministic_int,
+    deterministic_probability,
+    next_available_at,
+    parse_datetime,
+)
 from ..window_schedule import proactive_window_offset_minutes
 
 # Rejection reasons reported by the proactive policy.
@@ -48,12 +53,16 @@ class SchedulingMixin:
 
     def _at_time(self, date_str: str, hhmm: str) -> datetime:
         hour, minute = (int(part) for part in hhmm.split(":"))
-        return datetime.combine(date.fromisoformat(date_str), time(hour, minute), self.timezone)
+        return datetime.combine(
+            date.fromisoformat(date_str), time(hour, minute), self.timezone
+        )
 
     def _end_time(self, date_str: str, hhmm: str) -> datetime:
         if hhmm != "24:00":
             return self._at_time(date_str, hhmm)
-        return datetime.combine(date.fromisoformat(date_str) + timedelta(days=1), time.min, self.timezone)
+        return datetime.combine(
+            date.fromisoformat(date_str) + timedelta(days=1), time.min, self.timezone
+        )
 
     @staticmethod
     def _duration_minutes(start: str, end: str) -> int:
@@ -61,18 +70,25 @@ class SchedulingMixin:
 
     @staticmethod
     def _window_matches(umo: str, window: ProactiveWindow) -> bool:
-        return window.audience in {"both", "group" if session_kind(umo) == "group" else "private"}
+        return window.audience in {
+            "both",
+            "group" if session_kind(umo) == "group" else "private",
+        }
 
     # ------------------------------------------------------------------ (re)scheduling a session
 
-    async def _reschedule_plan_sessions(self, persona: PersonaContext, plan: DailyPlan) -> None:
+    async def _reschedule_plan_sessions(
+        self, persona: PersonaContext, plan: DailyPlan
+    ) -> None:
         for umo in self.policy.enabled_sessions():
             resolved = await self.personas.resolve(umo)
             if resolved.id == persona.id:
                 await self._schedule_session(umo, resolved, plan)
         await self.storage.save_sessions()
 
-    async def _schedule_session(self, umo: str, persona: PersonaContext, plan: DailyPlan) -> None:
+    async def _schedule_session(
+        self, umo: str, persona: PersonaContext, plan: DailyPlan
+    ) -> None:
         """Replace the session's plan jobs with ones for ``plan``."""
         plan_jobs = self._job_prefix(umo) + "plan:"
         self.runtime.remove_prefix(plan_jobs)
@@ -92,7 +108,13 @@ class SchedulingMixin:
             )
             if run_at > now:
                 self.runtime.add_date_job(
-                    f"{plan_jobs}window:{window.id}", run_at, self._run_window, umo, persona.id, plan.revision, window.id
+                    f"{plan_jobs}window:{window.id}",
+                    run_at,
+                    self._run_window,
+                    umo,
+                    persona.id,
+                    plan.revision,
+                    window.id,
                 )
         await self._schedule_sleep_exception(umo, persona, plan, state)
         self._schedule_idle(umo)
@@ -102,20 +124,41 @@ class SchedulingMixin:
         if state.sleep_drawn:
             return
         state.sleep_drawn = True
-        chance = max(0.0, min(1.0, float(self._delivery().get("sleep_exception_probability", 0.08))))
-        state.sleep_selected = deterministic_probability(f"sleep::{plan.date}::{umo}") < chance
-        sleeps = [item for item in plan.timeline if item.state == "sleep"] if state.sleep_selected else []
+        chance = max(
+            0.0,
+            min(1.0, float(self._delivery().get("sleep_exception_probability", 0.08))),
+        )
+        state.sleep_selected = (
+            deterministic_probability(f"sleep::{plan.date}::{umo}") < chance
+        )
+        sleeps = (
+            [item for item in plan.timeline if item.state == "sleep"]
+            if state.sleep_selected
+            else []
+        )
         if not sleeps:
             return
-        longest = max(sleeps, key=lambda item: self._duration_minutes(item.start, item.end))
-        start, end = self._at_time(plan.date, longest.start), self._end_time(plan.date, longest.end)
+        longest = max(
+            sleeps, key=lambda item: self._duration_minutes(item.start, item.end)
+        )
+        start, end = (
+            self._at_time(plan.date, longest.start),
+            self._end_time(plan.date, longest.end),
+        )
         if end <= self._now() or (end - start).total_seconds() < 120:
             return
         earliest = max(start, self._now() + timedelta(seconds=10))
         room = max(1, int((end - earliest).total_seconds() // 60) - 1)
-        run_at = earliest + timedelta(minutes=deterministic_int(f"sleep-time::{plan.date}::{umo}", 0, room))
+        run_at = earliest + timedelta(
+            minutes=deterministic_int(f"sleep-time::{plan.date}::{umo}", 0, room)
+        )
         self.runtime.add_date_job(
-            self._job_prefix(umo) + "plan:sleep", run_at, self._run_sleep, umo, persona.id, plan.revision
+            self._job_prefix(umo) + "plan:sleep",
+            run_at,
+            self._run_sleep,
+            umo,
+            persona.id,
+            plan.revision,
         )
 
     def _schedule_idle(self, umo: str, *, run_at: datetime | None = None) -> None:
@@ -136,13 +179,22 @@ class SchedulingMixin:
     async def _current(self, umo: str, persona_id: str, revision: str):
         """``(persona, plan)`` if the job still belongs to the live plan, else ``None``."""
         persona, plan = await self._ensure_plan_for_umo(umo)
-        return (persona, plan) if persona.id == persona_id and plan.revision == revision else None
+        return (
+            (persona, plan)
+            if persona.id == persona_id and plan.revision == revision
+            else None
+        )
 
     @staticmethod
     def _find_window(plan: DailyPlan, window_id: str) -> ProactiveWindow | None:
-        return next((window for window in plan.proactive_windows if window.id == window_id), None)
+        return next(
+            (window for window in plan.proactive_windows if window.id == window_id),
+            None,
+        )
 
-    async def _run_window(self, umo: str, persona_id: str, revision: str, window_id: str) -> None:
+    async def _run_window(
+        self, umo: str, persona_id: str, revision: str, window_id: str
+    ) -> None:
         persona, plan = await self._ensure_plan_for_umo(umo)
         if persona.id != persona_id or plan.revision != revision:
             await self._schedule_session(umo, persona, plan)
@@ -152,13 +204,24 @@ class SchedulingMixin:
             await self._attempt_window(umo, persona, plan, window, delayed=False)
 
     async def _run_delayed_window(
-        self, umo: str, persona_id: str, revision: str, window_id: str, scheduled_at: str, retry_reason: str = ""
+        self,
+        umo: str,
+        persona_id: str,
+        revision: str,
+        window_id: str,
+        scheduled_at: str,
+        retry_reason: str = "",
     ) -> None:
         live = await self._current(umo, persona_id, revision)
         window = self._find_window(live[1], window_id) if live else None
         if window:
             await self._attempt_window(
-                umo, *live, window, delayed=True, attempt_key=scheduled_at, retry_reason=retry_reason
+                umo,
+                *live,
+                window,
+                delayed=True,
+                attempt_key=scheduled_at,
+                retry_reason=retry_reason,
             )
 
     async def _run_sleep(self, umo: str, persona_id: str, revision: str) -> None:
@@ -168,7 +231,9 @@ class SchedulingMixin:
 
     async def _run_idle(self, umo: str) -> None:
         persona, plan = await self._ensure_plan_for_umo(umo)
-        sent, reason = await self._attempt_unsolicited(umo, persona, plan, IDLE_INTENT, "idle")
+        sent, reason = await self._attempt_unsolicited(
+            umo, persona, plan, IDLE_INTENT, "idle"
+        )
         if sent:
             self._schedule_idle(umo)
         elif reason in WAIT_FOR_FREE_SLOT:
@@ -192,7 +257,11 @@ class SchedulingMixin:
         retry_reason: str = "",
     ) -> None:
         """Try a window now; when the moment was wrong, book a retry later the same day."""
-        intent = self._delayed_window_intent(window, plan, retry_reason) if delayed else window.intent
+        intent = (
+            self._delayed_window_intent(window, plan, retry_reason)
+            if delayed
+            else window.intent
+        )
         sent, reason = await self._attempt_unsolicited(
             umo, persona, plan, intent, "window", attempt_key=attempt_key or window.id
         )
@@ -209,12 +278,18 @@ class SchedulingMixin:
         if run_at is None:
             return
         self._schedule_window_retry(umo, persona, plan, window, run_at, reason)
-        if reason != AGENT_BUSY:  # waiting on a running agent task doesn't use up a retry
+        if (
+            reason != AGENT_BUSY
+        ):  # waiting on a running agent task doesn't use up a retry
             self._window_retry_counts[key] = tries + 1
 
-    def _delayed_window_intent(self, window: ProactiveWindow, plan: DailyPlan, retry_reason: str = "") -> str:
+    def _delayed_window_intent(
+        self, window: ProactiveWindow, plan: DailyPlan, retry_reason: str = ""
+    ) -> str:
         """Once the window's activity is over, tell the model it missed the moment and why."""
-        source = next((item for item in plan.timeline if item.id == window.source_item_id), None)
+        source = next(
+            (item for item in plan.timeline if item.id == window.source_item_id), None
+        )
         if not source or self._now() < self._end_time(plan.date, source.end):
             return window.intent
         why = MISSED_REASONS.get(retry_reason, "当时时机不太合适")
@@ -233,7 +308,9 @@ class SchedulingMixin:
         }.get(reason)
         return bool(switch and self._delivery().get(switch, False))
 
-    def _window_retry_run_at(self, umo: str, plan: DailyPlan, reason: str) -> datetime | None:
+    def _window_retry_run_at(
+        self, umo: str, plan: DailyPlan, reason: str
+    ) -> datetime | None:
         """When to retry, or ``None`` if there's no sensible time left today."""
         now = self._now()
         if reason in WAIT_FOR_FREE_SLOT:
@@ -245,8 +322,14 @@ class SchedulingMixin:
             run_at = now + timedelta(minutes=30)
         elif reason == NOT_IDLE:
             state = self.storage.sessions.get(umo)
-            quiet = max(0, int(self._delivery().get("minimum_idle_for_window_minutes", 20)))
-            seen = [parse_datetime(state.last_user_message_at, self.timezone)] if state and state.last_user_message_at else []
+            quiet = max(
+                0, int(self._delivery().get("minimum_idle_for_window_minutes", 20))
+            )
+            seen = (
+                [parse_datetime(state.last_user_message_at, self.timezone)]
+                if state and state.last_user_message_at
+                else []
+            )
             if activity_at := self._conversation_activity_at.get(umo):
                 seen.append(activity_at)
             if not seen:
@@ -256,8 +339,12 @@ class SchedulingMixin:
             state = self.storage.sessions.get(umo)
             if not state or not state.last_proactive_at:
                 return None
-            cooldown = max(0, int(self.policy.settings_for(umo).get("cooldown_minutes", 0)))
-            ready = parse_datetime(state.last_proactive_at, self.timezone) + timedelta(minutes=cooldown)
+            cooldown = max(
+                0, int(self.policy.settings_for(umo).get("cooldown_minutes", 0))
+            )
+            ready = parse_datetime(state.last_proactive_at, self.timezone) + timedelta(
+                minutes=cooldown
+            )
             run_at = self._later(max(ready, now), 1, 5)
         else:
             return None

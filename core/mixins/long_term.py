@@ -1,7 +1,4 @@
-"""Long-term timeline renewals and drafts.
-
-Mixin for ProactiveVirtualDailyPlugin; split out of main.py without behaviour changes.
-"""
+"""Long-term timeline upkeep: automatic renewal, drafts, admin notices, job overview."""
 
 from __future__ import annotations
 
@@ -13,72 +10,84 @@ from astrbot.api import logger
 from astrbot.api.event import AstrMessageEvent, MessageChain
 
 from ..long_term import validate_stage_bundle
-from ..models import (
-    DailyPlan,
-)
+from ..models import DailyPlan
 from ..persona import PersonaContext
+
+RENEWAL_REQUIREMENT = (
+    "自动延续当前人物的大时间表，保持经历连续但允许进入新的学期、假期、项目或生活阶段。"
+)
+JOB_LABELS = (("window-retry:", "延迟窗口"), ("window:", "日程窗口"))
+
+
+def _stage_span(stage: dict) -> str:
+    return f"{stage['name']}（{stage['start_date']} 至 {stage['end_date']}）"
 
 
 class LongTermMixin:
+    def _long_term_settings(self) -> dict:
+        return self.config.get("long_term_settings", {}) or {}
+
     async def _check_long_term_renewals(self, target: date) -> None:
-        settings = self.config.get("long_term_settings", {}) or {}
-        if not settings.get("enable", True):
+        """Renew every persona whose last approved stage has run out."""
+        if not self._long_term_settings().get("enable", True):
             return
-        persona_ids = {
+        for persona_id in {
             str(stage.get("persona_id", ""))
             for stage in self.long_term.stages
             if stage.get("persona_id")
-        }
-        for persona_id in persona_ids:
+        }:
             latest = self.long_term.latest_stage(persona_id)
             if not latest:
                 continue
-            end = date.fromisoformat(latest["end_date"])
-            if target < end or self.long_term.has_stage_starting_after(persona_id, end):
-                continue
-            await self._run_long_term_renewal(persona_id)
+            ends = date.fromisoformat(latest["end_date"])
+            if target >= ends and not self.long_term.has_stage_starting_after(
+                persona_id, ends
+            ):
+                await self._run_long_term_renewal(persona_id)
 
     async def _run_long_term_renewal(self, persona_id: str) -> None:
+        """Generate the next stages; on failure tell the admin and retry later (bounded)."""
         latest = self.long_term.latest_stage(persona_id)
-        target_umo = self.long_term.notification_target(persona_id)
-        if not latest or not target_umo:
+        admin = self.long_term.notification_target(persona_id)
+        if not latest or not admin:
             return
-        attempts = self.renewal_attempts.get(persona_id, 0) + 1
-        self.renewal_attempts[persona_id] = attempts
-        settings = self.config.get("long_term_settings", {}) or {}
+        attempt = self.renewal_attempts[persona_id] = (
+            self.renewal_attempts.get(persona_id, 0) + 1
+        )
+        settings = self._long_term_settings()
         try:
-            persona = await self.personas.resolve_id(persona_id, target_umo)
-            start = date.fromisoformat(latest["end_date"]) + timedelta(days=1)
+            persona = await self.personas.resolve_id(persona_id, admin)
             stages = await self.plan_generator.generate_long_term_timeline(
                 persona,
-                start_date=start,
+                start_date=date.fromisoformat(latest["end_date"]) + timedelta(days=1),
                 previous_stage=latest,
-                requirements="自动延续当前人物的大时间表，保持经历连续但允许进入新的学期、假期、项目或生活阶段。",
+                requirements=RENEWAL_REQUIREMENT,
             )
             await self.long_term.add_auto_renewal(persona_id, stages)
             self.image_renderer.invalidate_persona(persona_id)
             self.renewal_attempts.pop(persona_id, None)
             await self._notify_admin(
-                target_umo,
+                admin,
                 f"人格 {persona_id} 的大时间表已自动续期："
-                + "、".join(
-                    f"{stage['name']}（{stage['start_date']} 至 {stage['end_date']}）"
-                    for stage in stages
-                ),
+                + "、".join(map(_stage_span, stages)),
             )
         except Exception as exc:
-            logger.warning("[虚拟人生] _run_long_term_renewal 失败: %s", exc, exc_info=True)
-            await self._notify_admin(
-                target_umo,
-                f"人格 {persona_id} 的大时间表自动续期失败（第 {attempts} 次）：{exc}",
+            logger.warning(
+                "[虚拟人生] 大时间表自动续期失败 persona=%s: %s",
+                persona_id,
+                exc,
+                exc_info=True,
             )
-            maximum = max(1, int(settings.get("renewal_max_attempts", 6)))
-            if attempts >= maximum:
+            await self._notify_admin(
+                admin,
+                f"人格 {persona_id} 的大时间表自动续期失败（第 {attempt} 次）：{exc}",
+            )
+            if attempt >= max(1, int(settings.get("renewal_max_attempts", 6))):
                 return
-            delay = max(1, int(settings.get("renewal_retry_minutes", 60)))
+            wait = max(1, int(settings.get("renewal_retry_minutes", 60)))
             self.runtime.add_date_job(
                 f"pvd:long-term-renewal:{hashlib.sha1(persona_id.encode()).hexdigest()[:12]}",
-                self._now() + timedelta(minutes=delay),
+                self._now() + timedelta(minutes=wait),
                 self._run_long_term_renewal,
                 persona_id,
             )
@@ -92,45 +101,37 @@ class LongTermMixin:
     def _scheduled_proactive_entries(
         self, umo: str, plan: DailyPlan
     ) -> list[tuple[datetime, str]]:
-        job_times = dict(self.runtime.scheduled_jobs())
-        umo_hash = self._umo_hash(umo)
-        plan_prefix = f"pvd:{umo_hash}:plan:"
-        windows = {window.id: window for window in plan.proactive_windows}
-        entries: list[tuple[datetime, str]] = []
-
-        idle_time = job_times.get(f"pvd:{umo_hash}:idle")
-        if idle_time:
-            entries.append((idle_time, "沉默主动"))
-
-        for job_id, run_at in job_times.items():
-            if not job_id.startswith(plan_prefix):
+        """``(time, label)`` of this session's pending proactive jobs, soonest first."""
+        jobs = dict(self.runtime.scheduled_jobs())
+        prefix = f"pvd:{self._umo_hash(umo)}:"
+        intents = {window.id: window.intent for window in plan.proactive_windows}
+        entries = (
+            [(jobs[prefix + "idle"], "沉默主动")] if jobs.get(prefix + "idle") else []
+        )
+        for job_id, run_at in jobs.items():
+            if not job_id.startswith(prefix + "plan:"):
                 continue
-            suffix = job_id[len(plan_prefix) :]
-            if suffix == "sleep":
+            name = job_id[len(prefix + "plan:") :]
+            if name == "sleep":
                 entries.append((run_at, "睡眠异常主动"))
-            elif suffix.startswith("window-retry:"):
-                window_id = suffix.removeprefix("window-retry:")
-                window = windows.get(window_id)
-                label = f"延迟窗口 [{window_id}]"
-                entries.append(
-                    (run_at, label + (f" · {window.intent}" if window else ""))
-                )
-            elif suffix.startswith("window:"):
-                window_id = suffix.removeprefix("window:")
-                window = windows.get(window_id)
-                label = f"日程窗口 [{window_id}]"
-                entries.append(
-                    (run_at, label + (f" · {window.intent}" if window else ""))
-                )
-
-        return sorted(entries, key=lambda item: (item[0], item[1]))
+                continue
+            for marker, label in JOB_LABELS:
+                if name.startswith(marker):
+                    window_id = name[len(marker) :]
+                    intent = intents.get(window_id)
+                    entries.append(
+                        (
+                            run_at,
+                            f"{label} [{window_id}]"
+                            + (f" · {intent}" if intent is not None else ""),
+                        )
+                    )
+                    break
+        return sorted(entries)
 
     async def _refresh_persona_daily_plan(self, persona: PersonaContext) -> DailyPlan:
         plan = await self._ensure_plan(
-            persona,
-            self._now().date(),
-            force=True,
-            preserve_disabled=True,
+            persona, self._now().date(), force=True, preserve_disabled=True
         )
         for umo in self.policy.enabled_sessions():
             resolved = await self.personas.resolve(umo)
@@ -170,6 +171,7 @@ class LongTermMixin:
     async def _image_view_results(
         self, event: AstrMessageEvent, title: str, fallback: str, jobs
     ) -> list:
+        """Render cards when images are on; fall back to text if rendering fails."""
         if not self.image_renderer.enabled:
             return [event.plain_result(fallback)]
         try:
@@ -177,19 +179,17 @@ class LongTermMixin:
         except Exception:
             logger.exception("[虚拟人生] 图片渲染失败，回退文字输出")
             return [event.plain_result("图片渲染失败，已切换为文字模式。\n" + fallback)]
-        return [
-            event.plain_result(title),
-            *(event.image_result(path) for path in paths),
-        ]
+        return [event.plain_result(title), *map(event.image_result, paths)]
 
     @staticmethod
     def _parse_long_term_json(content: str, persona_id: str) -> list[dict]:
+        """Admin-supplied JSON: a ``{"stages": [...]}`` bundle or one bare stage."""
         try:
             payload = json.loads(content)
         except json.JSONDecodeError as exc:
             raise ValueError(f"结构化数据不是合法 JSON：{exc}") from exc
         if not isinstance(payload, dict):
             raise ValueError("结构化数据必须是 JSON 对象")
-        if "stages" not in payload:
-            payload = {"stages": [payload]}
-        return validate_stage_bundle(payload, persona_id)
+        return validate_stage_bundle(
+            payload if "stages" in payload else {"stages": [payload]}, persona_id
+        )
