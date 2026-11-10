@@ -45,3 +45,27 @@ def life_timeline(
         block(item_id + "-evening", "19:00", "23:00", "看书放松", "客厅"),
         block(item_id + "-sleep", "23:00", "24:00", "睡觉", "卧室", "sleep", "blocked"),
     ]
+
+
+def simple_day(**overrides) -> dict:
+    """Small but valid plan payload: sleep / one long day block / sleep, one window at noon."""
+
+    def slot(slot_id, start, end, activity, state="available", availability="normal"):
+        return {"id": slot_id, "start": start, "end": end, "activity": activity, "state": state, "availability": availability}
+
+    payload = {
+        "date": "2026-07-14",
+        "persona_id": "alice",
+        "theme": "探索日",
+        "mood": "轻快",
+        "outfit": outfit_payload("清爽的夏日学院风"),
+        "timeline": [
+            slot("sleep", "00:00", "07:00", "睡觉", "sleep", "blocked"),
+            slot("day", "07:00", "23:00", "生活与工作"),
+            slot("night", "23:00", "24:00", "睡觉", "sleep", "blocked"),
+        ],
+        "proactive_windows": [{"id": "hello", "at": "12:00", "intent": "分享午饭", "audience": "both", "source_item_id": "day"}],
+        "budget_bonus": {"private": 2, "group": 1},
+    }
+    payload.update(overrides)
+    return payload

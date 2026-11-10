@@ -1,3 +1,6 @@
+"""Long-term stages: validation, expanding one day, picking a stage, drafts and persistence."""
+
+import asyncio
 import tempfile
 import unittest
 from datetime import date
@@ -5,9 +8,11 @@ from pathlib import Path
 
 from astrbot_plugin_simlife_world.core.long_term import LongTermTimelineStore, validate_stage, validate_stage_bundle
 
+from tests.astrbot_stub import is_stubbed
 
-def academic_stage():
-    return {
+
+def semester(**changes):
+    stage = {
         "id": "semester-fall",
         "name": "秋季学期",
         "kind": "academic",
@@ -21,153 +26,107 @@ def academic_stage():
         "milestones": [{"date": "2026-09-10", "title": "提交选课确认", "lead_days": 3}],
         "constraints": ["工作日保持学生作息"],
     }
+    stage.update(changes)
+    return stage
 
 
-from tests.astrbot_stub import is_stubbed  # noqa: E402
+def bare(stage_id, name, start, end, **changes):
+    return semester(id=stage_id, name=name, start_date=start, end_date=end, weekly_rules=[], special_dates=[], special_periods=[], milestones=[], **changes)
 
 
-class LongTermTests(unittest.IsolatedAsyncioTestCase):
-    def test_validation_rejects_empty_event_time_with_clear_error(self):
-        value = academic_stage()
-        value["special_dates"][0]["start"] = ""
-        with self.assertRaisesRegex(ValueError, "requires non-empty start and end"):
-            validate_stage(value, "student")
+def store_with(*stages, directory="unused"):
+    store = LongTermTimelineStore(Path(directory))
+    store.stages = list(stages)
+    return store
 
-    def test_validation_rejects_text_priority(self):
-        value = academic_stage()
-        value["priority"] = "high"
-        with self.assertRaisesRegex(ValueError, "priority must be an integer"):
-            validate_stage(value, "student")
 
-    def test_validation_accepts_numeric_string_priority(self):
-        value = academic_stage()
-        value["priority"] = "42"
-        self.assertEqual(validate_stage(value, "student")["priority"], 42)
+class Validation(unittest.TestCase):
+    def test_normalised_stage(self):
+        stage = validate_stage(semester(priority="42"), "student")
+        self.assertEqual((stage["persona_id"], stage["kind"], stage["priority"]), ("student", "academic", 42))
 
-    def test_validation_sets_persona_and_kind(self):
-        stage = validate_stage(academic_stage(), "student")
-        self.assertEqual(stage["persona_id"], "student")
-        self.assertEqual(stage["kind"], "academic")
+    def test_refusals(self):
+        empty_time = semester()
+        empty_time["special_dates"][0]["start"] = ""
+        for name, (value, message) in {
+            "empty event time": (empty_time, "requires non-empty start and end"),
+            "worded priority": (semester(priority="high"), "priority must be an integer"),
+        }.items():
+            with self.subTest(name), self.assertRaisesRegex(ValueError, message):
+                validate_stage(value, "student")
 
-    async def test_special_date_overrides_weekly_event(self):
-        with tempfile.TemporaryDirectory() as directory:
-            store = LongTermTimelineStore(Path(directory))
-            store.stages = [validate_stage(academic_stage(), "student")]
-            expanded = store.expand_day("student", date(2026, 9, 7))
-            self.assertEqual([item["title"] for item in expanded["fixed_events"]], ["开学典礼"])
-            self.assertEqual([item["title"] for item in expanded["milestones"]], ["提交选课确认"])
+    def test_bundle_must_be_continuous(self):
+        winter = {"id": "winter-break", "name": "寒假", "kind": "academic", "start_date": "2027-01-22", "end_date": "2027-02-20"}
+        with self.assertRaises(ValueError):  # one-day gap after 01-20
+            validate_stage_bundle({"stages": [semester(), winter]}, "student")
 
-    @unittest.skipIf(
-        is_stubbed("holidays") or is_stubbed("lunar_python"),
-        "requires the real holidays + lunar_python packages",
-    )
-    async def test_holidays_are_added_to_stage_and_daily_context(self):
-        with tempfile.TemporaryDirectory() as directory:
-            store = LongTermTimelineStore(Path(directory))
-            stage = validate_stage(academic_stage(), "student")
-            store.stages = [stage]
-            enriched = store.with_holidays(stage)
-            self.assertIn("中秋节", {item["name"] for item in enriched["holidays"]})
-            context = store.format_day_context("student", date(2026, 9, 25))
-            self.assertIn("今日节日：中秋节", context)
 
-    async def test_persona_isolation_and_priority(self):
-        with tempfile.TemporaryDirectory() as directory:
-            store = LongTermTimelineStore(Path(directory))
-            student = validate_stage(academic_stage(), "student")
-            project = validate_stage(
-                {
-                    "id": "release",
-                    "name": "发布工期",
-                    "kind": "project",
-                    "start_date": "2026-09-01",
-                    "end_date": "2026-10-01",
-                    "priority": 20,
-                    "weekly_rules": [],
-                    "special_dates": [],
-                    "special_periods": [],
-                    "milestones": [],
-                    "constraints": ["优先解决阻塞项"],
-                },
-                "worker",
-            )
-            store.stages = [student, project]
-            self.assertEqual(store.active_stage("student", date(2026, 9, 10))["id"], "semester-fall")
-            self.assertEqual(store.active_stage("worker", date(2026, 9, 10))["id"], "release")
+class Queries(unittest.TestCase):
+    def test_one_off_event_replaces_the_weekly_one(self):
+        day = store_with(validate_stage(semester(), "student")).expand_day("student", date(2026, 9, 7))
+        self.assertEqual([event["title"] for event in day["fixed_events"]], ["开学典礼"])
+        self.assertEqual([item["title"] for item in day["milestones"]], ["提交选课确认"])
 
-    def test_resolve_stage_supports_default_name_and_partial_id(self):
-        store = LongTermTimelineStore(Path("unused"))
-        first = validate_stage(academic_stage(), "student")
-        second_value = academic_stage()
-        second_value.update({"weekly_rules": [], "special_dates": [], "special_periods": [], "milestones": []})
-        second_value.update({"id": "winter-break", "name": "寒假", "start_date": "2027-01-21", "end_date": "2027-02-20"})
-        second = validate_stage(second_value, "student")
-        store.stages = [first, second]
+    def test_personas_do_not_share_stages(self):
+        release = validate_stage(bare("release", "发布工期", "2026-09-01", "2026-10-01", kind="project", priority=20), "worker")
+        store = store_with(validate_stage(semester(), "student"), release)
+        self.assertEqual(store.active_stage("student", date(2026, 9, 10))["id"], "semester-fall")
+        self.assertEqual(store.active_stage("worker", date(2026, 9, 10))["id"], "release")
 
-        active, _ = store.resolve_stage("student", date(2026, 10, 1))
-        future, _ = store.resolve_stage("student", date(2026, 8, 1))
-        past, _ = store.resolve_stage("student", date(2027, 3, 1))
-        by_name, _ = store.resolve_stage("student", date(2026, 10, 1), "寒假")
-        by_partial, _ = store.resolve_stage("student", date(2026, 10, 1), "winter")
+    def test_resolving_a_stage(self):
+        winter = validate_stage(bare("winter-break", "寒假", "2027-01-21", "2027-02-20"), "student")
+        store = store_with(validate_stage(semester(), "student"), winter)
+        cases = {
+            (date(2026, 10, 1), ""): "semester-fall",  # current
+            (date(2026, 8, 1), ""): "semester-fall",  # next
+            (date(2027, 3, 1), ""): "winter-break",  # latest past
+            (date(2026, 10, 1), "寒假"): "winter-break",
+            (date(2026, 10, 1), "winter"): "winter-break",
+        }
+        for (day, query), expected in cases.items():
+            with self.subTest(day=day, query=query):
+                self.assertEqual(store.resolve_stage("student", day, query)[0]["id"], expected)
 
-        self.assertEqual(active["id"], "semester-fall")
-        self.assertEqual(future["id"], "semester-fall")
-        self.assertEqual(past["id"], "winter-break")
-        self.assertEqual(by_name["id"], "winter-break")
-        self.assertEqual(by_partial["id"], "winter-break")
-
-    def test_resolve_stage_returns_ambiguous_candidates(self):
-        store = LongTermTimelineStore(Path("unused"))
-        first = validate_stage(academic_stage(), "student")
-        second_value = academic_stage()
-        second_value.update({"weekly_rules": [], "special_dates": [], "special_periods": [], "milestones": []})
-        second_value.update({"id": "semester-spring", "name": "春季学期", "start_date": "2027-01-21", "end_date": "2027-06-30"})
-        store.stages = [first, validate_stage(second_value, "student")]
-        stage, candidates = store.resolve_stage("student", date(2026, 10, 1), "semester")
+    def test_ambiguous_query_lists_candidates(self):
+        spring = validate_stage(bare("semester-spring", "春季学期", "2027-01-21", "2027-06-30"), "student")
+        stage, candidates = store_with(validate_stage(semester(), "student"), spring).resolve_stage("student", date(2026, 10, 1), "semester")
         self.assertIsNone(stage)
         self.assertEqual([item["id"] for item in candidates], ["semester-fall", "semester-spring"])
 
-    async def test_persistence(self):
-        with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory)
-            store = LongTermTimelineStore(path)
-            store.stages = [validate_stage(academic_stage(), "student")]
-            await store.save()
-            restored = LongTermTimelineStore(path)
-            await restored.load()
-            self.assertEqual(restored.find("student", "semester-fall")["name"], "秋季学期")
+    @unittest.skipIf(is_stubbed("holidays") or is_stubbed("lunar_python"), "calendar libraries not installed")
+    def test_festivals_show_up(self):
+        stage = validate_stage(semester(), "student")
+        store = store_with(stage)
+        self.assertIn("中秋节", [item["name"] for item in store.with_holidays(stage)["holidays"]])
+        self.assertIn("今日节日：中秋节", store.format_day_context("student", date(2026, 9, 25)))
 
-    def test_bundle_requires_continuous_stages(self):
-        first = academic_stage()
-        second = {
-            "id": "winter-break",
-            "name": "寒假",
-            "kind": "academic",
-            "start_date": "2027-01-22",
-            "end_date": "2027-02-20",
-        }
-        with self.assertRaises(ValueError):
-            validate_stage_bundle({"stages": [first, second]}, "student")
 
-    async def test_draft_approval_records_notification_target(self):
-        with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory)
-            store = LongTermTimelineStore(path)
-            stages = validate_stage_bundle({"stages": [academic_stage()]}, "student")
-            await store.set_draft(
-                "student",
-                stages,
-                source="natural",
-                admin_umo="admin-session",
-                created_at="2026-07-14T12:00:00+08:00",
-                requirements="生成校历",
-            )
-            approved = await store.approve_draft("student", "admin-session")
-            restored = LongTermTimelineStore(path)
-            await restored.load()
-            self.assertEqual(approved[0]["id"], "semester-fall")
-            self.assertIsNone(restored.get_draft("student"))
-            self.assertEqual(restored.notification_target("student"), "admin-session")
+class Persistence(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.path = Path(self.tmp.name)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def reload(self):
+        store = LongTermTimelineStore(self.path)
+        asyncio.run(store.load())
+        return store
+
+    def test_saved_stages_come_back(self):
+        asyncio.run(store_with(validate_stage(semester(), "student"), directory=self.path).save())
+        self.assertEqual(self.reload().find("student", "semester-fall")["name"], "秋季学期")
+
+    def test_approving_a_draft_remembers_who_to_notify(self):
+        store = LongTermTimelineStore(self.path)
+        stages = validate_stage_bundle({"stages": [semester()]}, "student")
+        asyncio.run(store.set_draft("student", stages, source="natural", admin_umo="admin", created_at="t", requirements="生成校历"))
+        approved = asyncio.run(store.approve_draft("student", "admin"))
+        restored = self.reload()
+        self.assertEqual(approved[0]["id"], "semester-fall")
+        self.assertIsNone(restored.get_draft("student"))
+        self.assertEqual(restored.notification_target("student"), "admin")
 
 
 if __name__ == "__main__":

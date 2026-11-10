@@ -1,158 +1,60 @@
+"""DailyPlan parsing: what a valid day looks like and which mistakes are refused."""
+
 import unittest
 
 from astrbot_plugin_simlife_world.core.models import DailyPlan
 
-from tests.fixtures import outfit_payload
+from tests.fixtures import simple_day
 
 
-def valid_payload():
-    return {
-        "date": "2026-07-14",
-        "persona_id": "alice",
-        "theme": "探索日",
-        "mood": "轻快",
-        "outfit": outfit_payload("清爽的夏日学院风"),
-        "timeline": [
-            {
-                "id": "sleep",
-                "start": "00:00",
-                "end": "07:00",
-                "activity": "睡觉",
-                "state": "sleep",
-                "availability": "blocked",
-            },
-            {
-                "id": "day",
-                "start": "07:00",
-                "end": "23:00",
-                "activity": "生活与工作",
-                "state": "available",
-                "availability": "normal",
-            },
-            {
-                "id": "night",
-                "start": "23:00",
-                "end": "24:00",
-                "activity": "睡觉",
-                "state": "sleep",
-                "availability": "blocked",
-            },
-        ],
-        "proactive_windows": [
-            {
-                "id": "hello",
-                "at": "12:00",
-                "intent": "分享午饭",
-                "audience": "both",
-                "source_item_id": "day",
-            }
-        ],
-        "budget_bonus": {"private": 2, "group": 1},
-    }
+def without(categories, payload):
+    payload["outfit"]["items"] = [item for item in payload["outfit"]["items"] if item["category"] not in categories]
+    return payload
 
 
-class ModelTests(unittest.TestCase):
-    def test_empty_timeline_time_has_clear_error(self):
-        payload = valid_payload()
-        payload["timeline"][0]["start"] = ""
-        with self.assertRaisesRegex(ValueError, "non-empty HH:MM"):
-            DailyPlan.from_dict(payload)
-
-    def test_valid_structured_plan(self):
-        payload = valid_payload()
-        payload["timeline"][1]["participant_ids"] = ["person-1", "person-1"]
+class PlanParsing(unittest.TestCase):
+    def test_round_trip_of_a_full_day(self):
+        payload = simple_day()
+        payload["timeline"][1]["participant_ids"] = ["p1", "p1"]
         plan = DailyPlan.from_dict(payload)
-        self.assertEqual(plan.private_bonus, 2)
+        self.assertEqual((plan.private_bonus, plan.group_bonus), (2, 1))
         self.assertEqual(plan.timeline[-1].end, "24:00")
-        self.assertEqual(plan.timeline[1].participant_ids, ("person-1",))
-        self.assertEqual(plan.to_dict()["timeline"][1]["participant_ids"], ("person-1",))
-        self.assertEqual(plan.outfit.items[1].category, "underwear")
-        self.assertEqual(plan.outfit.style, "日常休闲风")
+        self.assertEqual(plan.timeline[1].participant_ids, ("p1",))  # duplicates collapse
+        self.assertEqual(plan.to_dict()["timeline"][1]["participant_ids"], ("p1",))
+        self.assertEqual((plan.outfit.style, plan.outfit.items[1].category), ("日常休闲风", "underwear"))
 
-    def test_legacy_outfit_without_style_is_supported(self):
-        payload = valid_payload()
-        payload["outfit"].pop("style")
-        plan = DailyPlan.from_dict(payload)
-        self.assertEqual(plan.outfit.style, "未记录")
+    def test_old_outfits_without_style_still_load(self):
+        payload = simple_day()
+        del payload["outfit"]["style"]
+        self.assertEqual(DailyPlan.from_dict(payload).outfit.style, "未记录")
 
-    def test_outfit_without_underpants_is_rejected(self):
-        payload = valid_payload()
-        payload["outfit"]["items"] = [
-            item
-            for item in payload["outfit"]["items"]
-            if item["category"] != "underpants"
-        ]
-        with self.assertRaisesRegex(ValueError, "underpants"):
-            DailyPlan.from_dict(payload)
+    def test_halves_can_exist_alone(self):
+        schedule_only = DailyPlan.from_dict(simple_day(outfit=None))
+        self.assertEqual((schedule_only.has_schedule, schedule_only.has_outfit), (True, False))
+        self.assertIsNone(schedule_only.to_dict()["outfit"])
+        outfit_only = DailyPlan.from_dict(simple_day(theme="", mood="", timeline=[], proactive_windows=[]))
+        self.assertEqual((outfit_only.has_schedule, outfit_only.has_outfit), (False, True))
 
-    def test_string_outfit_is_rejected(self):
-        payload = valid_payload()
-        payload["outfit"] = "白衬衫和长裙"
-        with self.assertRaisesRegex(ValueError, "JSON object"):
-            DailyPlan.from_dict(payload)
+    def test_refused_payloads(self):
+        def edit(change):
+            payload = simple_day()
+            change(payload)
+            return payload
 
-    def test_schedule_can_exist_without_outfit(self):
-        payload = valid_payload()
-        payload["outfit"] = None
-
-        plan = DailyPlan.from_dict(payload)
-
-        self.assertTrue(plan.has_schedule)
-        self.assertFalse(plan.has_outfit)
-        self.assertIsNone(plan.to_dict()["outfit"])
-
-    def test_outfit_can_exist_without_schedule(self):
-        payload = valid_payload()
-        payload["theme"] = ""
-        payload["mood"] = ""
-        payload["timeline"] = []
-        payload["proactive_windows"] = []
-
-        plan = DailyPlan.from_dict(payload)
-
-        self.assertFalse(plan.has_schedule)
-        self.assertTrue(plan.has_outfit)
-
-    def test_proactive_windows_require_schedule(self):
-        payload = valid_payload()
-        payload["timeline"] = []
-
-        with self.assertRaisesRegex(ValueError, "need a schedule"):
-            DailyPlan.from_dict(payload)
-
-    def test_incomplete_outfit_is_rejected(self):
-        payload = valid_payload()
-        payload["outfit"]["items"] = [
-            item
-            for item in payload["outfit"]["items"]
-            if item["category"] != "underwear"
-        ]
-        with self.assertRaisesRegex(ValueError, "underwear"):
-            DailyPlan.from_dict(payload)
-
-    def test_timeline_gap_is_rejected(self):
-        payload = valid_payload()
-        payload["timeline"][1]["start"] = "08:00"
-        with self.assertRaises(ValueError):
-            DailyPlan.from_dict(payload)
-
-    def test_unknown_window_source_is_rejected(self):
-        payload = valid_payload()
-        payload["proactive_windows"][0]["source_item_id"] = "missing"
-        with self.assertRaises(ValueError):
-            DailyPlan.from_dict(payload)
-
-    def test_window_outside_source_timeline_item_is_rejected(self):
-        payload = valid_payload()
-        payload["proactive_windows"][0]["at"] = "06:59"
-        with self.assertRaisesRegex(ValueError, "inside"):
-            DailyPlan.from_dict(payload)
-
-    def test_window_without_source_is_rejected(self):
-        payload = valid_payload()
-        payload["proactive_windows"][0].pop("source_item_id")
-        with self.assertRaisesRegex(ValueError, "source_item_id"):
-            DailyPlan.from_dict(payload)
+        cases = {
+            "empty time": (edit(lambda p: p["timeline"][0].update(start="")), "non-empty HH:MM"),
+            "no underpants": (without({"underpants"}, simple_day()), "underpants"),
+            "no underwear": (without({"underwear"}, simple_day()), "underwear"),
+            "outfit as text": (simple_day(outfit="白衬衫和长裙"), "JSON object"),
+            "windows without schedule": (simple_day(timeline=[]), "need a schedule"),
+            "gap in the day": (edit(lambda p: p["timeline"][1].update(start="08:00")), ""),
+            "unknown window source": (edit(lambda p: p["proactive_windows"][0].update(source_item_id="missing")), ""),
+            "window outside its source": (edit(lambda p: p["proactive_windows"][0].update(at="06:59")), "inside"),
+            "window without source": (edit(lambda p: p["proactive_windows"][0].pop("source_item_id")), "source_item_id"),
+        }
+        for name, (payload, message) in cases.items():
+            with self.subTest(name), self.assertRaisesRegex(ValueError, message):
+                DailyPlan.from_dict(payload)
 
 
 if __name__ == "__main__":
