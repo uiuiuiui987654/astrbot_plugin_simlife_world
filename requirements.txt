@@ -1,3 +1,4 @@
 APScheduler>=3.10,<4.0
 holidays>=0.40
 lunar_python>=1.4.8,<2.0
+aiohttp>=3.8

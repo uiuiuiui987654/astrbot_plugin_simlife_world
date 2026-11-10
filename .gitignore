@@ -3,9 +3,10 @@ __pycache__/
 *.py[cod]
 *.pyo
 .pytest_cache/
+.ruff_cache/
 
 # Runtime data and secrets
-data/
+/data/
 *.log
 cmd_config.json
 astrbot_plugin_virtual_life_config.json

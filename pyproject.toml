@@ -1,0 +1,15 @@
+# Tooling config only — AstrBot loads the plugin from main.py / metadata.yaml, not from this file.
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q -p no:cacheprovider"
+
+[tool.ruff]
+target-version = "py310"
+extend-exclude = ["views"]
+
+[tool.ruff.lint]
+# CI gate: real errors only (undefined names, syntax errors, unused imports…).
+select = ["F", "E9"]
+# F841 (assigned-but-unused locals) is tracked separately; several sites keep calls for their side effects.
+ignore = ["F841"]
