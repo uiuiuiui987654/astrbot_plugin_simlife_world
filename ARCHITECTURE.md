@@ -119,6 +119,17 @@ AstrBot 按**定义所在的模块**绑定指令、LLM 工具和事件钩子，�
 - `room-perspective.js`：2D 近景透视绘制
 - `bedroom-3d.js`：3D 房间引擎；`room-3d-outdoor.js`、`room-3d-atmosphere.js`：户外与光照
 
+### 数据版本与迁移
+
+数据目录里的每个状态 JSON 都有顶层 `schema_version`。`core/migrations.py` 的 `SCHEMAS` 记录每个文件当前代码写出的版本，以及把旧格式逐级升级的函数；插件启动时（`initialize` 最开始）调用 `migrate_all`：
+
+- 已是最新的文件不会被重写；
+- 旧文件先复制到数据目录的 `backups/`（每个文件保留最近 5 份），再逐级升级；
+- 由更新版插件写出的文件不做改动，只在日志里警告；
+- 结果写入 `data_manifest.json`，`/虚拟人生 自检` 会显示摘要。
+
+改数据格式时：在写文件的模块和 `SCHEMAS` 里同时把版本加一，在 `steps[旧版本]` 注册升级函数，并在 `tests/test_migrations.py` 里用一份真实的旧数据做测试。`test_registered_versions_match_what_the_code_writes` 会提醒两边版本不一致。
+
 ### 本地预览面板
 
 `python tools/panel_server.py` 会在 http://127.0.0.1:8770/ 打开生活面板：静态文件来自 `views/life/`，接口直接调用插件的 `VirtualLifeViewAPI.dispatch`，数据放在临时目录里并预置一天示例日程（`--data-dir` 可指定目录）。`tests/test_panel_smoke.py` 也用它跑无头浏览器测试。

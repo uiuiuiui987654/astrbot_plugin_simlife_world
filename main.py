@@ -30,6 +30,7 @@ from .core.human_style import (
     SELFIE_CHAT_RULE,
 )
 from .core import chat_schedule as chat_schedule_events
+from .core import migrations
 from .core import platforms
 from .core import character_assets
 from .core import wardrobe
@@ -197,6 +198,15 @@ class ProactiveVirtualDailyPlugin(
 
     async def initialize(self) -> None:
         await self._cancel_stale_loops()
+        try:
+            # 升级旧格式的数据文件（先备份），必须在任何模块读文件之前
+            await asyncio.to_thread(
+                migrations.migrate_all,
+                self.data_dir,
+                plugin_version=_plugin_version(),
+            )
+        except Exception as exc:
+            logger.warning("[虚拟人生] 数据版本检查失败，继续使用原数据：%s", exc)
         await self.storage.load()
         await self._normalize_loaded_timelines()
         await self.long_term.load()
@@ -2427,6 +2437,7 @@ class ProactiveVirtualDailyPlugin(
                 )
         except Exception as exc:
             logger.warning("[虚拟人生] 自检读取主动状态失败 umo=%s: %s", umo, exc)
+        lines.append(migrations.summary(migrations.load_manifest(self.data_dir)))
         lines.append("平台测试：\n" + platforms.format_checks(platforms.load_checks(self.data_dir)))
         yield event.plain_result("\n".join(lines))
 
