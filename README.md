@@ -121,13 +121,19 @@ astrbot_plugin_simlife_world/
 ├─ _conf_schema.json          配置项定义
 ├─ requirements.txt           Python 依赖
 ├─ core/                      日程、人格、家具、厨房、相机、出行等逻辑
+│  ├─ mixins/                 插件类的辅助方法（按功能拆分）
+│  └─ life_state/             身体与心情状态计算
 ├─ templates/                 图片渲染模板
+├─ tools/                     前端构建与重构校验脚本
 └─ views/life/                虚拟人生面板
    ├─ index.html
-   ├─ app.js
-   ├─ style.css
+   ├─ app.js                  由 src/app/ 生成
+   ├─ style.css               由 src/style/ 生成
+   ├─ src/                    前端大文件的源码片段
    └─ assets/                 2D 房间、3D 模型、家具、目的地、车辆素材
 ```
+
+代码分层、修改流程和前端构建方式见 [ARCHITECTURE.md](ARCHITECTURE.md)。
 
 ## 💾 数据目录
 
