@@ -13,6 +13,8 @@ from typing import Any
 
 import aiohttp
 
+from .privacy import resolve_secret
+
 # re-exported for callers that still use camera_photo.<name>
 from .camera_prompt import (  # noqa: F401
     ACTIVITY_EN,
@@ -64,6 +66,8 @@ from .camera_prompt import (  # noqa: F401
 )
 
 logger = logging.getLogger("astrbot")
+
+IMAGE_API_KEY_ENV = "SIMLIFE_IMAGE_API_KEY"
 
 
 def extract_image(result: dict[str, Any]) -> str:
@@ -215,7 +219,8 @@ async def generate(
         extra_prompt=extra_prompt,
     )
     api_url = str(settings.get("api_url") or COMFY_PROXY_URL).strip()
-    api_key = str(settings.get("api_key") or "").strip()
+    # 支持 env:NAME / ${NAME}，留空时读环境变量 SIMLIFE_IMAGE_API_KEY
+    api_key = resolve_secret(settings.get("api_key"), fallback_env=IMAGE_API_KEY_ENV)
     model_text = str(settings.get("model") or "moss").strip()
     models = tuple(
         part.strip() for part in model_text.split(",") if part.strip()

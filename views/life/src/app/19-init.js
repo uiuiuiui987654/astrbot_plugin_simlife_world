@@ -581,7 +581,8 @@
     $('system-refresh').addEventListener('click', renderSystem);
     $('system-export').addEventListener('click', exportDiagnostics);
     $('system-reset-prefs').addEventListener('click', resetViewPreferences);
-    $('system-backup').addEventListener('click', backupAllData);
+    $('system-backup').addEventListener('click', function () { backupAllData(false); });
+    if ($('system-backup-safe')) $('system-backup-safe').addEventListener('click', function () { backupAllData(true); });
     $('system-restore').addEventListener('click', function () {
       $('backup-file').click();
     });

@@ -7,9 +7,11 @@
     $('system-modal').classList.add('hidden');
   }
 
-  function backupAllData() {
+  // safe = true：脱敏导出，隐藏聊天会话标识并去掉只属于本机的文件，适合附在 issue 里
+  function backupAllData(safe) {
+    safe = safe === true;
     var persona = (state.data && state.data.persona) || '';
-    fetch('/api/backup?persona=' + encodeURIComponent(persona), {
+    fetch('/api/backup?persona=' + encodeURIComponent(persona) + (safe ? '&safe=1' : ''), {
       cache: 'no-store'
     })
       .then(function (response) { return response.json(); })
@@ -26,12 +28,12 @@
         var url = URL.createObjectURL(blob);
         var link = document.createElement('a');
         link.href = url;
-        link.download = '虚拟人生-数据备份-' + day + '.json';
+        link.download = '虚拟人生-数据备份-' + (safe ? '脱敏-' : '') + day + '.json';
         document.body.appendChild(link);
         link.click();
         link.remove();
         window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-        showToast('数据备份已下载');
+        showToast(safe ? '脱敏备份已下载（不含会话标识）' : '数据备份已下载');
       })
       .catch(function (error) {
         showToast(error && error.message ? error.message : '备份失败');

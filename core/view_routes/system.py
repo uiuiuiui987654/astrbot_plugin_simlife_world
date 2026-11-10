@@ -16,12 +16,12 @@ from .. import (
     holiday_calendar,
     integrations,
     money,
+    privacy,
     travel,
     view_state,
     world_events,
 )
 from ..jsonio import atomic_write_json
-
 from .context import RouteContext
 
 
@@ -70,11 +70,15 @@ class SystemRoutes:
                 )
             except (OSError, ValueError, TypeError):
                 continue
-        return {
+        result = {
             "ok": True,
             "exported_at": now.isoformat(timespec="seconds"),
             "files": files,
         }
+        if str(ctx.params.get("safe") or "") in {"1", "true", "yes"}:
+            # 脱敏导出：隐藏会话标识、去掉只属于本机的文件，方便附在 issue 里
+            result["files"], result["privacy"] = privacy.sanitize_backup(files)
+        return result
 
     def _get_state(self, ctx: RouteContext) -> dict:
         """GET state"""

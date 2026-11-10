@@ -32,6 +32,7 @@ from .core.human_style import (
 from .core import chat_schedule as chat_schedule_events
 from .core import migrations
 from .core import platforms
+from .core import privacy
 from .core import character_assets
 from .core import wardrobe
 from .core import (
@@ -2438,6 +2439,13 @@ class ProactiveVirtualDailyPlugin(
         except Exception as exc:
             logger.warning("[虚拟人生] 自检读取主动状态失败 umo=%s: %s", umo, exc)
         lines.append(migrations.summary(migrations.load_manifest(self.data_dir)))
+        camera_config = (self.config.get("camera_settings", {}) or {}) if hasattr(self.config, "get") else {}
+        lines.append(
+            "绘图密钥来源："
+            + privacy.describe_secret_source(
+                camera_config.get("api_key"), fallback_env="SIMLIFE_IMAGE_API_KEY"
+            )
+        )
         lines.append("平台测试：\n" + platforms.format_checks(platforms.load_checks(self.data_dir)))
         yield event.plain_result("\n".join(lines))
 

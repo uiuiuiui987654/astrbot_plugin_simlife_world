@@ -1537,7 +1537,7 @@
         "description": "绘图接口密钥",
         "type": "string",
         "default": "",
-        "hint": "接口不需要鉴权时留空。"
+        "hint": "可以直接填密钥，也可以写 env:变量名 或 ${变量名} 从环境变量读取（避免明文保存在配置里）；留空时读取环境变量 SIMLIFE_IMAGE_API_KEY，都没有则不鉴权。"
       },
       "model": {
         "description": "绘图模型",
