@@ -25,6 +25,7 @@ PHASES = ("none", "countdown", "eve", "depart", "away", "return", "afterglow")
 AWAY_PHASES = ("depart", "away", "return")
 
 HOME_ROOMS = ('客厅', '浴室', '厨房', '餐厅', '健身室', '阳台', '玄关', '卧室', '衣帽间', '书房', '画室', '影音室', '露台', '楼梯厅', '车库')
+HOME_WORDS = ("家", "在家", "家里", "家中", "自己家", "宅家")
 TRANSIT_WORDS = (
     "机场",
     "高铁",
@@ -167,6 +168,9 @@ def is_home_location(location: str) -> bool:
     text = str(location or "").strip()
     if not text:
         return False
+    # 日程里常直接写「家」「家里」；「农家乐」「家具店」这类不算
+    if text in HOME_WORDS or text.startswith(("家·", "家里", "家中")):
+        return True
     return any(room in text for room in HOME_ROOMS)
 
 

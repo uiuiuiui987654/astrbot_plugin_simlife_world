@@ -56,9 +56,10 @@ def build(
         summary = str(entry.get("summary") or "")
         for value in re.findall(r"工作\s*(\d+)\s*分钟", summary):
             work_minutes += int(value)
+    # snapshot() 只带最近 10 件物品；月报 / 年报要看完整列表
     purchases = [
         item
-        for item in snapshot.get("possessions") or []
+        for item in money.possessions(data_dir, persona)
         if start <= _day(item.get("at")) <= end
     ]
     category_labels = {

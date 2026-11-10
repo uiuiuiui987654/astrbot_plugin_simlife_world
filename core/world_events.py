@@ -557,11 +557,14 @@ def _pick_event(
     rng: random.Random,
     day_text: str,
     entries: dict[str, Any],
+    exclude: str = "",
 ) -> tuple[str, str, int]:
     recent_titles = _recent_titles(entries, day_text)
+    if exclude:
+        recent_titles.add(exclude)
     candidates = [event for event in EVENTS if event[0] not in recent_titles]
     if not candidates:
-        candidates = list(EVENTS)
+        candidates = [event for event in EVENTS if event[0] != exclude] or list(EVENTS)
     return rng.choice(candidates)
 
 
@@ -608,9 +611,15 @@ def reroll(
         content = _load(data_dir)
         personas = content.setdefault("personas", {})
         entries = personas.setdefault(str(persona), {})
-        entries.pop(day_text, None)
-        rng = random.Random(f"{persona}:{day_text}:reroll")
-        title, summary, mood = _pick_event(rng, day_text, entries)
+        previous = entries.pop(day_text, None)
+        previous_title = (
+            str(previous.get("title") or "") if isinstance(previous, dict) else ""
+        )
+        # 种子带上被替换的事件，连续重抽不会一直抽到同一个
+        rng = random.Random(f"{persona}:{day_text}:reroll:{previous_title}")
+        title, summary, mood = _pick_event(
+            rng, day_text, entries, exclude=previous_title
+        )
         entry = {
             "date": day_text,
             "title": title,
