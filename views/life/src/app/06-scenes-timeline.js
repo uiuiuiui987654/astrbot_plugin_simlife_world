@@ -1,5 +1,5 @@
   function roomScene(room, now) {
-    if (use3D() && window.Bedroom3D && Bedroom3D.supports && Bedroom3D.supports(room) && !state.placement) return Bedroom3D.markup(now, state.homeItems, sceneEnvironment(), (state.data || {}).appearance, room);
+    if ((/阳台|露台/.test(room) ? use3DWorld() : use3D()) && window.Bedroom3D && Bedroom3D.supports && Bedroom3D.supports(room) && !state.placement) return Bedroom3D.markup(now, state.homeItems, sceneEnvironment(), (state.data || {}).appearance, room);
     if (window.SceneStudio) return SceneStudio.room(room, now, state.homeItems, sceneEnvironment(), (state.data || {}).appearance);
     var roomClass = ROOM_CLASS[room] || 'living';
     var key = activityKey(now && now.activity);
@@ -540,7 +540,7 @@
 
   // 3D outing scenes (assets/destination-3d.js); the 2D art above stays as the fallback.
   function destination3d(key, view, label, status, environment, html2d, toggleTo, mode) {
-    if (!use3D() || !window.Room3D || !Room3D.destinationMarkup || !Room3D.supportsDestination(key, view)) return html2d;
+    if (!use3DWorld() || !window.Room3D || !Room3D.destinationMarkup || !Room3D.supportsDestination(key, view)) return html2d;
     var toggle = toggleTo ? '<button type="button" class="scene-mode-toggle" data-scene-mode="' + toggleTo + '">' + (toggleTo === 'indoor' ? '室内' : '室外') + '</button>' : '';
     var labelHtml = '<div class="scene-label"><span class="scene-label-icon">' + sceneIconSvg(key) + '</span>' + escapeHtml(label) + '<small>' + escapeHtml(status) + '</small>' + toggle + '</div>';
     var appearance = (state.data && state.data.appearance) || {};

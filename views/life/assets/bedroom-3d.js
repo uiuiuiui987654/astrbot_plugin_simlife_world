@@ -32,6 +32,9 @@
     var badge=root.SceneStudio?root.SceneStudio.badge(env):'';
     return '<div class="bedroom-3d room-3d" data-room="'+esc(room)+'" data-config="'+esc(JSON.stringify(config))+'"><div class="bedroom-3d-fallback">'+fallback+'</div><div class="bedroom-3d-viewport" tabindex="0" role="region" aria-label="'+esc(room)+'3D：拖动旋转，右键或 Shift 拖动平移，滚轮缩放，方向键旋转"></div><div class="room-label">'+esc(room)+' · 3D<small>'+floorOf(room)+'F · '+esc(config.activity)+'</small></div>'+badge+'<div class="appearance-badge">'+esc(config.look.name||'白紫日常装')+'</div><div class="bedroom-3d-hint">拖动旋转 · 右键平移 · 滚轮缩放 · 点击家具</div><div class="bedroom-3d-status" role="status">正在布置 3D '+esc(room)+'…</div><div class="bedroom-3d-toolbar" role="group" aria-label="'+esc(room)+'3D控制"><button type="button" data-bed3d="items" aria-expanded="false">家具</button><button type="button" data-bed3d="out" aria-label="缩小">−</button><button type="button" data-bed3d="in" aria-label="放大">＋</button><button type="button" data-bed3d="reset">复位</button><button type="button" data-bed3d="expand" aria-label="全屏查看">放大</button><button type="button" data-bed3d="env" aria-expanded="false">环境</button><button type="button" data-bed3d="plan">平面</button></div><div class="room-3d-env" hidden><label>时间 <output>--:--</output><input type="range" min="0" max="23.75" step="0.25" data-env="hour"></label><label>天气 <select data-env="weather"><option value="clear">晴朗</option><option value="cloudy">多云</option><option value="rain">小雨</option><option value="storm">雷雨</option><option value="snow">下雪</option><option value="fog">有雾</option><option value="wind">大风</option></select></label><button type="button" data-env="live">跟随当前</button></div><div class="bedroom-3d-items" hidden>'+local.map(function(i){return '<button type="button" class="furniture-hit" data-id="'+esc(i.id)+'">'+esc(i.name||i.id)+'</button>';}).join('')+'</div><div class="bedroom-3d-tooltip"></div></div>';
   }
+  // 画质档位由面板（app.js 的 05a-render-mode）按设备写入 window.__VL_3D_QUALITY：high / balanced / low
+  var QUALITY={high:{pixelRatio:1.6,antialias:true,shadows:true,softShadows:true,shadowMap:2048},balanced:{pixelRatio:1.25,antialias:true,shadows:true,softShadows:false,shadowMap:1024},low:{pixelRatio:1,antialias:false,shadows:false,softShadows:false,shadowMap:512}};
+  function quality(){return QUALITY[root.__VL_3D_QUALITY]||QUALITY.high;}
   // Outing destinations (street view / interior) — models in destination-3d.js.
   function supportsDestination(key,view){return !!(root.Destination3DModels&&root.Destination3DModels.supports(key,view||'outdoor'));}
   function markupDestination(o){
@@ -61,8 +64,8 @@
       var DEST=cfg.dest?root.Destination3DModels:null,dspec=DEST?DEST.spec(cfg.dest.key,cfg.dest.view,cfg.dest.mode):null,destAnchor=null,built=null;if(cfg.dest&&!dspec)throw new Error('destination not supported');if(DEST)room='dest:'+cfg.dest.key+':'+cfg.dest.view+(cfg.dest.mode?':'+cfg.dest.mode:'');
       if(!DEST&&!supports(room))throw new Error('room not supported: '+room);
       var outdoor=DEST?dspec.outdoor:OUTDOOR.test(room),corridor=!DEST&&CORRIDOR.test(room),cfgRoom=DEST?{floor:dspec.floor,dark:dspec.dark,height:dspec.H}:(MODELS.rooms[room]||{}),theme=DEST?dspec.theme:MODELS.theme(room);
-      var renderer=new T.WebGLRenderer({antialias:true,alpha:false,preserveDrawingBuffer:true,powerPreference:'low-power'});
-      renderer.setPixelRatio(Math.min(root.devicePixelRatio||1,1.6));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=night?1.15:1.2;
+      var Q=quality();var renderer=new T.WebGLRenderer({antialias:Q.antialias,alpha:false,preserveDrawingBuffer:true,powerPreference:'low-power'});
+      renderer.setPixelRatio(Math.min(root.devicePixelRatio||1,Q.pixelRatio));renderer.shadowMap.enabled=Q.shadows;renderer.shadowMap.type=Q.softShadows?T.PCFSoftShadowMap:T.PCFShadowMap;renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=night?1.15:1.2;
       viewport.appendChild(renderer.domElement);renderer.domElement.setAttribute('aria-hidden','true');
       var scene=new T.Scene();scene.background=new T.Color(night?'#343c50':outdoor?'#dfe6dc':'#e5e4da');if(env.hour==null&&root.Room3DAtmosphere)env=Object.assign({},env,{hour:{night:22,dawn:6.8,day:12,dusk:17.8}[env.band]});
       var Bd=DEST?{OX:0,OZ:0,RX:dspec.W/SCALE,RZ:dspec.D/SCALE}:bounds(room),W=(Bd.RX-Bd.OX)*SCALE,D=(Bd.RZ-Bd.OZ)*SCALE,H=cfgRoom.height||2.64,scale=SCALE;
@@ -177,7 +180,7 @@
       // ---------- lighting (values are driven by the atmosphere controller) ----------
       var hemi=new T.HemisphereLight('#fff4dc','#a6ad94',1.9);scene.add(hemi);
       var sun=new T.DirectionalLight('#fff1d4',2.6),span=Math.max(W,D)/2+2.2;scene.add(sun,sun.target);
-      sun.castShadow=true;var res=Math.max(W,D)>9?2048:1536;sun.shadow.mapSize.set(res,res);Object.assign(sun.shadow.camera,{left:-span,right:span,top:span,bottom:-span,near:.5,far:40});sun.shadow.normalBias=.025;sun.shadow.bias=-.0003;
+      sun.castShadow=true;var res=Math.min(Q.shadowMap,Math.max(W,D)>9?2048:1536);sun.shadow.mapSize.set(res,res);Object.assign(sun.shadow.camera,{left:-span,right:span,top:span,bottom:-span,near:.5,far:40});sun.shadow.normalBias=.025;sun.shadow.bias=-.0003;
       var fill=new T.DirectionalLight('#e8e2ff',.75);fill.position.set(W/2-3,3.5,D+6);scene.add(fill);
       var flashLight=new T.DirectionalLight('#dfe8ff',0);flashLight.position.set(W/2,8,-4);scene.add(flashLight);
       if(!outdoor){var Lt=MODELS.lighting(kit,cfgRoom);if(Lt.ceiling){var cl=new T.PointLight('#ffd9a8',0,Math.max(W,D)*1.4,1.6);cl.position.set(W/2,H-.25,D/2);scene.add(cl);lights.push(cl);lampLights.push({light:cl,day:0,night:Lt.ceiling});}}

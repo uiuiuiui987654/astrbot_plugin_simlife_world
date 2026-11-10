@@ -125,6 +125,17 @@ class PanelSmokeTests(unittest.TestCase):
         self.assertIn("3D", page.inner_text("#render-toggle"))
         self.assertNoPageErrors()
 
+    def test_outdoor_3d_scripts_load_only_when_needed(self):
+        page = self.open("3d")
+        page.wait_for_selector(".bedroom-3d[data-ready]", timeout=60000)
+        loaded = page.evaluate("[!!window.Destination3DModels, !!window.Room3DOutdoor, window.__VL_3D_QUALITY]")
+        self.assertEqual(loaded[:2], [False, False], "home rooms must not pull in the outdoor/destination scripts")
+        self.assertIn(loaded[2], {"high", "balanced", "low"})
+        page.click('#scene-chips [data-scene="beach"]')
+        page.wait_for_function("!!window.Destination3DModels && !!window.Room3DOutdoor", timeout=60000)
+        page.wait_for_selector(".bedroom-3d[data-ready]", timeout=60000)
+        self.assertNoPageErrors()
+
     def test_switching_render_mode_rerenders_scene(self):
         page = self.open("2d")
         self.use_menu(page, "render-toggle")  # 2D -> auto

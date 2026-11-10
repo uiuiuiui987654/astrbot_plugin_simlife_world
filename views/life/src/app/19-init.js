@@ -89,7 +89,7 @@
     if (pageParams.get('item')) state.pendingItem = pageParams.get('item');
     applyAnimations();
     applyRenderMode();
-    if (want3D()) ensure3DScripts();
+    if (want3D()) ensure3DScripts('core');
     if ($('render-toggle')) $('render-toggle').addEventListener('click', cycleRenderMode);
     $('anim-toggle').addEventListener('click', function () {
       state.animations = !state.animations;

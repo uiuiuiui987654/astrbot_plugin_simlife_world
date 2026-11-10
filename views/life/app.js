@@ -2,7 +2,7 @@
 (function () {
   'use strict';
 
-  window.__VIRTUAL_LIFE_UI_VERSION = '20261110-perf2';
+  window.__VIRTUAL_LIFE_UI_VERSION = '20261110-perf3';
   console.log('[VirtualLife UI] ' + window.__VIRTUAL_LIFE_UI_VERSION);
 
   var $ = function (id) { return document.getElementById(id); };
@@ -3409,7 +3409,7 @@
       placedSignature(),
       window.SceneStudio ? sceneEnvironment().signature : '',
       // 画面模式切换或 3D 脚本加载完成时要重画场景
-      use3D() ? '3d' : '2d'
+      (use3D() ? '3d' : '2d') + (lazy3d.worldReady ? '+world' : '')
     ].join('|');
   }
 
@@ -3485,9 +3485,11 @@
   // ---------------------------------------------------------------------------
   // 画面模式（性能模式）：自动 / 3D / 2D
   //
-  // 3D 场景脚本（room-3d-models、room-3d-atmosphere、room-3d-outdoor、destination-3d、
-  // bedroom-3d，合计约 0.5 MB，另需约 2 MB 的 three.js）不再随页面一起加载。index.html
-  // 里把它们写成 <script type="text/x-lazy-3d" data-src="…">，只有需要 3D 时才按顺序注入。
+  // 3D 场景脚本不随页面一起加载。index.html 里把它们写成
+  // <script type="text/x-lazy-3d" data-src="…" [data-group="world"]>，需要 3D 时才按顺序注入：
+  // core 组（room-3d-models、room-3d-atmosphere、bedroom-3d，约 0.2 MB，外加约 0.7 MB 的
+  // three.js）用于家里的房间；world 组（room-3d-outdoor、destination-3d，约 0.3 MB）
+  // 只在去户外、车库、阳台 / 露台时才加载。
   //
   // “自动”在以下情况默认用 2D：浏览器不支持 WebGL、开启了省流量、内存 ≤ 4 GB、
   // CPU ≤ 4 核，或面板不是在本机 / 局域网打开（远程访问时加载 3D 资源很慢）。
@@ -3495,7 +3497,7 @@
   // ---------------------------------------------------------------------------
   var RENDER_MODES = ['auto', '3d', '2d'];
   var RENDER_MODE_LABEL = { auto: '自动', '3d': '3D', '2d': '2D' };
-  var lazy3d = { promise: null, ready: false, failed: false };
+  var lazy3d = { promise: null, ready: false, failed: false, worldPromise: null, worldReady: false, worldFailed: false };
 
   function storedRenderMode() {
     try {
@@ -3549,11 +3551,19 @@
     return !state.autoRenderReason;
   }
 
-  // 渲染时使用：想要 3D 且 3D 脚本已经就绪。未就绪时顺便开始加载，加载完会重新渲染。
+  // 渲染时使用：想要 3D 且家里房间用的 3D 脚本已经就绪。未就绪时顺便开始加载，加载完会重新渲染。
   function use3D() {
     if (!want3D() || lazy3d.failed) return false;
     if (lazy3d.ready) return true;
-    ensure3DScripts();
+    ensure3DScripts('core');
+    return false;
+  }
+
+  // 户外目的地、车库、阳台 / 露台还需要 world 组（room-3d-outdoor、destination-3d）。
+  function use3DWorld() {
+    if (!use3D()) return false;
+    if (lazy3d.worldReady) return true;
+    if (!lazy3d.worldFailed) ensure3DScripts('world');
     return false;
   }
 
@@ -3568,23 +3578,67 @@
     });
   }
 
-  function ensure3DScripts() {
-    if (lazy3d.promise) return lazy3d.promise;
-    var placeholders = Array.prototype.slice.call(document.querySelectorAll('script[type="text/x-lazy-3d"][data-src]'));
-    lazy3d.promise = placeholders.reduce(function (chain, node) {
-      return chain.then(function () { return loadScriptInOrder(node.getAttribute('data-src')); });
-    }, Promise.resolve()).then(function () {
-      lazy3d.ready = !!window.Room3D;
-      if (!lazy3d.ready) throw new Error('3D 模块未注册');
-      wire3D();
-      render();
-    }).catch(function (error) {
-      lazy3d.failed = true;
-      console.warn('[VirtualLife UI] 3D 场景加载失败，改用 2D', error);
-      showToast('3D 场景加载失败，已改用 2D');
-      render();
+  function lazyPlaceholders(group) {
+    return Array.prototype.slice.call(document.querySelectorAll('script[type="text/x-lazy-3d"][data-src]')).filter(function (node) {
+      return (node.getAttribute('data-group') || 'core') === group;
     });
-    return lazy3d.promise;
+  }
+
+  function loadGroup(group) {
+    return lazyPlaceholders(group).reduce(function (chain, node) {
+      return chain.then(function () { return loadScriptInOrder(node.getAttribute('data-src')); });
+    }, Promise.resolve());
+  }
+
+  // 按需分两组加载：core = 家里房间（模型、光照、3D 引擎），world = 户外与目的地。
+  function ensure3DScripts(group) {
+    applyQuality3D();
+    if (!lazy3d.promise) {
+      lazy3d.promise = loadGroup('core').then(function () {
+        lazy3d.ready = !!window.Room3D;
+        if (!lazy3d.ready) throw new Error('3D 模块未注册');
+        wire3D();
+        render();
+      }).catch(function (error) {
+        lazy3d.failed = true;
+        console.warn('[VirtualLife UI] 3D 场景加载失败，改用 2D', error);
+        showToast('3D 场景加载失败，已改用 2D');
+        render();
+      });
+    }
+    if (group !== 'world') return lazy3d.promise;
+    if (!lazy3d.worldPromise) {
+      lazy3d.worldPromise = lazy3d.promise.then(function () {
+        if (!lazy3d.ready) return;
+        return loadGroup('world').then(function () {
+          lazy3d.worldReady = true;
+          render();
+        });
+      }).catch(function (error) {
+        lazy3d.worldFailed = true;
+        console.warn('[VirtualLife UI] 户外 3D 场景加载失败，户外改用 2D', error);
+        render();
+      });
+    }
+    return lazy3d.worldPromise;
+  }
+
+  // 3D 画质：high / balanced / low，可用 localStorage 的 vl-3d-quality 手动指定。
+  function quality3D() {
+    try {
+      var stored = localStorage.getItem('vl-3d-quality');
+      if (stored === 'high' || stored === 'balanced' || stored === 'low') return stored;
+    } catch (error) { /* 忽略本地存储异常 */ }
+    var nav = window.navigator || {};
+    var cores = typeof nav.hardwareConcurrency === 'number' ? nav.hardwareConcurrency : 0;
+    var memory = typeof nav.deviceMemory === 'number' ? nav.deviceMemory : 0;
+    if ((cores && cores <= 4) || (memory && memory <= 4)) return 'low';
+    if (cores >= 8 && (!memory || memory >= 8)) return 'high';
+    return 'balanced';
+  }
+
+  function applyQuality3D() {
+    if (!window.__VL_3D_QUALITY) window.__VL_3D_QUALITY = quality3D();
   }
 
   function renderModeLabel() {
@@ -3606,13 +3660,13 @@
     state.renderMode = next;
     try { localStorage.setItem('vl-render', next); } catch (error) { /* 忽略本地存储异常 */ }
     applyRenderMode();
-    if (want3D()) ensure3DScripts();
+    if (want3D()) ensure3DScripts('core');
     showToast(renderModeLabel() + (next === '2d' ? '，更省电、加载更快' : ''));
     render();
   }
 
   function roomScene(room, now) {
-    if (use3D() && window.Bedroom3D && Bedroom3D.supports && Bedroom3D.supports(room) && !state.placement) return Bedroom3D.markup(now, state.homeItems, sceneEnvironment(), (state.data || {}).appearance, room);
+    if ((/阳台|露台/.test(room) ? use3DWorld() : use3D()) && window.Bedroom3D && Bedroom3D.supports && Bedroom3D.supports(room) && !state.placement) return Bedroom3D.markup(now, state.homeItems, sceneEnvironment(), (state.data || {}).appearance, room);
     if (window.SceneStudio) return SceneStudio.room(room, now, state.homeItems, sceneEnvironment(), (state.data || {}).appearance);
     var roomClass = ROOM_CLASS[room] || 'living';
     var key = activityKey(now && now.activity);
@@ -4153,7 +4207,7 @@
 
   // 3D outing scenes (assets/destination-3d.js); the 2D art above stays as the fallback.
   function destination3d(key, view, label, status, environment, html2d, toggleTo, mode) {
-    if (!use3D() || !window.Room3D || !Room3D.destinationMarkup || !Room3D.supportsDestination(key, view)) return html2d;
+    if (!use3DWorld() || !window.Room3D || !Room3D.destinationMarkup || !Room3D.supportsDestination(key, view)) return html2d;
     var toggle = toggleTo ? '<button type="button" class="scene-mode-toggle" data-scene-mode="' + toggleTo + '">' + (toggleTo === 'indoor' ? '室内' : '室外') + '</button>' : '';
     var labelHtml = '<div class="scene-label"><span class="scene-label-icon">' + sceneIconSvg(key) + '</span>' + escapeHtml(label) + '<small>' + escapeHtml(status) + '</small>' + toggle + '</div>';
     var appearance = (state.data && state.data.appearance) || {};
@@ -8979,7 +9033,7 @@
   function garage3dMarkup(isOut, vehicle, fuel) {
     var art = document.querySelector('#garage-room .garage-room-art');
     var fallback = art ? '<div class="garage-3d-fallback">' + art.outerHTML.replace(/ id="[^"]*"/g, '') + '</div>' : '';
-    if (!use3D() || !window.Room3D || !Room3D.destinationMarkup || !Room3D.supportsDestination('garage', 'indoor')) return fallback;
+    if (!use3DWorld() || !window.Room3D || !Room3D.destinationMarkup || !Room3D.supportsDestination('garage', 'indoor')) return fallback;
     var status = isOut ? '车不在' : ((vehicle.name || '白色小车') + ' · 油量 ' + fuel + '%');
     var labelHtml = '<div class="scene-label">1F · 车库<small>' + escapeHtml(status) + '</small></div>';
     var mode = (isOut ? 'out' : 'parked') + (vehicle.plate ? '|' + String(vehicle.plate).replace(/\|/g, '') : '');
@@ -11630,7 +11684,7 @@
     if (pageParams.get('item')) state.pendingItem = pageParams.get('item');
     applyAnimations();
     applyRenderMode();
-    if (want3D()) ensure3DScripts();
+    if (want3D()) ensure3DScripts('core');
     if ($('render-toggle')) $('render-toggle').addEventListener('click', cycleRenderMode);
     $('anim-toggle').addEventListener('click', function () {
       state.animations = !state.animations;

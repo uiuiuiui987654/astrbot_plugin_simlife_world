@@ -279,7 +279,7 @@
   function garage3dMarkup(isOut, vehicle, fuel) {
     var art = document.querySelector('#garage-room .garage-room-art');
     var fallback = art ? '<div class="garage-3d-fallback">' + art.outerHTML.replace(/ id="[^"]*"/g, '') + '</div>' : '';
-    if (!use3D() || !window.Room3D || !Room3D.destinationMarkup || !Room3D.supportsDestination('garage', 'indoor')) return fallback;
+    if (!use3DWorld() || !window.Room3D || !Room3D.destinationMarkup || !Room3D.supportsDestination('garage', 'indoor')) return fallback;
     var status = isOut ? '车不在' : ((vehicle.name || '白色小车') + ' · 油量 ' + fuel + '%');
     var labelHtml = '<div class="scene-label">1F · 车库<small>' + escapeHtml(status) + '</small></div>';
     var mode = (isOut ? 'out' : 'parked') + (vehicle.plate ? '|' + String(vehicle.plate).replace(/\|/g, '') : '');

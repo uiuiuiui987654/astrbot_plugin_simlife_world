@@ -81,6 +81,17 @@ AstrBot 按**定义所在的模块**绑定指令、LLM 工具和事件钩子，�
 
 模块之间只允许单向依赖：`base` ← 主题模块 ← `compute`，避免循环导入。
 
+## 数据版本与迁移
+
+数据目录里的每个状态 JSON 都有顶层 `schema_version`。`core/migrations.py` 的 `SCHEMAS` 记录每个文件当前代码写出的版本，以及把旧格式逐级升级的函数；插件启动时（`initialize` 最开始）调用 `migrate_all`：
+
+- 已是最新的文件不会被重写；
+- 旧文件先复制到数据目录的 `backups/`（每个文件保留最近 5 份），再逐级升级；
+- 由更新版插件写出的文件不做改动，只在日志里警告；
+- 结果写入 `data_manifest.json`，`/虚拟人生 自检` 会显示摘要。
+
+改数据格式时：在写文件的模块和 `SCHEMAS` 里同时把版本加一，在 `steps[旧版本]` 注册升级函数，并在 `tests/test_migrations.py` 里用一份真实的旧数据做测试。`test_registered_versions_match_what_the_code_writes` 会提醒两边版本不一致。
+
 ## 前端
 
 ### 生成文件与片段
@@ -119,32 +130,33 @@ AstrBot 按**定义所在的模块**绑定指令、LLM 工具和事件钩子，�
 - `room-perspective.js`：2D 近景透视绘制
 - `bedroom-3d.js`：3D 房间引擎；`room-3d-outdoor.js`、`room-3d-atmosphere.js`：户外与光照
 
-### 数据版本与迁移
-
-数据目录里的每个状态 JSON 都有顶层 `schema_version`。`core/migrations.py` 的 `SCHEMAS` 记录每个文件当前代码写出的版本，以及把旧格式逐级升级的函数；插件启动时（`initialize` 最开始）调用 `migrate_all`：
-
-- 已是最新的文件不会被重写；
-- 旧文件先复制到数据目录的 `backups/`（每个文件保留最近 5 份），再逐级升级；
-- 由更新版插件写出的文件不做改动，只在日志里警告；
-- 结果写入 `data_manifest.json`，`/虚拟人生 自检` 会显示摘要。
-
-改数据格式时：在写文件的模块和 `SCHEMAS` 里同时把版本加一，在 `steps[旧版本]` 注册升级函数，并在 `tests/test_migrations.py` 里用一份真实的旧数据做测试。`test_registered_versions_match_what_the_code_writes` 会提醒两边版本不一致。
-
 ### 本地预览面板
 
 `python tools/panel_server.py` 会在 http://127.0.0.1:8770/ 打开生活面板：静态文件来自 `views/life/`，接口直接调用插件的 `VirtualLifeViewAPI.dispatch`，数据放在临时目录里并预置一天示例日程（`--data-dir` 可指定目录）。`tests/test_panel_smoke.py` 也用它跑无头浏览器测试。
 
 ### 3D 脚本按需加载
 
-`room-3d-models.js`、`room-3d-atmosphere.js`、`room-3d-outdoor.js`、`destination-3d.js`、`bedroom-3d.js` 在 `index.html` 里写成：
+3D 场景脚本在 `index.html` 里写成占位标签，浏览器不会执行：
 
 ```html
 <script type="text/x-lazy-3d" data-src="assets/bedroom-3d.js?v=…"></script>
+<script type="text/x-lazy-3d" data-group="world" data-src="assets/destination-3d.js?v=…"></script>
 ```
 
-浏览器不会执行这种标签。只有需要 3D 时，`src/app/05a-render-mode.js` 的 `ensure3DScripts()` 才按标签顺序注入真正的脚本，加载完成后调用 `wire3D()` 并重新渲染。改这几个文件时照常在这里更新 `?v=`；新增的 3D 脚本也用同样写法，放在 `bedroom-3d.js` 之前。
+`src/app/05a-render-mode.js` 分两组按标签顺序注入：
 
-渲染代码判断 3D 时用 `use3D()`（想要 3D 且脚本已就绪），不要直接判断 `window.Room3D`。画面模式（自动 / 3D / 2D）保存在 `localStorage` 的 `vl-render`；自动模式在无 WebGL、省流量、内存 ≤ 4 GB、CPU ≤ 4 核或非本机 / 局域网访问时选 2D。
+| 组 | 脚本 | 何时加载 |
+| --- | --- | --- |
+| `core`（默认） | `room-3d-models.js`、`room-3d-atmosphere.js`、`bedroom-3d.js`，以及它动态引入的 `vendor/three.*.js` | 需要 3D 时（家里的房间） |
+| `world` | `room-3d-outdoor.js`、`destination-3d.js` | 第一次显示户外目的地、车库、阳台 / 露台时 |
+
+渲染代码判断 3D 时用 `use3D()`（家里房间）或 `use3DWorld()`（户外、车库、阳台 / 露台），不要直接判断 `window.Room3D`；两组加载完成后都会重画场景。改这些文件时照常更新标签上的 `?v=`；新增的 3D 脚本按用途放进对应的组。
+
+画面模式（自动 / 3D / 2D）保存在 `localStorage` 的 `vl-render`；自动模式在无 WebGL、省流量、内存 ≤ 4 GB、CPU ≤ 4 核或非本机 / 局域网访问时选 2D。
+
+3D 画质分 `high` / `balanced` / `low` 三档，由 `quality3D()` 按 CPU 核数和内存选择并写入 `window.__VL_3D_QUALITY`，`bedroom-3d.js` 据此调整像素比、抗锯齿和阴影；可用 `localStorage` 的 `vl-3d-quality` 手动指定。
+
+`vendor/three.core.js`、`vendor/three.module.js` 是 three.js r180 的压缩版（esbuild `--minify --legal-comments=inline`，共约 0.7 MB，原版约 2 MB）。升级 three.js 时同样换成压缩版。
 
 ## 重构校验
 

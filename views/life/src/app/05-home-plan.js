@@ -653,7 +653,7 @@
       placedSignature(),
       window.SceneStudio ? sceneEnvironment().signature : '',
       // 画面模式切换或 3D 脚本加载完成时要重画场景
-      use3D() ? '3d' : '2d'
+      (use3D() ? '3d' : '2d') + (lazy3d.worldReady ? '+world' : '')
     ].join('|');
   }
 
