@@ -1,7 +1,4 @@
-"""Daily plan generation, schedule requirements and travel commands.
-
-Mixin for ProactiveVirtualDailyPlugin; split out of main.py without behaviour changes.
-"""
+"""Daily plans: the nightly refresh, generating a day, admin schedule requirements, travel commands."""
 
 from __future__ import annotations
 
@@ -12,14 +9,16 @@ from astrbot.api import logger
 from astrbot.api.event import AstrMessageEvent
 
 from .. import life_memory
-from ..models import (
-    DailyPlan,
-    ScheduleRequirement,
-)
+from ..models import DailyPlan, ScheduleRequirement
 from ..persona import PersonaContext
-from ..utils import (
-    parse_schedule_date_range,
-    prune_date_keys,
+from ..utils import parse_schedule_date_range, prune_date_keys
+
+MAX_REQUIREMENT_CHARS = 500
+MAX_REQUIREMENTS_PER_DAY = 10
+MAX_REQUIREMENT_SPAN_DAYS = 366
+MEMORY_CONTINUITY_NOTE = (
+    "\n以上是真实发生过的事。新日程可以自然延续（比如接着读买来的书、"
+    "再去路过的那家店、继续和主人约好的事），但不要照搬同样的安排。"
 )
 
 
@@ -28,36 +27,41 @@ class PlanningMixin:
         await self._refresh_all(force=True)
 
     async def _refresh_all(self, *, force: bool) -> None:
+        """Settle yesterday, write diaries, (re)plan today and reschedule every enabled session."""
         async with self.refresh_lock:
             now = self._now()
-            self.storage.prune_schedule_requirements(now.date())
-            await self._check_long_term_renewals(now.date())
-            grouped: dict[str, tuple[PersonaContext, list[str]]] = {}
+            today, yesterday = now.date(), now.date() - timedelta(days=1)
+            self.storage.prune_schedule_requirements(today)
+            await self._check_long_term_renewals(today)
+            by_persona: dict[str, tuple[PersonaContext, list[str]]] = {}
             for umo in self.policy.enabled_sessions():
                 persona = await self.personas.resolve(umo)
-                grouped.setdefault(persona.id, (persona, []))[1].append(umo)
+                by_persona.setdefault(persona.id, (persona, []))[1].append(umo)
 
-            for persona, sessions in grouped.values():
+            for persona, sessions in by_persona.values():
                 await self._record_completed_personal_network_events(persona.id, now)
                 await self._process_deliveries(persona, now)
-                await self._ensure_world_event(persona, now.date())
+                await self._ensure_world_event(persona, today)
                 await self._record_garage_returns(persona, now)
-                await self._settle_work_income(persona, now.date() - timedelta(days=1))
-                await self._settle_work_income(persona, now.date(), before=now)
-                await self._write_daily_diary(persona, now.date() - timedelta(days=1))
-                await self._write_weekly_diary(persona, now)
-                await self._write_monthly_diary(persona, now)
-                await self._write_yearly_diary(persona, now)
-                await self._record_anniversary(persona, now)
-                plan = await self._ensure_plan(persona, now.date(), force=force)
+                await self._settle_work_income(persona, yesterday)
+                await self._settle_work_income(persona, today, before=now)
+                await self._write_daily_diary(persona, yesterday)
+                for write in (
+                    self._write_weekly_diary,
+                    self._write_monthly_diary,
+                    self._write_yearly_diary,
+                    self._record_anniversary,
+                ):
+                    await write(persona, now)
+                plan = await self._ensure_plan(persona, today, force=force)
                 for umo in sessions:
                     await self._schedule_session(umo, persona, plan)
 
-            keep_days = int(
+            history_days = int(
                 (self.config.get("schedule_settings", {}) or {}).get("history_days", 14)
             )
             self.storage.plans = prune_date_keys(
-                self.storage.plans, keep_days, now.date()
+                self.storage.plans, history_days, today
             )
             await self.storage.save_plans()
             await self.storage.save_sessions()
@@ -71,14 +75,13 @@ class PlanningMixin:
         preserve_disabled: bool = False,
     ) -> tuple[PersonaContext, DailyPlan]:
         persona = await self.personas.resolve(umo)
-        plan = await self._ensure_plan(
+        return persona, await self._ensure_plan(
             persona,
             self._now().date(),
             force=force,
             extra=extra,
             preserve_disabled=preserve_disabled,
         )
-        return persona, plan
 
     async def _ensure_plan(
         self,
@@ -89,126 +92,107 @@ class PlanningMixin:
         extra: str = "",
         preserve_disabled: bool = False,
     ) -> DailyPlan:
-        date_str = target.isoformat()
-        existing = self.storage.get_plan(date_str, persona.id)
+        """The stored plan for ``target``, generating (and saving) a new one when missing or forced.
+
+        ``preserve_disabled`` keeps the parts whose daily generation is switched off.
+        """
+        day = target.isoformat()
+        existing = self.storage.get_plan(day, persona.id)
         if existing and not force:
             return existing
-        settings = self.config.get("schedule_settings", {}) or {}
-        include_schedule, include_outfit = self._daily_generation_flags()
-        history_plans = []
-        if include_schedule:
-            reference_days = max(0, int(settings.get("reference_history_days", 3)))
-            history_plans = self.storage.get_recent_plans(
-                persona.id, target, reference_days
-            )
-        long_term_settings = self.config.get("long_term_settings", {}) or {}
-        long_term_context = ""
-        if include_schedule and long_term_settings.get("enable", True):
-            long_term_context = self.long_term.format_day_context(
-                persona.id,
-                target,
-                fallback_to_latest=True,
-            )
-        schedule_requirements = (
-            self.storage.active_schedule_requirements(persona.id, target)
-            if include_schedule
-            else []
+        with_schedule, with_outfit = self._daily_generation_flags()
+        history, long_term_context, requirements, relationships, newcomer = (
+            [],
+            "",
+            [],
+            "",
+            "",
         )
-        relationship_context = (
-            await self._personal_network_context(persona.id) if include_schedule else ""
-        )
-        new_character_hint = (
-            await self._generate_new_character(persona) if include_schedule else ""
-        )
-        requirement_sections = []
-        if extra.strip():
-            requirement_sections.append("本次补充要求：\n" + extra.strip())
-        if schedule_requirements:
-            requirement_sections.append(
-                "预设日程要求：\n"
-                + "\n".join(f"- {item.requirement}" for item in schedule_requirements)
+        if with_schedule:
+            lookback = max(
+                0,
+                int(
+                    (self.config.get("schedule_settings", {}) or {}).get(
+                        "reference_history_days", 3
+                    )
+                ),
             )
-        if new_character_hint:
-            requirement_sections.append("新人物出现要求：\n" + new_character_hint)
-        if include_schedule:
-            try:
-                self._sync_life_memory(persona.id, self._now(), days_back=3)
-                memory = life_memory.recent_context(self.data_dir, persona.id, target)
-            except Exception:
-                logger.debug("[虚拟人生] 读取生活记忆失败", exc_info=True)
-                memory = ""
-            if memory:
-                requirement_sections.append(
-                    memory
-                    + "\n以上是真实发生过的事。新日程可以自然延续（比如接着读买来的书、"
-                    "再去路过的那家店、继续和主人约好的事），但不要照搬同样的安排。"
+            history = self.storage.get_recent_plans(persona.id, target, lookback)
+            if (self.config.get("long_term_settings", {}) or {}).get("enable", True):
+                long_term_context = self.long_term.format_day_context(
+                    persona.id, target, fallback_to_latest=True
                 )
+            requirements = self.storage.active_schedule_requirements(persona.id, target)
+            relationships = await self._personal_network_context(persona.id)
+            newcomer = await self._generate_new_character(persona)
+
+        sections = []
+        if extra.strip():
+            sections.append("本次补充要求：\n" + extra.strip())
+        if requirements:
+            sections.append(
+                "预设日程要求：\n"
+                + "\n".join(f"- {item.requirement}" for item in requirements)
+            )
+        if newcomer:
+            sections.append("新人物出现要求：\n" + newcomer)
+        if with_schedule:
+            memory = self._recent_life_memory(persona.id, target)
+            if memory:
+                sections.append(memory + MEMORY_CONTINUITY_NOTE)
+
         plan = await self.plan_generator.generate(
             target,
             persona,
-            extra="\n\n".join(requirement_sections),
-            history_plans=history_plans,
+            extra="\n\n".join(sections),
+            history_plans=history,
             long_term_context=long_term_context,
-            relationship_context=relationship_context,
-            include_schedule=include_schedule,
-            include_outfit=include_outfit,
+            relationship_context=relationships,
+            include_schedule=with_schedule,
+            include_outfit=with_outfit,
             base_plan=existing if preserve_disabled else None,
         )
-        plan_key = self.storage.plan_key(date_str, persona.id)
-        previous_plan = self.storage.plans.get(plan_key)
-        self.storage.plans[plan_key] = plan
-        if include_schedule and plan.has_schedule:
+        key = self.storage.plan_key(day, persona.id)
+        before = self.storage.plans.get(key)
+        self.storage.plans[key] = plan
+        if with_schedule and plan.has_schedule:
             self.storage.consume_schedule_requirements(
-                [item.id for item in schedule_requirements], target
+                [item.id for item in requirements], target
             )
         try:
             await self.storage.save_plans()
         except Exception:
-            if previous_plan is None:
-                self.storage.plans.pop(plan_key, None)
+            # Put memory back the way it was so a later retry sees the same state.
+            if before is None:
+                self.storage.plans.pop(key, None)
             else:
-                self.storage.plans[plan_key] = previous_plan
-            for item in schedule_requirements:
+                self.storage.plans[key] = before
+            for item in requirements:
                 self.storage.schedule_requirements[item.id] = item
             raise
         return plan
 
+    def _recent_life_memory(self, persona_id: str, target: date) -> str:
+        try:
+            self._sync_life_memory(persona_id, self._now(), days_back=3)
+            return life_memory.recent_context(self.data_dir, persona_id, target)
+        except Exception:
+            logger.debug("[虚拟人生] 读取生活记忆失败", exc_info=True)
+            return ""
+
     async def _add_schedule_requirement(
-        self,
-        event: AstrMessageEvent,
-        date_range: str,
-        requirement: str,
+        self, event: AstrMessageEvent, date_range: str, requirement: str
     ) -> str:
+        """Admin command: a wish for future days, used once when those days are first planned."""
         if not event.is_admin():
             return "无权限：仅管理员可以添加日程要求。"
         today = self._now().date()
         requirement = str(requirement).strip()
         try:
             start, end = parse_schedule_date_range(date_range, today)
-            if start <= today:
-                raise ValueError("只能为今天之后的日期添加日程要求")
-            range_days = (end - start).days + 1
-            if range_days > 366:
-                raise ValueError("日期区间不能超过 366 天")
-            if not requirement:
-                raise ValueError("日程要求不能为空")
-            if len(requirement) > 500:
-                raise ValueError("每条日程要求不能超过 500 字")
-            persona = await self.personas.resolve(event.unified_msg_origin)
-            for offset in range(range_days):
-                target = start + timedelta(days=offset)
-                existing_plan = self.storage.get_plan(target.isoformat(), persona.id)
-                if existing_plan and existing_plan.has_schedule:
-                    raise ValueError(
-                        f"{target.isoformat()} 已有有效日程，无法添加首次生成要求"
-                    )
-                if (
-                    len(self.storage.active_schedule_requirements(persona.id, target))
-                    >= 10
-                ):
-                    raise ValueError(
-                        f"{target.isoformat()} 已有 10 条日程要求，无法继续添加"
-                    )
+            persona = await self._requirement_target(
+                event, start, end, today, requirement
+            )
         except ValueError as exc:
             return f"无法添加日程要求：{exc}。"
 
@@ -226,17 +210,49 @@ class PlanningMixin:
         except Exception as exc:
             self.storage.schedule_requirements.pop(item.id, None)
             logger.warning(
-                "[Virtual Life] Schedule requirement persistence failed persona=%s: %s",
-                persona.id,
-                exc,
+                "[虚拟人生] 日程要求保存失败 persona=%s: %s", persona.id, exc
             )
             return "日程要求保存失败，请检查日志后重试。"
-        normalized_range = (
+        span = (
             item.start_date
             if item.start_date == item.end_date
             else f"{item.start_date}..{item.end_date}"
         )
-        return f"已为人格 {persona.id} 添加日程要求：{normalized_range}。"
+        return f"已为人格 {persona.id} 添加日程要求：{span}。"
+
+    async def _requirement_target(
+        self,
+        event: AstrMessageEvent,
+        start: date,
+        end: date,
+        today: date,
+        requirement: str,
+    ) -> PersonaContext:
+        """Validate a new requirement; returns the persona it is for or raises ``ValueError``."""
+        span = (end - start).days + 1
+        if start <= today:
+            raise ValueError("只能为今天之后的日期添加日程要求")
+        if span > MAX_REQUIREMENT_SPAN_DAYS:
+            raise ValueError(f"日期区间不能超过 {MAX_REQUIREMENT_SPAN_DAYS} 天")
+        if not requirement:
+            raise ValueError("日程要求不能为空")
+        if len(requirement) > MAX_REQUIREMENT_CHARS:
+            raise ValueError(f"每条日程要求不能超过 {MAX_REQUIREMENT_CHARS} 字")
+        persona = await self.personas.resolve(event.unified_msg_origin)
+        for day in (start + timedelta(days=offset) for offset in range(span)):
+            planned = self.storage.get_plan(day.isoformat(), persona.id)
+            if planned and planned.has_schedule:
+                raise ValueError(
+                    f"{day.isoformat()} 已有有效日程，无法添加首次生成要求"
+                )
+            if (
+                len(self.storage.active_schedule_requirements(persona.id, day))
+                >= MAX_REQUIREMENTS_PER_DAY
+            ):
+                raise ValueError(
+                    f"{day.isoformat()} 已有 {MAX_REQUIREMENTS_PER_DAY} 条日程要求，无法继续添加"
+                )
+        return persona
 
     def _parse_travel_plan_args(
         self, text: str, today: date
