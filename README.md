@@ -318,7 +318,7 @@ AI 在聊天里想发自拍时会调用 `take_selfie` 工具，生成后直接�
 - 3D 视图首次打开时会初始化 Three.js，低性能设备可能需要几秒。
 - 如果画面停留在平面视图，检查浏览器是否禁用了 WebGL。
 - 修改 `views/life` 下的前端文件后，更新 `index.html` 中的 `?v=` 版本号并强制刷新页面。
-- 插件只包含运行所需文件，测试和开发脚本不在运行包内。
+- `tests/`、`tools/` 只用于开发，插件运行时不会加载；代码结构说明见 [ARCHITECTURE.md](ARCHITECTURE.md)。
 
 ## 🖥 兼容性
 
@@ -330,7 +330,7 @@ AI 在聊天里想发自拍时会调用 `take_selfie` 工具，生成后直接�
 
 ## 📜 来源与许可证
 
-本项目基于 [FloranceYeh/astrbot_plugin_virtual_life](https://github.com/FloranceYeh/astrbot_plugin_virtual_life)（GPL-3.0）继续修改，保留原始项目的版权与许可声明。
+本项目基于 [FloranceYeh/astrbot_plugin_virtual_life](https://github.com/FloranceYeh/astrbot_plugin_virtual_life) v1.12.2（GPL-3.0）继续修改，保留原始项目的版权与许可声明。相对上游的修改见 [NOTICE.md](NOTICE.md)，完整更新历史（含上游原有记录）见 [CHANGELOG.md](CHANGELOG.md)。
 
 本项目以 **GNU General Public License v3.0（GPL-3.0）** 发布，完整文本见 [LICENSE](LICENSE)。
 
