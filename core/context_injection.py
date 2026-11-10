@@ -1,14 +1,57 @@
+"""What the character "knows" about her own day, injected into LLM requests.
+
+``SmartContextInjector`` picks sections by keyword: the current state is always
+available (when the base module is on), the schedule / long-term plan / outfit
+only when the user's message asks about them. ``build_state_snapshot`` is a
+side-effect-free summary for other plugins.
+"""
+
 from __future__ import annotations
 
 import unicodedata
 from datetime import date, datetime, timedelta
 from typing import Any
 
+from . import life_state
 from .environment import environment_context
-from .wardrobe import appearance_for, appearance_context
 from .models import OUTFIT_CATEGORY_LABELS, DailyPlan, TimelineItem, minute_of_day
 from .utils import timeline_item_at
-from . import life_state
+from .wardrobe import appearance_context, appearance_for
+
+INTIMATES = frozenset({"underwear", "underpants"})
+FULL_QUERY_HINT = "用户明确请求完整信息：必须优先调用 {tool}，不要凭当前摘要补全未查询的数据。"
+
+
+def _minute(now: datetime) -> int:
+    return now.hour * 60 + now.minute
+
+
+def _segment_at(plan: DailyPlan, now: datetime) -> TimelineItem | None:
+    """Same-day lookup (start <= now < end); unlike ``timeline_item_at`` it ignores overnight wrap."""
+    minute = _minute(now)
+    return next((item for item in plan.timeline if minute_of_day(item.start) <= minute < minute_of_day(item.end)), None)
+
+
+def _segment_after(plan: DailyPlan, now: datetime) -> TimelineItem | None:
+    return next((item for item in plan.timeline if minute_of_day(item.start) > _minute(now)), None)
+
+
+def _segment_before(plan: DailyPlan, current: TimelineItem) -> TimelineItem | None:
+    position = next((index for index, item in enumerate(plan.timeline) if item == current), None)
+    return plan.timeline[position - 1] if position else None
+
+
+def _simplify(text: str) -> str:
+    """Case-folded text without whitespace or punctuation, for keyword matching."""
+    folded = unicodedata.normalize("NFKC", text).casefold()
+    return "".join(char for char in folded if not char.isspace() and not unicodedata.category(char).startswith("P"))
+
+
+def _clamped_int(value: Any, low: int, high: int, default: int) -> int:
+    try:
+        return max(low, min(high, int(value)))
+    except (TypeError, ValueError):
+        return default
 
 
 class SmartContextInjector:
@@ -18,6 +61,154 @@ class SmartContextInjector:
     @property
     def enabled(self) -> bool:
         return bool(self.settings.get("enable", False))
+
+    # ------------------------------------------------------------------ settings
+
+    def _max_chars(self) -> int:
+        return _clamped_int(self.settings.get("max_chars", 1600), 400, 8000, 1600)
+
+    def _milestone_days(self) -> int:
+        return _clamped_int(self.settings.get("long_term_milestone_days", 7), 0, 90, 7)
+
+    def _matches(self, normalized_text: str, values: Any) -> bool:
+        if not isinstance(values, list):
+            return False
+        keywords = (_simplify(str(value)) for value in values)
+        return any(keyword and keyword in normalized_text for keyword in keywords)
+
+    @staticmethod
+    def _normalize(value: str) -> str:
+        return _simplify(value)
+
+    @staticmethod
+    def _current_item(plan: DailyPlan, now: datetime) -> TimelineItem | None:
+        return _segment_at(plan, now)
+
+    @staticmethod
+    def _next_item(plan: DailyPlan, now: datetime) -> TimelineItem | None:
+        return _segment_after(plan, now)
+
+    @staticmethod
+    def _previous_item(plan: DailyPlan, current: TimelineItem) -> TimelineItem | None:
+        return _segment_before(plan, current)
+
+    # ------------------------------------------------------------------ sections
+
+    def _body_line(self, plan, now, furniture_states, history_plans, health_summary) -> str:
+        if health_summary:
+            return f"\n身体状态：{health_summary}"
+        try:
+            needs = life_state.compute(plan, now, furniture_states=furniture_states, history_plans=history_plans)
+        except (TypeError, ValueError):
+            return ""
+        return f"\n身体状态：{needs['summary']}" if needs.get("summary") else ""
+
+    def _base_section(
+        self,
+        plan: DailyPlan,
+        now: datetime,
+        current: TimelineItem,
+        *,
+        furniture_context: str = "",
+        furniture_states: dict[str, Any] | None = None,
+        history_plans: list[Any] | None = None,
+        health_summary: str = "",
+    ) -> str:
+        surroundings = environment_context(
+            current.location, now, plan.weather, current.activity, current.state, timeline=plan.timeline, outfit=plan.outfit
+        )
+        return "".join(
+            [
+                f"时间：{now.strftime('%Y-%m-%d %H:%M')}\n",
+                f"天气：{plan.weather.prompt_text if plan.weather else '未记录'}\n",
+                f"当前活动：{current.activity}\n",
+                f"地点：{current.location or '未说明'}\n",
+                surroundings + "\n",
+                f"状态：{current.state}，可打扰度：{current.availability}\n",
+                self._body_line(plan, now, furniture_states, history_plans, health_summary),
+                f"\n家具状态：{furniture_context}" if furniture_context else "",
+                "\n普通回复必须与当前状态保持一致。",
+            ]
+        )
+
+    def _schedule_section(self, plan: DailyPlan, now: datetime, current: TimelineItem, **context: Any) -> str:
+        lines = [
+            self._base_section(plan, now, current, **context),
+            f"今日主题：{plan.theme}；心情：{plan.mood}。",
+            f"当前时段：{current.start}-{current.end}。",
+        ]
+        for label, item in (("上个时段", _segment_before(plan, current)), ("下个时段", _segment_after(plan, now))):
+            if item:
+                lines.append(f"{label}：{item.start}-{item.end} {item.activity}。")
+        return "\n".join(lines)
+
+    def _outfit_section(
+        self, plan: DailyPlan, *, include_underwear: bool, underwear_only: bool = False, current=None, now=None
+    ) -> str:
+        if plan.outfit is None:
+            return ""
+        shown = [
+            piece
+            for piece in plan.outfit.items
+            if not (underwear_only and piece.category not in INTIMATES)
+            and not (not include_underwear and piece.category in INTIMATES)
+        ]
+        if not shown:
+            return ""
+        listing = "；".join(
+            f"{OUTFIT_CATEGORY_LABELS[piece.category]}：{piece.name}" + (f"（{piece.details}）" if piece.details else "")
+            for piece in shown
+        )
+        if underwear_only:
+            return "贴身穿搭信息：" + listing
+        heading = f"今日穿搭：{plan.outfit.summary}（当前就按这套穿，睡衣/就寝时段除外）。"
+        if current and now:
+            worn = appearance_context(
+                current.location, current.activity, current.state, now, timeline=plan.timeline, outfit=plan.outfit
+            )
+            heading = worn + "\n" + heading
+        return heading + listing
+
+    def _long_term_sections(self, long_term, persona_id: str, target: date) -> list[str]:
+        day = long_term.expand_day(persona_id, target)
+        if not day:
+            latest = long_term.latest_stage(persona_id)
+            if not latest:
+                return ["大时间表：当前没有已批准阶段。"]
+            return [
+                f"最近阶段已于 {latest['end_date']} 结束：{latest['name']}。后续阶段正在生成中，"
+                "不要虚构已过期的固定课程、会议或截止日期。"
+            ]
+        stage = day["stage"]
+        header = f"当前大时间表阶段：{stage['name']}（{stage['kind']}，{stage['start_date']} 至 {stage['end_date']}）。"
+        if stage.get("summary"):
+            header += f"摘要：{stage['summary']}。"
+        if day["constraints"]:
+            header += f"约束：{'；'.join(day['constraints'])}。"
+        sections = [header]
+        if day["fixed_events"]:
+            events = "；".join(f"{event['start']}-{event['end']} {event['title']}" for event in day["fixed_events"])
+            sections.append(f"今日固定事件：{events}。")
+        if day["active_periods"]:
+            sections.append("当前特殊时期：" + "；".join(period["name"] for period in day["active_periods"]) + "。")
+        horizon = target + timedelta(days=self._milestone_days())
+        upcoming = [item for item in stage.get("milestones", []) if target <= date.fromisoformat(item["date"]) <= horizon]
+        if upcoming:
+            sections.append("近期里程碑：" + "；".join(f"{item['date']} {item['title']}" for item in upcoming) + "。")
+        return sections
+
+    @staticmethod
+    def _join_with_limit(sections: list[str], limit: int) -> str:
+        body = "\n".join(section for section in sections if section)
+        if not body:
+            return ""
+        opening, closing = "<character_state>\n", "\n</character_state>"
+        text = opening + body
+        if len(text) + len(closing) > limit:
+            text = text[: max(0, limit - len(closing) - 1)] + "…"
+        return text + closing
+
+    # ------------------------------------------------------------------ public
 
     def build(
         self,
@@ -53,27 +244,20 @@ class SmartContextInjector:
         history_plans: list[Any] | None = None,
         health_summary: str = "",
     ) -> str:
-        """Build a natural in-character state block for proactive messages.
-
-        Unlike build_details, it does not depend on user keyword matching and
-        always includes the current schedule section alongside long-term context.
-        """
-        current = self._current_item(plan, now)
+        """State block for proactive messages: always the schedule plus the long-term plan."""
+        current = _segment_at(plan, now)
         if not current:
             return ""
-        sections = [
-            self._schedule_section(
-                plan,
-                now,
-                current,
-                furniture_context=furniture_context,
-                furniture_states=furniture_states,
-                history_plans=history_plans,
-                                health_summary=health_summary,
-            )
-        ]
-        sections.extend(self._long_term_sections(long_term, plan.persona_id, now.date()))
-        return self._join_with_limit(sections, self._max_chars())
+        schedule = self._schedule_section(
+            plan,
+            now,
+            current,
+            furniture_context=furniture_context,
+            furniture_states=furniture_states,
+            history_plans=history_plans,
+            health_summary=health_summary,
+        )
+        return self._join_with_limit([schedule, *self._long_term_sections(long_term, plan.persona_id, now.date())], self._max_chars())
 
     def build_details(
         self,
@@ -88,369 +272,97 @@ class SmartContextInjector:
         history_plans: list[Any] | None = None,
         health_summary: str = "",
     ) -> tuple[str, tuple[str, ...], int]:
+        """``(injection, modules used, character limit)`` for one chat message."""
         limit = self._max_chars()
-        current = self._current_item(plan, now)
-        normalized_text = self._normalize(user_text)
-        outfit_matched = self._matches(normalized_text, self.settings.get("outfit_keywords"))
-        underwear_matched = self._matches(normalized_text, self.settings.get("underwear_keywords"))
-        schedule_matched = self._matches(normalized_text, self.settings.get("schedule_keywords"))
-        long_term_matched = self._matches(normalized_text, self.settings.get("long_term_keywords"))
-        full_schedule_matched = self._matches(normalized_text, self.settings.get("full_schedule_keywords"))
-        full_long_term_matched = self._matches(normalized_text, self.settings.get("full_long_term_keywords"))
-        sections = []
-        modules = []
+        current = _segment_at(plan, now)
+        text = _simplify(user_text)
+        asked = {
+            topic: self._matches(text, self.settings.get(f"{topic}_keywords"))
+            for topic in ("outfit", "underwear", "schedule", "long_term", "full_schedule", "full_long_term")
+        }
+        context = dict(
+            furniture_context=furniture_context,
+            furniture_states=furniture_states,
+            history_plans=history_plans,
+            health_summary=health_summary,
+        )
+        sections: list[str] = []
+        modules: list[str] = []
+
+        def add(module: str, *content: str) -> None:
+            modules.append(module)
+            sections.extend(content)
 
         if participant_context:
-            modules.append("participants")
-            sections.append(participant_context)
-
-        base_module_enabled = bool(self.settings.get("base_module_enable", False))
-        if base_module_enabled and current:
-            modules.append("base")
-            if not schedule_matched:
-                sections.append(
-                    self._base_section(
-                        plan,
-                        now,
-                        current,
-                        furniture_context=furniture_context,
-                        furniture_states=furniture_states,
-                        history_plans=history_plans,
-                        health_summary=health_summary,
-                    )
-                )
-
-        if full_schedule_matched and plan.has_schedule:
-            modules.append("full_schedule_query")
-            sections.append(
-                "用户明确请求完整信息：必须优先调用 "
-                "get_virtual_daily_schedule，不要凭当前摘要补全未查询的数据。"
-            )
-        if full_long_term_matched:
-            modules.append("full_long_term_query")
-            sections.append(
-                "用户明确请求完整信息：必须优先调用 "
-                "get_long_term_timeline，不要凭当前摘要补全未查询的数据。"
-            )
-        if schedule_matched and current:
-            modules.append("schedule")
-            sections.append(
-                self._schedule_section(
-                    plan,
-                    now,
-                    current,
-                    furniture_context=furniture_context,
-                    furniture_states=furniture_states,
-                    history_plans=history_plans,
-                    health_summary=health_summary,
-                )
-            )
-        if long_term_matched:
-            modules.append("long_term")
-            sections.extend(self._long_term_sections(long_term, plan.persona_id, now.date()))
-        if outfit_matched and plan.has_outfit:
-            modules.append("outfit")
-            if underwear_matched:
-                modules.append("underwear")
-            sections.append(self._outfit_section(plan, include_underwear=underwear_matched, current=current, now=now))
-        elif underwear_matched and plan.has_outfit:
-            modules.append("underwear")
-            sections.append(self._outfit_section(plan, include_underwear=True, underwear_only=True, current=current, now=now))
-
-        if current and not base_module_enabled and not schedule_matched and self.settings.get("environment_enable", False):
-            modules.append("environment")
-            environment = environment_context(current.location, now, plan.weather, current.activity, current.state, timeline=plan.timeline, outfit=plan.outfit)
-            if health_summary:
-                environment += f"\n身体状态：{health_summary}"
+            add("participants", participant_context)
+        base_on = bool(self.settings.get("base_module_enable", False))
+        if base_on and current:
+            add("base", *([] if asked["schedule"] else [self._base_section(plan, now, current, **context)]))
+        if asked["full_schedule"] and plan.has_schedule:
+            add("full_schedule_query", FULL_QUERY_HINT.format(tool="get_virtual_daily_schedule"))
+        if asked["full_long_term"]:
+            add("full_long_term_query", FULL_QUERY_HINT.format(tool="get_long_term_timeline"))
+        if asked["schedule"] and current:
+            add("schedule", self._schedule_section(plan, now, current, **context))
+        if asked["long_term"]:
+            add("long_term", *self._long_term_sections(long_term, plan.persona_id, now.date()))
+        if plan.has_outfit and (asked["outfit"] or asked["underwear"]):
+            if asked["outfit"]:
+                add("outfit")
+                if asked["underwear"]:
+                    modules.append("underwear")
+                sections.append(self._outfit_section(plan, include_underwear=asked["underwear"], current=current, now=now))
             else:
-                try:
-                    needs = life_state.compute(
-                        plan,
-                        now,
-                        furniture_states=furniture_states,
-                        history_plans=history_plans,
-                    )
-                    if needs.get("summary"):
-                        environment += f"\n身体状态：{needs['summary']}"
-                except (TypeError, ValueError):
-                    pass
-            if furniture_context:
-                environment += f"\n家具状态：{furniture_context}"
-            sections.append(environment)
-        injection = self._join_with_limit(sections, limit)
-        return injection, tuple(modules), limit
-
-    def _max_chars(self) -> int:
-        try:
-            return max(400, min(8000, int(self.settings.get("max_chars", 1600))))
-        except (TypeError, ValueError):
-            return 1600
-
-    def _milestone_days(self) -> int:
-        try:
-            return max(0, min(90, int(self.settings.get("long_term_milestone_days", 7))))
-        except (TypeError, ValueError):
-            return 7
-
-    def _matches(self, normalized_text: str, values: Any) -> bool:
-        if not isinstance(values, list):
-            return False
-        return any(
-            normalized_keyword and normalized_keyword in normalized_text
-            for value in values
-            if (normalized_keyword := self._normalize(str(value)))
-        )
-
-    @staticmethod
-    def _normalize(value: str) -> str:
-        normalized = unicodedata.normalize("NFKC", value).casefold()
-        return "".join(char for char in normalized if not char.isspace() and not unicodedata.category(char).startswith("P"))
-
-    @staticmethod
-    def _current_item(plan: DailyPlan, now: datetime) -> TimelineItem | None:
-        minute = now.hour * 60 + now.minute
-        return next(
-            (
-                item
-                for item in plan.timeline
-                if minute_of_day(item.start) <= minute < minute_of_day(item.end)
-            ),
-            None,
-        )
-
-    def _base_section(
-        self,
-        plan: DailyPlan,
-        now: datetime,
-        current: TimelineItem,
-        *,
-        furniture_context: str = "",
-        furniture_states: dict[str, Any] | None = None,
-        history_plans: list[Any] | None = None,
-        health_summary: str = "",
-    ) -> str:
-        weather = plan.weather.prompt_text if plan.weather else "未记录"
-        if health_summary:
-            needs_line = f"\n身体状态：{health_summary}"
-        else:
-            try:
-                needs = life_state.compute(
-                    plan,
-                    now,
-                    furniture_states=furniture_states,
-                    history_plans=history_plans,
-                )
-                needs_line = f"\n身体状态：{needs.get('summary')}" if needs.get("summary") else ""
-            except (TypeError, ValueError):
-                needs_line = ""
-        return (
-            f"时间：{now.strftime('%Y-%m-%d %H:%M')}\n"
-            f"天气：{weather}\n"
-            f"当前活动：{current.activity}\n"
-            f"地点：{current.location or '未说明'}\n"
-            + environment_context(current.location, now, plan.weather, current.activity, current.state, timeline=plan.timeline, outfit=plan.outfit) + "\n"
-            + f"状态：{current.state}，可打扰度：{current.availability}\n"
-            + needs_line
-            + (f"\n家具状态：{furniture_context}" if furniture_context else "")
-            + "\n普通回复必须与当前状态保持一致。"
-        )
-
-    def _schedule_section(
-        self,
-        plan: DailyPlan,
-        now: datetime,
-        current: TimelineItem,
-        *,
-        furniture_context: str = "",
-        furniture_states: dict[str, Any] | None = None,
-        history_plans: list[Any] | None = None,
-        health_summary: str = "",
-    ) -> str:
-        previous_item = self._previous_item(plan, current)
-        next_item = self._next_item(plan, now)
-        lines = [
-            self._base_section(
-                plan,
-                now,
-                current,
-                furniture_context=furniture_context,
-                furniture_states=furniture_states,
-                history_plans=history_plans,
-                health_summary=health_summary,
-            ),
-            f"今日主题：{plan.theme}；心情：{plan.mood}。",
-            f"当前时段：{current.start}-{current.end}。",
-        ]
-        if previous_item:
-            lines.append(f"上个时段：{previous_item.start}-{previous_item.end} {previous_item.activity}。")
-        if next_item:
-            lines.append(f"下个时段：{next_item.start}-{next_item.end} {next_item.activity}。")
-        return "\n".join(lines)
-
-    @staticmethod
-    def _next_item(plan: DailyPlan, now: datetime) -> TimelineItem | None:
-        minute = now.hour * 60 + now.minute
-        return next((item for item in plan.timeline if minute_of_day(item.start) > minute), None)
-
-    @staticmethod
-    def _previous_item(plan: DailyPlan, current: TimelineItem) -> TimelineItem | None:
-        for index, item in enumerate(plan.timeline):
-            if item == current:
-                if index == 0:
-                    return None
-                return plan.timeline[index - 1]
-        return None
-
-    def _outfit_section(self, plan: DailyPlan, *, include_underwear: bool, underwear_only: bool = False, current=None, now=None) -> str:
-        if plan.outfit is None:
-            return ""
-        items = []
-        for item in plan.outfit.items:
-            if underwear_only and item.category not in {"underwear", "underpants"}:
-                continue
-            if not include_underwear and item.category in {"underwear", "underpants"}:
-                continue
-            detail = f"（{item.details}）" if item.details else ""
-            items.append(f"{OUTFIT_CATEGORY_LABELS[item.category]}：{item.name}{detail}")
-        if not items:
-            return ""
-        prefix = "贴身穿搭信息：" if underwear_only else f"今日穿搭：{plan.outfit.summary}（当前就按这套穿，睡衣/就寝时段除外）。"
-        if current and now and not underwear_only:
-            prefix = appearance_context(current.location, current.activity, current.state, now, timeline=plan.timeline, outfit=plan.outfit) + "\n" + prefix
-        return prefix + "；".join(items)
-
-    def _long_term_sections(self, long_term, persona_id: str, target: date) -> list[str]:
-        expanded = long_term.expand_day(persona_id, target)
-        if not expanded:
-            latest = long_term.latest_stage(persona_id)
-            if not latest:
-                return ["大时间表：当前没有已批准阶段。"]
-            return [
-                f"最近阶段已于 {latest['end_date']} 结束：{latest['name']}。后续阶段正在生成中，"
-                "不要虚构已过期的固定课程、会议或截止日期。"
-            ]
-        stage = expanded["stage"]
-        sections = [
-            f"当前大时间表阶段：{stage['name']}（{stage['kind']}，{stage['start_date']} 至 {stage['end_date']}）。"
-            + (f"摘要：{stage['summary']}。" if stage.get("summary") else "")
-            + (f"约束：{'；'.join(expanded['constraints'])}。" if expanded["constraints"] else "")
-        ]
-        if expanded["fixed_events"]:
-            sections.append(
-                "今日固定事件："
-                + "；".join(f"{item['start']}-{item['end']} {item['title']}" for item in expanded["fixed_events"])
-                + "。"
+                add("underwear", self._outfit_section(plan, include_underwear=True, underwear_only=True, current=current, now=now))
+        if current and not base_on and not asked["schedule"] and self.settings.get("environment_enable", False):
+            surroundings = environment_context(
+                current.location, now, plan.weather, current.activity, current.state, timeline=plan.timeline, outfit=plan.outfit
             )
-        if expanded["active_periods"]:
-            sections.append("当前特殊时期：" + "；".join(item["name"] for item in expanded["active_periods"]) + "。")
-        deadline = target + timedelta(days=self._milestone_days())
-        milestones = [
-            item
-            for item in stage.get("milestones", [])
-            if target <= date.fromisoformat(item["date"]) <= deadline
-        ]
-        if milestones:
-            sections.append("近期里程碑：" + "；".join(f"{item['date']} {item['title']}" for item in milestones) + "。")
-        return sections
-
-    @staticmethod
-    def _join_with_limit(sections: list[str], limit: int) -> str:
-        parts = [section for section in sections if section]
-        if not parts:
-            return ""
-        content = "<character_state>\n" + "\n".join(parts)
-        closing = "\n</character_state>"
-        if len(content) + len(closing) > limit:
-            content = content[: max(0, limit - len(closing) - 1)] + "…"
-        return content + closing
+            add("environment", surroundings + self._body_line(plan, now, furniture_states, history_plans, health_summary)
+                + (f"\n家具状态：{furniture_context}" if furniture_context else ""))
+        return self._join_with_limit(sections, limit), tuple(modules), limit
 
 
-def _timeline_view(item: TimelineItem) -> dict[str, Any]:
-    """Return the public read-only view of a timeline item for other plugins."""
-    return {
-        "start": item.start,
-        "end": item.end,
-        "activity": item.activity,
-        "location": item.location,
-    }
+# ------------------------------------------------------------------ snapshot for other plugins
 
 
-def _current_view(item: TimelineItem) -> dict[str, Any]:
-    return {
-        "id": item.id,
-        "start": item.start,
-        "end": item.end,
-        "activity": item.activity,
-        "location": item.location,
-        "state": item.state,
-        "availability": item.availability,
-    }
+def _segment_view(item: TimelineItem, *, full: bool = False) -> dict[str, Any]:
+    view = {"start": item.start, "end": item.end, "activity": item.activity, "location": item.location}
+    if full:
+        view = {"id": item.id, **view, "state": item.state, "availability": item.availability}
+    return view
 
 
-def _snapshot_previous_item(
-    plan: DailyPlan, now: datetime, current: TimelineItem | None
-) -> TimelineItem | None:
-    """Return the item before ``current`` (or the latest finished item)."""
+def _finished_before(plan: DailyPlan, now: datetime, current: TimelineItem | None) -> TimelineItem | None:
     if current is not None:
-        for index, item in enumerate(plan.timeline):
-            if item is current:
-                return plan.timeline[index - 1] if index > 0 else None
-        return None
-    minute = now.hour * 60 + now.minute
-    for item in reversed(plan.timeline):
-        if minute_of_day(item.end) <= minute:
-            return item
-    return None
+        position = next((index for index, item in enumerate(plan.timeline) if item is current), None)
+        return plan.timeline[position - 1] if position else None
+    return next((item for item in reversed(plan.timeline) if minute_of_day(item.end) <= _minute(now)), None)
 
 
 def build_state_snapshot(plan: DailyPlan, now: datetime) -> dict[str, Any]:
-    """Build a small read-only snapshot of the current virtual-life state.
-
-    This helper is intentionally side-effect free: it never calls an LLM, never
-    touches the plan storage, and never raises for an empty or partial plan.  It
-    exists so other plugins (e.g. an image plugin) can render a selfie that
-    matches the character's current activity, location, outfit and mood.
-
-    Args:
-        plan: The character's daily plan.
-        now: Moment used to resolve the current/next/previous timeline items.
-
-    Returns:
-        A JSON-serializable dict with ``date``, ``theme``, ``mood``,
-        ``current``, ``next``, ``previous``, ``outfit`` and ``timeline_count``.
-    """
+    """JSON-safe summary of what she is doing now, for other plugins (never raises on a partial plan)."""
     current = timeline_item_at(plan, now)
-    minute = now.hour * 60 + now.minute
-    next_item = next(
-        (item for item in plan.timeline if minute_of_day(item.start) > minute),
-        None,
-    )
-    previous_item = _snapshot_previous_item(plan, now, current)
-    outfit: dict[str, Any] | None = None
-    if plan.outfit is not None:
-        outfit = {
-            "style": plan.outfit.style,
-            "summary": plan.outfit.summary,
-            "items": [
-                {
-                    "category": item.category,
-                    "name": item.name,
-                    "details": item.details,
-                }
-                for item in plan.outfit.items
-            ],
-        }
+    upcoming = _segment_after(plan, now)
+    earlier = _finished_before(plan, now, current)
+    outfit = plan.outfit
     return {
         "date": plan.date,
         "theme": plan.theme,
         "mood": plan.mood,
         "weather": plan.weather.to_dict() if plan.weather is not None else None,
-        "current": _current_view(current) if current is not None else None,
-        "next": _timeline_view(next_item) if next_item is not None else None,
-        "previous": (
-            _timeline_view(previous_item) if previous_item is not None else None
-        ),
-        "outfit": outfit,
-        "appearance": appearance_for(current.location, current.activity, current.state, now, timeline=plan.timeline) if current else None,
+        "current": _segment_view(current, full=True) if current is not None else None,
+        "next": _segment_view(upcoming) if upcoming is not None else None,
+        "previous": _segment_view(earlier) if earlier is not None else None,
+        "outfit": None
+        if outfit is None
+        else {
+            "style": outfit.style,
+            "summary": outfit.summary,
+            "items": [{"category": piece.category, "name": piece.name, "details": piece.details} for piece in outfit.items],
+        },
+        "appearance": appearance_for(current.location, current.activity, current.state, now, timeline=plan.timeline)
+        if current
+        else None,
         "timeline_count": len(plan.timeline),
     }
