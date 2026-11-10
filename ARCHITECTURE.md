@@ -119,6 +119,10 @@ AstrBot 按**定义所在的模块**绑定指令、LLM 工具和事件钩子，�
 - `room-perspective.js`：2D 近景透视绘制
 - `bedroom-3d.js`：3D 房间引擎；`room-3d-outdoor.js`、`room-3d-atmosphere.js`：户外与光照
 
+### 本地预览面板
+
+`python tools/panel_server.py` 会在 http://127.0.0.1:8770/ 打开生活面板：静态文件来自 `views/life/`，接口直接调用插件的 `VirtualLifeViewAPI.dispatch`，数据放在临时目录里并预置一天示例日程（`--data-dir` 可指定目录）。`tests/test_panel_smoke.py` 也用它跑无头浏览器测试。
+
 ### 3D 脚本按需加载
 
 `room-3d-models.js`、`room-3d-atmosphere.js`、`room-3d-outdoor.js`、`destination-3d.js`、`bedroom-3d.js` 在 `index.html` 里写成：

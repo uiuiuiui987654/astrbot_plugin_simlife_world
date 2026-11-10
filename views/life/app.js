@@ -2,7 +2,7 @@
 (function () {
   'use strict';
 
-  window.__VIRTUAL_LIFE_UI_VERSION = '20261110-perf1';
+  window.__VIRTUAL_LIFE_UI_VERSION = '20261110-perf2';
   console.log('[VirtualLife UI] ' + window.__VIRTUAL_LIFE_UI_VERSION);
 
   var $ = function (id) { return document.getElementById(id); };
@@ -3407,7 +3407,9 @@
       state.indoorView ? 'indoor' : 'outdoor',
       state.homeItems.length,
       placedSignature(),
-      window.SceneStudio ? sceneEnvironment().signature : ''
+      window.SceneStudio ? sceneEnvironment().signature : '',
+      // 画面模式切换或 3D 脚本加载完成时要重画场景
+      use3D() ? '3d' : '2d'
     ].join('|');
   }
 
