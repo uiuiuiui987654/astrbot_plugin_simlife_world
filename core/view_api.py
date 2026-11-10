@@ -17,7 +17,6 @@ from . import (
     camera_events,
     camera_photo,
     cooking,
-    delivery,
     diagnostics,
     diary,
     food,
