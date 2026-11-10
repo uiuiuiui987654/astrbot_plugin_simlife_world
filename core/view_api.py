@@ -138,6 +138,7 @@ class VirtualLifeViewAPI:
                 str(getattr(resolved, "prompt", "") or "")
             )
         except Exception:
+            logger.debug("[虚拟人生] _camera_photo 出错，已忽略", exc_info=True)
             persona_visual = ""
         result = await camera_photo.generate(
             self.plugin,
@@ -155,6 +156,7 @@ class VirtualLifeViewAPI:
                 try:
                     resolved_persona = (await self.plugin.personas.resolve(None)).id
                 except Exception:
+                    logger.debug("[虚拟人生] _camera_photo 出错，已忽略", exc_info=True)
                     resolved_persona = ""
             if resolved_persona:
                 event = None
@@ -168,6 +170,7 @@ class VirtualLifeViewAPI:
                         now=now,
                     )
                 except Exception:
+                    logger.debug("[虚拟人生] _camera_photo 出错，已忽略", exc_info=True)
                     event = None
                 if event:
                     handler = getattr(self.plugin, "react_to_camera", None)
@@ -177,7 +180,7 @@ class VirtualLifeViewAPI:
                                 handler(resolved_persona, event)
                             )
                         except Exception:
-                            pass
+                            logger.debug("[虚拟人生] _camera_photo 出错，已忽略", exc_info=True)
         return result
 
     async def _apply_garage_schedule(
@@ -626,6 +629,7 @@ class VirtualLifeViewAPI:
                         self.plugin._now().date().isoformat(),
                     )
                 except Exception:
+                    logger.debug("[虚拟人生] dispatch 出错，已忽略", exc_info=True)
                     current_event = None
                 long_term = [
                     entry
@@ -989,6 +993,7 @@ class VirtualLifeViewAPI:
                         now=self.plugin._now(),
                     )
                 except Exception as exc:
+                    logger.warning("[虚拟人生] dispatch 失败: %s", exc, exc_info=True)
                     return {"ok": False, "error": f"给钱失败：{exc}"}
                 return {
                     "ok": True,

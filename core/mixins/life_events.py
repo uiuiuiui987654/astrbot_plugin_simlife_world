@@ -78,7 +78,7 @@ class LifeEventsMixin:
                     ttl_minutes=12 * 60,
                 )
             except Exception:
-                pass
+                logger.debug("[虚拟人生] _ensure_world_event 出错，已忽略", exc_info=True)
             logger.info(
                 "[虚拟人生] 今日小事 persona=%s title=%s mood=%s",
                 persona.id,
@@ -442,6 +442,7 @@ class LifeEventsMixin:
         try:
             snapshot = money.snapshot(self.data_dir, persona.id, limit=1)
         except Exception:
+            logger.debug("[虚拟人生] _maybe_queue_goal_wish 出错，已忽略", exc_info=True)
             return
         goal = snapshot.get("goal")
         if not goal or goal.get("fulfilled") or not goal.get("achieved"):
@@ -459,6 +460,7 @@ class LifeEventsMixin:
                 self.data_dir / "plans.json", persona.id
             )
         except Exception:
+            logger.debug("[虚拟人生] _maybe_queue_goal_wish 出错，已忽略", exc_info=True)
             pending = []
         if any(str(action.get("kind") or "") == "wish" for action in pending):
             return

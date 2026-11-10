@@ -86,7 +86,7 @@ class LifeContextMixin:
                     now=now,
                 )
             except Exception:
-                pass
+                logger.debug("[虚拟人生] _life_needs 出错，已忽略", exc_info=True)
             return adjusted
         except (OSError, TypeError, ValueError):
             return {}
@@ -174,6 +174,7 @@ class LifeContextMixin:
             items = self.interactions.recent(limit)
             now = self._now()
         except Exception:
+            logger.debug("[虚拟人生] _recent_interaction_lines 出错，已忽略", exc_info=True)
             return ""
         cutoff = now - timedelta(minutes=45)
         lines = []
@@ -277,7 +278,7 @@ class LifeContextMixin:
             if pose_hint:
                 snapshot["pose_hint"] = pose_hint
         except Exception:
-            pass
+            logger.debug("[虚拟人生] get_virtual_life_snapshot 出错，已忽略", exc_info=True)
         snapshot.update(
             {
                 "ok": True,

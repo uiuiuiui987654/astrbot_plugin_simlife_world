@@ -232,7 +232,7 @@ class ProactiveMixin:
                         "不要每条都提，也不要像在报清单。"
                     )
             except Exception:
-                pass
+                logger.debug("[虚拟人生] _deliver 出错，已忽略", exc_info=True)
         group_intent = "想自然地在群里说句话，和群友互动一下"
         recent_proactive: list[str] = []
         reader = getattr(self.message_generator, "recent_proactive_texts", None)

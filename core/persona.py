@@ -33,7 +33,7 @@ class PersonaResolver:
                 if prompt:
                     return PersonaContext(str(conversation_persona_id), prompt)
             except Exception:
-                pass
+                logger.debug("[虚拟人生] resolve 出错，已忽略", exc_info=True)
 
         try:
             persona = await self.context.persona_manager.get_default_persona_v3(umo=umo)
@@ -51,13 +51,13 @@ class PersonaResolver:
             if prompt:
                 return PersonaContext(persona_id, prompt)
         except Exception:
-            pass
+            logger.debug("[虚拟人生] resolve_id 出错，已忽略", exc_info=True)
         try:
             persona = self.context.persona_manager.get_persona_v3_by_id(persona_id)
             if persona:
                 return PersonaContext(persona_id, str(persona.get("prompt", "") or ""))
         except Exception:
-            pass
+            logger.debug("[虚拟人生] resolve_id 出错，已忽略", exc_info=True)
         resolved = await self.resolve(fallback_umo)
         if resolved.id != persona_id:
             raise RuntimeError(f"无法加载已批准人格 {persona_id}")

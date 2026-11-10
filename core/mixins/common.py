@@ -341,6 +341,7 @@ def _plugin_version() -> str:
         match = re.search(r"(?m)^version:\s*(\S+)", text)
         return match.group(1).strip() if match else "未知"
     except Exception:
+        logger.debug("[虚拟人生] _plugin_version 出错，已忽略", exc_info=True)
         return "未知"
 
 
@@ -376,4 +377,5 @@ def _frontend_ui_version() -> str:
         match = re.search(r"app\.js\?v=([^\"'&<>]+)", text)
         return match.group(1).strip() if match else "未知"
     except Exception:
+        logger.debug("[虚拟人生] _frontend_ui_version 出错，已忽略", exc_info=True)
         return "未知"

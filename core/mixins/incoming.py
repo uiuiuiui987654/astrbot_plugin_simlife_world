@@ -76,7 +76,7 @@ class IncomingMixin:
                 if str(item.get("name") or "").strip()
             )
         except Exception:
-            pass
+            logger.debug("[虚拟人生] _known_gift_item_names 出错，已忽略", exc_info=True)
         if persona_id:
             try:
                 snapshot = money.snapshot(self.data_dir, persona_id)
@@ -86,7 +86,7 @@ class IncomingMixin:
                     if str(item.get("name") or "").strip()
                 )
             except Exception:
-                pass
+                logger.debug("[虚拟人生] _known_gift_item_names 出错，已忽略", exc_info=True)
         return sorted(names, key=len, reverse=True)
 
     def _maybe_queue_give_request(

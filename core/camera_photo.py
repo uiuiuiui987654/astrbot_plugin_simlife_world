@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import base64
 import mimetypes
 import re
@@ -9,6 +10,8 @@ from pathlib import Path
 from typing import Any
 
 import aiohttp
+
+logger = logging.getLogger("astrbot")
 
 COMFY_PROXY_URL = "http://127.0.0.1:8189/v1/images/generations"
 
@@ -1297,6 +1300,7 @@ async def _materialize_image(image: str) -> str:
                     )
         except Exception:
             # 下载失败时退回原地址，至少给页面一次机会直接加载。
+            logger.debug("[虚拟人生] _materialize_image 出错，已忽略", exc_info=True)
             return image
     path = Path(image)
     try:
@@ -1357,6 +1361,7 @@ async def _generate_via_proxy(
                     if image:
                         return image
         except Exception:
+            logger.debug("[虚拟人生] _generate_via_proxy 出错，已忽略", exc_info=True)
             continue
     return ""
 

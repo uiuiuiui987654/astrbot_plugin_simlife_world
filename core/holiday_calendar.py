@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import logging
 from datetime import date, timedelta
 from functools import lru_cache
 from typing import Any
 
 import holidays
+
+logger = logging.getLogger("astrbot")
 
 try:
     from lunar_python import Solar
@@ -29,6 +32,7 @@ def _public_holidays(year: int) -> dict[date, str]:
     try:
         return dict(holidays.country_holidays("CN", years=[year], language="zh_CN"))
     except Exception:
+        logger.debug("[虚拟人生] _public_holidays 出错，已忽略", exc_info=True)
         return {}
 
 
@@ -50,7 +54,7 @@ class ChinaHolidayCalendar:
                     if name in TRADITIONAL_FESTIVALS
                 )
             except Exception:
-                pass
+                logger.debug("[虚拟人生] on 出错，已忽略", exc_info=True)
 
         result = []
         seen = set()

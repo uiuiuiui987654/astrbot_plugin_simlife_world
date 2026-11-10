@@ -9,6 +9,7 @@ Intentional changes: regenerate the golden files with ``UPDATE_GOLDEN=1 pytest t
 
 from __future__ import annotations
 
+import ast
 import hashlib
 import json
 import os
@@ -108,6 +109,42 @@ class LifeStateGoldenTests(unittest.TestCase):
             blob = json.dumps(result, ensure_ascii=False, sort_keys=True, default=str)
             digests.append(hashlib.sha256(blob.encode("utf-8")).hexdigest()[:16])
         self.assertEqual(digests, _golden("life_state_compute.json", digests))
+
+
+_LOG_METHODS = {"debug", "info", "warning", "error", "exception", "critical"}
+
+
+def _handler_reports(body) -> bool:
+    for node in ast.walk(ast.Module(body=body, type_ignores=[])):
+        if isinstance(node, ast.Raise):
+            return True
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr in _LOG_METHODS
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == "logger"
+        ):
+            return True
+    return False
+
+
+class SilentExceptionTests(unittest.TestCase):
+    def test_broad_except_handlers_log_or_reraise(self):
+        """Every ``except Exception`` must log (debug is fine) or re-raise, so failures are traceable."""
+        silent = []
+        for path in sorted([ROOT / "main.py", *(ROOT / "core").rglob("*.py")]):
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+            for node in ast.walk(tree):
+                if not isinstance(node, ast.ExceptHandler):
+                    continue
+                types = node.type.elts if isinstance(node.type, ast.Tuple) else [node.type]
+                broad = node.type is None or any(
+                    isinstance(t, ast.Name) and t.id in ("Exception", "BaseException") for t in types
+                )
+                if broad and not _handler_reports(node.body):
+                    silent.append(f"{path.relative_to(ROOT)}:{node.lineno}")
+        self.assertEqual(silent, [])
 
 
 if __name__ == "__main__":

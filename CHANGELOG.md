@@ -21,6 +21,7 @@
 ### 修复
 
 - 所有状态 JSON 改为原子写入（唯一临时文件 + fsync + 替换），崩溃或断电不再留下半截文件；`chat_schedule`、`user_state` 此前是直接覆盖写。磁盘格式不变。
+- 71 处 `except Exception` 之前直接吞掉错误，现在都会记录日志（预期内的回退记为 debug，带异常对象的记为 warning），并有测试防止再出现静默吞错。
 - 同时读改写同一状态文件的指令与面板请求改为共用一把可重入锁，避免并发时丢失更新；`cooking`、`health_journal`、`view_state`、`furniture_state` 此前没有加锁。
 
 ## [v2.0.3] - 2026-11-09

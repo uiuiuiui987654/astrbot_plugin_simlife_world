@@ -67,6 +67,7 @@ class LongTermMixin:
                 ),
             )
         except Exception as exc:
+            logger.warning("[虚拟人生] _run_long_term_renewal 失败: %s", exc, exc_info=True)
             await self._notify_admin(
                 target_umo,
                 f"人格 {persona_id} 的大时间表自动续期失败（第 {attempts} 次）：{exc}",

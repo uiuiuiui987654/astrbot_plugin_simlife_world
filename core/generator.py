@@ -1217,6 +1217,7 @@ class DailyPlanGenerator:
         try:
             return str(holidays.country_holidays("CN").get(target, "普通日期"))
         except Exception:
+            logger.debug("[虚拟人生] _holiday 出错，已忽略", exc_info=True)
             return "普通日期"
 
     def _window_budget_caps(self) -> tuple[int | None, int | None]:

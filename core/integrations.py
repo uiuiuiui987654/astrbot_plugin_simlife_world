@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import logging
 import json
 from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger("astrbot")
 
 # 只登记已知插件的展示信息；未知插件仍会自动出现在控制台里。
 INTEGRATION_CATALOG: dict[str, dict[str, Any]] = {
@@ -193,6 +196,7 @@ def collect_integrations(plugin: Any) -> dict[str, Any]:
         try:
             metas = list(context.get_all_stars() or [])
         except Exception:
+            logger.debug("[虚拟人生] collect_integrations 出错，已忽略", exc_info=True)
             metas = []
 
     data_dir = Path(getattr(plugin, "data_dir", "."))

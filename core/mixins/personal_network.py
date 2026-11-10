@@ -49,6 +49,7 @@ class PersonalNetworkMixin:
         try:
             available = bool(self._personal_network_plugin())
         except Exception:
+            logger.debug("[虚拟人生] _personal_network_status 出错，已忽略", exc_info=True)
             available = False
         return "已连接" if available else "已启用但插件不可用"
 

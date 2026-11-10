@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import json
 import random
 import re
@@ -27,6 +28,8 @@ from . import (
     world_events,
 )
 from .jsonio import atomic_write_json, synchronized
+
+logger = logging.getLogger("astrbot")
 
 CORE_DIR = Path(__file__).resolve().parent
 
@@ -1099,7 +1102,7 @@ def build_state(
                     now=now,
                 )
             except Exception:
-                pass
+                logger.debug("[虚拟人生] build_state 出错，已忽略", exc_info=True)
     except (OSError, TypeError, ValueError):
         needs = {}
     persona_id = plan_persona(plan) if plan else "未连接"

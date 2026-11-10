@@ -166,6 +166,7 @@ class ProactiveVirtualDailyPlugin(
             name = str(self.context.get_config().get("timezone") or "Asia/Shanghai")
             return ZoneInfo(name)
         except Exception:
+            logger.debug("[虚拟人生] _resolve_timezone 出错，已忽略", exc_info=True)
             return ZoneInfo("Asia/Shanghai")
 
     @filter.event_message_type(
@@ -359,6 +360,7 @@ class ProactiveVirtualDailyPlugin(
                         "去观察窗点一下；不要说得像系统提示。"
                     )
             except Exception:
+                logger.debug("[虚拟人生] inject_virtual_state 出错，已忽略", exc_info=True)
                 pending_hint = ""
         if schedule_allowed:
             self._apply_reply_delay_batch(event, req)
@@ -466,6 +468,7 @@ class ProactiveVirtualDailyPlugin(
                     if pending_delivery:
                         delivery_text = f"快递在路上：{pending_delivery}。"
                 except Exception:
+                    logger.debug("[虚拟人生] inject_virtual_state 出错，已忽略", exc_info=True)
                     delivery_text = ""
                 recent_delivery_text = ""
                 try:
@@ -482,6 +485,7 @@ class ProactiveVirtualDailyPlugin(
                         )
                         recent_delivery_text = f"刚刚收到快递：{names}。"
                 except Exception:
+                    logger.debug("[虚拟人生] inject_virtual_state 出错，已忽略", exc_info=True)
                     recent_delivery_text = ""
                 world_event_text = ""
                 try:
@@ -491,6 +495,7 @@ class ProactiveVirtualDailyPlugin(
                         now=self._now(),
                     )
                 except Exception:
+                    logger.debug("[虚拟人生] inject_virtual_state 出错，已忽略", exc_info=True)
                     garage_text = ""
                 try:
                     current_event = world_events.recent(
@@ -505,6 +510,7 @@ class ProactiveVirtualDailyPlugin(
                             f"（心情 {int(current_event.get('mood') or 0):+d}）"
                         )
                 except Exception:
+                    logger.debug("[虚拟人生] inject_virtual_state 出错，已忽略", exc_info=True)
                     world_event_text = ""
                 req.extra_user_content_parts.append(
                     TextPart(
@@ -580,7 +586,7 @@ class ProactiveVirtualDailyPlugin(
                                 TextPart(text=daily_text).mark_as_temp()
                             )
                 except Exception:
-                    pass
+                    logger.debug("[虚拟人生] inject_virtual_state 出错，已忽略", exc_info=True)
                 try:
                     relation = affection.snapshot(
                         self.data_dir,
@@ -626,9 +632,9 @@ class ProactiveVirtualDailyPlugin(
                         ).mark_as_temp()
                     )
                 except Exception:
-                    pass
+                    logger.debug("[虚拟人生] inject_virtual_state 出错，已忽略", exc_info=True)
             except Exception:
-                pass
+                logger.debug("[虚拟人生] inject_virtual_state 出错，已忽略", exc_info=True)
         await self._inject_recent_chat(event, req)
         if not schedule_allowed:
             await self._inject_group_life_state(event, req)
@@ -678,7 +684,7 @@ class ProactiveVirtualDailyPlugin(
                         TextPart(text=reading).mark_as_temp()
                     )
             except Exception:
-                pass
+                logger.debug("[虚拟人生] inject_virtual_state 出错，已忽略", exc_info=True)
         reading_item = next(
             (
                 item
@@ -710,7 +716,7 @@ class ProactiveVirtualDailyPlugin(
                         TextPart(text=reading).mark_as_temp()
                     )
             except Exception:
-                pass
+                logger.debug("[虚拟人生] inject_virtual_state 出错，已忽略", exc_info=True)
         furniture_states, furniture_context = self._furniture_activity_context(now)
         health_summary = str(self._life_needs(plan, now).get("summary") or "")
         injection, modules, limit = self.smart_context_injector.build_details(
@@ -767,7 +773,7 @@ class ProactiveVirtualDailyPlugin(
             try:
                 result.chain = new_chain
             except Exception:
-                pass
+                logger.debug("[虚拟人生] humanize_outgoing 出错，已忽略", exc_info=True)
 
     @filter.on_llm_response()
     async def track_delayed_llm_response(
@@ -790,7 +796,7 @@ class ProactiveVirtualDailyPlugin(
                         try:
                             response.completion_text = filtered
                         except Exception:
-                            pass
+                            logger.debug("[虚拟人生] track_delayed_llm_response 出错，已忽略", exc_info=True)
                         reply_text = filtered
                 user_text = ""
                 getter = getattr(event, "get_message_str", None)
@@ -805,7 +811,7 @@ class ProactiveVirtualDailyPlugin(
                     try:
                         response.completion_text = humanized
                     except Exception:
-                        pass
+                        logger.debug("[虚拟人生] track_delayed_llm_response 出错，已忽略", exc_info=True)
                     reply_text = humanized
                 event.set_extra("virtual_life_chat_reply_text", reply_text)
         if not event.get_extra("virtual_life_ordinary_llm_request", False):
@@ -819,6 +825,7 @@ class ProactiveVirtualDailyPlugin(
         try:
             settings = self._chat_schedule_settings()
         except Exception:
+            logger.debug("[虚拟人生] maybe_schedule_chat_activity 出错，已忽略", exc_info=True)
             return
         if not bool(settings.get("enable", True)):
             return
@@ -974,6 +981,7 @@ class ProactiveVirtualDailyPlugin(
                     str(getattr(persona, "prompt", "") or "")
                 )
             except Exception:
+                logger.debug("[虚拟人生] take_selfie 出错，已忽略", exc_info=True)
                 persona_visual = ""
             result = await camera_photo.generate(
                 self,
@@ -1424,6 +1432,7 @@ class ProactiveVirtualDailyPlugin(
         try:
             persona = await self.personas.resolve(event.unified_msg_origin)
         except Exception:
+            logger.debug("[虚拟人生] read_book 出错，已忽略", exc_info=True)
             return "现在找不到这本书的主人。"
         chapters = item.get("chapters") or []
         total = max(1, len(chapters))
@@ -1469,6 +1478,7 @@ class ProactiveVirtualDailyPlugin(
         try:
             persona = await self.personas.resolve(event.unified_msg_origin)
         except Exception:
+            logger.debug("[虚拟人生] add_reading_note 出错，已忽略", exc_info=True)
             return "现在找不到这本书的主人。"
         result = books.add_note(
             self.data_dir,
@@ -2309,6 +2319,7 @@ class ProactiveVirtualDailyPlugin(
                     else 0.0
                 )
             except Exception:
+                logger.debug("[虚拟人生] self_check 出错，已忽略", exc_info=True)
                 wallet_balance = 0.0
             lines.append(
                 f"钱包余额：{money.format_money(wallet_balance)} {currency}"
@@ -2359,7 +2370,7 @@ class ProactiveVirtualDailyPlugin(
                     lines.append(f"待处理动作：{len(pending)} 个（{labels}）")
                     lines.append("可发送 /虚拟人生 递东西 直接接受，或 /虚拟人生 清空待处理 取消")
             except Exception:
-                pass
+                logger.debug("[虚拟人生] self_check 出错，已忽略", exc_info=True)
         except Exception as exc:
             logger.warning("[虚拟人生] 自检读取当前状态失败 umo=%s: %s", umo, exc)
         try:
@@ -2668,6 +2679,7 @@ class ProactiveVirtualDailyPlugin(
                 mode="append",
             )
         except Exception as exc:
+            logger.warning("[虚拟人生] long_term_generate 失败: %s", exc, exc_info=True)
             yield event.plain_result(f"生成草稿失败：{exc}")
             return
         yield event.plain_result(
@@ -2692,6 +2704,7 @@ class ProactiveVirtualDailyPlugin(
             )
             self.image_renderer.invalidate_persona(persona.id)
         except Exception as exc:
+            logger.warning("[虚拟人生] long_term_import 失败: %s", exc, exc_info=True)
             yield event.plain_result(f"导入草稿失败：{exc}")
             return
         yield event.plain_result("结构化数据已保存为草稿，确认后执行 /大时间表 批准。")
@@ -2737,6 +2750,7 @@ class ProactiveVirtualDailyPlugin(
             self.image_renderer.invalidate_persona(persona.id)
             plan = await self._refresh_persona_daily_plan(persona)
         except Exception as exc:
+            logger.warning("[虚拟人生] long_term_approve 失败: %s", exc, exc_info=True)
             yield event.plain_result(f"批准失败：{exc}")
             return
         components = []
@@ -2794,6 +2808,7 @@ class ProactiveVirtualDailyPlugin(
                 mode=str(draft.get("mode", "append")),
             )
         except Exception as exc:
+            logger.warning("[虚拟人生] long_term_reject 失败: %s", exc, exc_info=True)
             yield event.plain_result(f"草稿已拒绝，但重新生成失败：{exc}")
             return
         yield event.plain_result("已按修改意见重新生成草稿，使用 /大时间表 草稿 查看。")
@@ -2875,6 +2890,7 @@ class ProactiveVirtualDailyPlugin(
                 mode="replace_all",
             )
         except Exception as exc:
+            logger.warning("[虚拟人生] long_term_regenerate 失败: %s", exc, exc_info=True)
             yield event.plain_result(f"重生成草稿失败：{exc}")
             return
         yield event.plain_result(
