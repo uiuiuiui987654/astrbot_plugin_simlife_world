@@ -1,249 +1,143 @@
+"""Proactive message writing: provider choice, the "no reply yet" hint, and history records."""
+
+import asyncio
 import unittest
 from datetime import datetime
+from types import SimpleNamespace
 from zoneinfo import ZoneInfo
 
 from astrbot_plugin_simlife_world.core.message_generator import ProactiveMessageGenerator
 from astrbot_plugin_simlife_world.core.persona import PersonaContext
 
-
-class Response:
-    completion_text = "主动消息"
+FRIEND = "aiocqhttp:FriendMessage:42"
+NOON = datetime(2026, 7, 14, 12, 0, tzinfo=ZoneInfo("Asia/Shanghai"))
 
 
 class Provider:
     def __init__(self):
-        self.calls = 0
         self.prompts = []
 
     async def text_chat(self, prompt, session_id):
-        self.calls += 1
         self.prompts.append(prompt)
-        return Response()
+        return SimpleNamespace(completion_text="主动消息")
 
 
-class ConversationManager:
-    def __init__(self, conversation_id=None):
-        self.conversation_id = conversation_id
-        self.created = []
-        self.pairs = []
+class Conversations:
+    def __init__(self, current=None):
+        self.current, self.created, self.pairs = current, [], []
 
     async def get_curr_conversation_id(self, umo):
-        return self.conversation_id
+        return self.current
 
     async def new_conversation(self, umo, persona_id=None):
         self.created.append((umo, persona_id))
-        self.conversation_id = "created-conversation"
-        return self.conversation_id
+        self.current = "created-conversation"
+        return self.current
 
-    async def add_message_pair(self, **kwargs):
-        self.pairs.append(kwargs)
+    async def add_message_pair(self, **pair):
+        self.pairs.append(pair)
 
 
 class Context:
-    def __init__(self, default_provider, selected_provider, conversation_manager=None):
-        self.default_provider = default_provider
-        self.selected_provider = selected_provider
-        self.requested_provider_ids = []
-        self.conversation_manager = conversation_manager or ConversationManager()
+    def __init__(self, default=None, selected=None, conversations=None):
+        self.default, self.selected, self.asked_for = default or Provider(), selected, []
+        self.conversation_manager = conversations or Conversations()
 
     def get_provider_by_id(self, provider_id):
-        self.requested_provider_ids.append(provider_id)
-        return self.selected_provider
+        self.asked_for.append(provider_id)
+        return self.selected
 
     def get_using_provider(self):
-        return self.default_provider
+        return self.default
 
 
-class MessageGeneratorTests(unittest.IsolatedAsyncioTestCase):
-    async def test_proactive_provider_is_independent_from_schedule_provider(self):
-        default_provider = Provider()
-        selected_provider = Provider()
-        context = Context(default_provider, selected_provider)
-        generator = ProactiveMessageGenerator(
-            context,
-            {
-                "schedule_settings": {
-                    "schedule_llm_provider": "schedule-provider",
-                    "proactive_llm_provider": "proactive-provider",
-                },
-                "delivery_settings": {
-                    "recent_chat_messages": 0,
-                    "proactive_prompt": "{current_time} {current_state} {intent} {unanswered_count}",
-                },
-            },
-        )
-        text = await generator.generate(
-            umo="aiocqhttp:FriendMessage:42",
+def write(context, delivery=None, schedule=None, unanswered=0):
+    config = {"delivery_settings": {"recent_chat_messages": 0, **(delivery or {})}, "schedule_settings": schedule or {}}
+    return asyncio.run(
+        ProactiveMessageGenerator(context, config).generate(
+            umo=FRIEND,
             persona=PersonaContext("alice", "persona"),
-            current_time=datetime(2026, 7, 14, 12, 0, tzinfo=ZoneInfo("Asia/Shanghai")),
+            current_time=NOON,
             current_state="吃午饭",
             intent="分享午饭",
-            unanswered_count=0,
+            unanswered_count=unanswered,
         )
-        self.assertEqual(text, "主动消息")
-        self.assertEqual(context.requested_provider_ids, ["proactive-provider"])
-        self.assertEqual(selected_provider.calls, 1)
-        self.assertEqual(default_provider.calls, 0)
+    )
 
-    async def test_record_conversation_appends_proactive_pair(self):
-        manager = ConversationManager("conversation-1")
-        generator = ProactiveMessageGenerator(Context(Provider(), None, manager), {})
-        recorded = await generator.record_conversation(
-            umo="aiocqhttp:FriendMessage:42",
-            persona_id="alice",
-            intent="分享午饭",
-            assistant_text="今天的午饭很好吃。",
-        )
-        self.assertTrue(recorded)
-        self.assertEqual(manager.created, [])
-        self.assertEqual(manager.pairs[0]["cid"], "conversation-1")
-        user_message = manager.pairs[0]["user_message"].model_dump()
-        assistant_message = manager.pairs[0]["assistant_message"].model_dump()
-        self.assertIn("你主动发起的消息", user_message["content"][0]["text"])
-        self.assertIn("分享午饭", user_message["content"][0]["text"])
-        self.assertNotIn("系统事件", user_message["content"][0]["text"])
-        self.assertEqual(assistant_message["content"][0]["text"], "今天的午饭很好吃。")
 
-    async def test_record_conversation_honors_custom_note_template(self):
-        manager = ConversationManager("conversation-1")
-        generator = ProactiveMessageGenerator(
-            Context(Provider(), None, manager),
-            {
-                "delivery_settings": {
-                    "proactive_history_note_template": "（你想起关于{intent}的事）"
-                }
-            },
-        )
-        await generator.record_conversation(
-            umo="aiocqhttp:FriendMessage:42",
-            persona_id="alice",
-            intent="分享午饭",
-            assistant_text="今天的午饭很好吃。",
-        )
-        user_message = manager.pairs[0]["user_message"].model_dump()
-        self.assertIn("你想起关于分享午饭的事", user_message["content"][0]["text"])
+def record(conversations, delivery=None):
+    generator = ProactiveMessageGenerator(Context(conversations=conversations), {"delivery_settings": delivery or {}})
+    return asyncio.run(generator.record_conversation(umo=FRIEND, persona_id="alice", intent="分享午饭", assistant_text="今天的午饭很好吃。"))
 
-    async def test_record_conversation_creates_missing_conversation(self):
-        manager = ConversationManager()
-        generator = ProactiveMessageGenerator(Context(Provider(), None, manager), {})
-        recorded = await generator.record_conversation(
-            umo="aiocqhttp:FriendMessage:42",
-            persona_id="alice",
-            intent="分享街景",
-            assistant_text="给你看看今天拍到的街景。",
-        )
-        self.assertTrue(recorded)
-        self.assertEqual(manager.created, [("aiocqhttp:FriendMessage:42", "alice")])
-        self.assertEqual(manager.pairs[0]["cid"], "created-conversation")
 
-    async def test_generate_reads_unanswered_hint_template(self):
-        provider = Provider()
-        generator = ProactiveMessageGenerator(
-            Context(provider, None),
-            {
-                "delivery_settings": {
-                    "recent_chat_messages": 0,
-                    "proactive_prompt": "hint={unanswered_hint}",
-                    "unanswered_hint_template": "0: 正常热络\n2: 多次未回应，请收敛",
-                },
-            },
-        )
-        await generator.generate(
-            umo="aiocqhttp:FriendMessage:42",
-            persona=PersonaContext("alice", "persona"),
-            current_time=datetime(2026, 7, 14, 12, 0, tzinfo=ZoneInfo("Asia/Shanghai")),
-            current_state="吃午饭",
-            intent="分享午饭",
-            unanswered_count=3,
-        )
-        self.assertIn("多次未回应，请收敛", provider.prompts[0])
+def texts(pair):
+    return [pair[key].model_dump()["content"][0]["text"] for key in ("user_message", "assistant_message")]
 
-    async def test_generate_uses_empty_hint_without_template(self):
-        provider = Provider()
-        generator = ProactiveMessageGenerator(
-            Context(provider, None),
-            {
-                "delivery_settings": {
-                    "recent_chat_messages": 0,
-                    "proactive_prompt": "hint=[{unanswered_hint}]",
-                },
-            },
-        )
-        await generator.generate(
-            umo="aiocqhttp:FriendMessage:42",
-            persona=PersonaContext("alice", "persona"),
-            current_time=datetime(2026, 7, 14, 12, 0, tzinfo=ZoneInfo("Asia/Shanghai")),
-            current_state="吃午饭",
-            intent="分享午饭",
-            unanswered_count=3,
-        )
-        self.assertIn("hint=[]", provider.prompts[0])
 
-    def test_parse_unanswered_hint_picks_highest_matching_threshold(self):
-        generator = ProactiveMessageGenerator(Context(Provider(), None), {})
+class Providers(unittest.TestCase):
+    PROMPT = {"proactive_prompt": "{current_time} {current_state} {intent} {unanswered_count}"}
+
+    def test_proactive_provider_is_separate_from_the_schedule_one(self):
+        context = Context(selected=Provider())
+        schedule = {"schedule_llm_provider": "schedule-provider", "proactive_llm_provider": "proactive-provider"}
+        self.assertEqual(write(context, self.PROMPT, schedule), "主动消息")
+        self.assertEqual(context.asked_for, ["proactive-provider"])
+        self.assertEqual((len(context.selected.prompts), len(context.default.prompts)), (1, 0))
+
+    def test_old_llm_provider_key_is_ignored(self):
+        context = Context(selected=Provider())
+        write(context, self.PROMPT, {"llm_provider": "legacy-provider"})
+        self.assertEqual((context.asked_for, len(context.default.prompts)), ([], 1))
+
+
+class UnansweredHint(unittest.TestCase):
+    hint = staticmethod(ProactiveMessageGenerator._parse_unanswered_hint)
+    build = staticmethod(ProactiveMessageGenerator._build_unanswered_hint)
+
+    def test_threshold_lines(self):
         template = "0: 正常\n2: 收敛\n3: 明显收敛"
-        self.assertEqual(generator._parse_unanswered_hint(template, 0), "正常")
-        self.assertEqual(generator._parse_unanswered_hint(template, 1), "正常")
-        self.assertEqual(generator._parse_unanswered_hint(template, 2), "收敛")
-        self.assertEqual(generator._parse_unanswered_hint(template, 5), "明显收敛")
-        self.assertEqual(generator._parse_unanswered_hint("", 2), "")
-        self.assertEqual(generator._parse_unanswered_hint("2: 收敛", 0), "")
-        self.assertEqual(generator._parse_unanswered_hint("不加数字的文本", 3), "")
+        for count, expected in ((0, "正常"), (1, "正常"), (2, "收敛"), (5, "明显收敛")):
+            self.assertEqual(self.hint(template, count), expected)
+        for template, count in (("", 2), ("2: 收敛", 0), ("不加数字的文本", 3)):
+            self.assertEqual(self.hint(template, count), "")
 
-    def test_build_unanswered_hint_uses_placeholder_method(self):
-        generator = ProactiveMessageGenerator(Context(Provider(), None), {})
-        settings = {
-            "unanswered_hint_method": "placeholder",
-            "unanswered_hint_placeholder_template": "已连续 {unanswered_count} 次未回应",
-            "unanswered_hint_template": "0: 正常\n3: 收敛",
-        }
-        self.assertEqual(
-            generator._build_unanswered_hint(settings, 2), "已连续 2 次未回应"
-        )
+    def test_methods(self):
+        both = {"unanswered_hint_placeholder_template": "已连续 {unanswered_count} 次未回应", "unanswered_hint_template": "0: 正常\n3: 收敛"}
+        self.assertEqual(self.build({**both, "unanswered_hint_method": "placeholder"}, 2), "已连续 2 次未回应")
+        self.assertEqual(self.build({**both, "unanswered_hint_method": "segmented"}, 5), "收敛")
+        self.assertEqual(self.build({"unanswered_hint_template": "0: 正常\n3: 收敛"}, 0), "正常")  # segmented by default
+        self.assertEqual(self.build({}, 3), "")
 
-    def test_build_unanswered_hint_uses_segmented_method(self):
-        generator = ProactiveMessageGenerator(Context(Provider(), None), {})
-        settings = {
-            "unanswered_hint_method": "segmented",
-            "unanswered_hint_placeholder_template": "占位 {unanswered_count}",
-            "unanswered_hint_template": "0: 正常\n3: 收敛",
-        }
-        self.assertEqual(generator._build_unanswered_hint(settings, 5), "收敛")
+    def test_hint_reaches_the_prompt(self):
+        context = Context()
+        write(context, {"proactive_prompt": "hint={unanswered_hint}", "unanswered_hint_template": "0: 正常热络\n2: 多次未回应，请收敛"}, unanswered=3)
+        self.assertIn("多次未回应，请收敛", context.default.prompts[0])
+        context = Context()
+        write(context, {"proactive_prompt": "hint=[{unanswered_hint}]"}, unanswered=3)
+        self.assertIn("hint=[]", context.default.prompts[0])
 
-    def test_build_unanswered_hint_defaults_to_segmented(self):
-        generator = ProactiveMessageGenerator(Context(Provider(), None), {})
-        settings = {"unanswered_hint_template": "0: 正常\n3: 收敛"}
-        self.assertEqual(generator._build_unanswered_hint(settings, 0), "正常")
 
-    def test_build_unanswered_hint_returns_empty_when_unset(self):
-        generator = ProactiveMessageGenerator(Context(Provider(), None), {})
-        self.assertEqual(generator._build_unanswered_hint({}, 3), "")
+class History(unittest.TestCase):
+    def test_pair_is_added_to_the_current_conversation(self):
+        conversations = Conversations("conversation-1")
+        self.assertTrue(record(conversations))
+        (pair,) = conversations.pairs
+        note, reply = texts(pair)
+        self.assertEqual((pair["cid"], conversations.created, reply), ("conversation-1", [], "今天的午饭很好吃。"))
+        self.assertIn("你主动发起的消息", note)
+        self.assertIn("分享午饭", note)
+        self.assertNotIn("系统事件", note)
 
-    async def test_legacy_provider_setting_is_not_used(self):
-        default_provider = Provider()
-        selected_provider = Provider()
-        context = Context(default_provider, selected_provider)
-        generator = ProactiveMessageGenerator(
-            context,
-            {
-                "schedule_settings": {"llm_provider": "legacy-provider"},
-                "delivery_settings": {
-                    "recent_chat_messages": 0,
-                    "proactive_prompt": "{current_time} {current_state} {intent} {unanswered_count}",
-                },
-            },
-        )
-        await generator.generate(
-            umo="aiocqhttp:FriendMessage:42",
-            persona=PersonaContext("alice", "persona"),
-            current_time=datetime(2026, 7, 14, 12, 0, tzinfo=ZoneInfo("Asia/Shanghai")),
-            current_state="吃午饭",
-            intent="分享午饭",
-            unanswered_count=0,
-        )
-        self.assertEqual(context.requested_provider_ids, [])
-        self.assertEqual(default_provider.calls, 1)
-        self.assertEqual(selected_provider.calls, 0)
+    def test_custom_note(self):
+        conversations = Conversations("conversation-1")
+        record(conversations, {"proactive_history_note_template": "（你想起关于{intent}的事）"})
+        self.assertIn("你想起关于分享午饭的事", texts(conversations.pairs[0])[0])
+
+    def test_missing_conversation_is_created(self):
+        conversations = Conversations()
+        self.assertTrue(record(conversations))
+        self.assertEqual(conversations.created, [(FRIEND, "alice")])
+        self.assertEqual(conversations.pairs[0]["cid"], "created-conversation")
 
 
 if __name__ == "__main__":
