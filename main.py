@@ -68,9 +68,7 @@ from .core.schedule_edit import insert_garage_trip
 from .core.storage import PluginStorage
 from .core.user_state import UserStateStore
 from .core.utils import (
-    format_outfit,
     format_plan,
-    format_timeline,
     parse_schedule_date_range,
 )
 from .core.view_api import VirtualLifeViewAPI
@@ -92,6 +90,7 @@ from .core.mixins.group_chat import GroupChatMixin
 from .core.mixins.life_context import LifeContextMixin
 from .core.mixins.chat_activity import ChatActivityMixin
 from .core.mixins.life_events import LifeEventsMixin
+from .core.mixins.admin_commands import AdminCommandsMixin
 
 
 class ProactiveVirtualDailyPlugin(
@@ -108,6 +107,7 @@ class ProactiveVirtualDailyPlugin(
     LifeContextMixin,
     ChatActivityMixin,
     LifeEventsMixin,
+    AdminCommandsMixin,
     Star,
 ):
     def __init__(self, context: Context, config: AstrBotConfig):
@@ -2462,49 +2462,7 @@ class ProactiveVirtualDailyPlugin(
     @filter.command("回复延迟")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def reply_delay_command(self, event: AstrMessageEvent, action: str):
-        action = str(action).strip()
-        if action == "结算":
-            batch = await self.reply_delay_coordinator.settle_now(
-                event.unified_msg_origin
-            )
-            if batch is None:
-                yield event.plain_result("当前会话没有等待结算的回复批次。")
-                return
-            logger.info(
-                "[虚拟人生] 管理员立即结算回复延迟批次 会话=%s 消息数=%s",
-                event.unified_msg_origin,
-                len(batch.messages),
-            )
-            yield event.plain_result(
-                f"已立即结算当前会话的回复批次，共 {len(batch.messages)} 条消息。"
-            )
-            return
-        if action not in {"开启", "关闭"}:
-            yield event.plain_result("用法：/回复延迟 开启|关闭|结算")
-            return
-
-        enabled = action == "开启"
-        settings = self.config.get("reply_delay_settings", {}) or {}
-        changed = bool(settings.get("enable")) != enabled
-        settings["enable"] = enabled
-        self.config["reply_delay_settings"] = settings
-        self.reply_delay_policy.settings = settings
-        if changed:
-            self.config.save_config()
-
-        settled_count = 0
-        if not enabled:
-            batches = await self.reply_delay_coordinator.settle_all_now()
-            settled_count = len(batches)
-        logger.info(
-            "[虚拟人生] 管理员%s回复延迟 配置变更=%s 结算批次=%s",
-            action,
-            changed,
-            settled_count,
-        )
-        state = "已开启" if enabled else "已关闭"
-        suffix = f"，并立即结算 {settled_count} 个等待批次" if settled_count else ""
-        yield event.plain_result(f"回复延迟{state}{suffix}。")
+        yield event.plain_result(await self._cmd_reply_delay(event, action))
 
     @filter.command_group("虚拟日程")
     def virtual_daily_group(self):
@@ -2527,48 +2485,13 @@ class ProactiveVirtualDailyPlugin(
     @virtual_daily_group.command("查看")
     async def show_schedule(self, event: AstrMessageEvent):
         """查看今日虚拟日程时间轴图片。"""
-        if not self._schedule_available_for_umo(event.unified_msg_origin):
-            yield event.plain_result("虚拟日程系统仅在私聊生效，群聊中不提供日程查看。")
-            return
-        persona, plan = await self._ensure_plan_for_umo(event.unified_msg_origin)
-        if not plan.has_schedule:
-            yield event.plain_result("今日没有日程。")
-            return
-        now = self._now()
-        target = date.fromisoformat(plan.date)
-        long_term_day = self.long_term.expand_day(persona.id, target) or {
-            "stage": None,
-            "active_periods": [],
-            "holidays": self.long_term.holidays.on(target),
-        }
-        fallback = format_timeline(plan, now, long_term_day)
-        results = await self._image_view_results(
-            event,
-            f"{persona.id} · {plan.date} 虚拟日程",
-            fallback,
-            [lambda: self.image_renderer.render_timeline(plan, now, long_term_day)],
-        )
-        for result in results:
+        for result in await self._cmd_show_schedule(event):
             yield result
 
     @virtual_daily_group.command("穿搭")
     async def show_outfit(self, event: AstrMessageEvent):
         """查看今日穿搭图片。"""
-        if not self._schedule_available_for_umo(event.unified_msg_origin):
-            yield event.plain_result("虚拟日程系统仅在私聊生效，群聊中不提供穿搭查看。")
-            return
-        persona, plan = await self._ensure_plan_for_umo(event.unified_msg_origin)
-        if not plan.has_outfit:
-            yield event.plain_result("今日没有穿搭。")
-            return
-        now = self._now()
-        results = await self._image_view_results(
-            event,
-            f"{persona.id} · {plan.date} 今日穿搭",
-            format_outfit(plan),
-            [lambda: self.image_renderer.render_outfit(plan, now)],
-        )
-        for result in results:
+        for result in await self._cmd_show_outfit(event):
             yield result
 
     @virtual_daily_group.command("菜单")
@@ -2609,22 +2532,7 @@ class ProactiveVirtualDailyPlugin(
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def rewrite_schedule(self, event: AstrMessageEvent, extra: str | None = None):
         """重新生成今日完整虚拟日程。"""
-        include_schedule, include_outfit = self._daily_generation_flags()
-        if not include_schedule and not include_outfit:
-            yield event.plain_result("日程生成和穿搭生成均已关闭。")
-            return
-        persona, plan = await self._ensure_plan_for_umo(
-            event.unified_msg_origin,
-            force=True,
-            extra=extra or "",
-            preserve_disabled=True,
-        )
-        await self._reschedule_plan_sessions(persona, plan)
-        yield event.plain_result(
-            "重写失败，请检查 LLM 输出。"
-            if plan.status != "ok"
-            else format_plan(plan, self._now())
-        )
+        yield event.plain_result(await self._cmd_rewrite_all(event, extra))
 
     @virtual_daily_group.command("重写日程")
     @filter.permission_type(filter.PermissionType.ADMIN)
@@ -2632,54 +2540,7 @@ class ProactiveVirtualDailyPlugin(
         self, event: AstrMessageEvent, extra: str | None = None
     ):
         """保留主题、心情与穿搭，只重写今日时间日程。"""
-        include_schedule, _ = self._daily_generation_flags()
-        if not include_schedule:
-            yield event.plain_result("日程生成功能已关闭。")
-            return
-        persona, current = await self._ensure_plan_for_umo(event.unified_msg_origin)
-        if current.status != "ok":
-            yield event.plain_result(
-                "今日没有可局部重写的有效日程，请先使用“虚拟日程 重写”。"
-            )
-            return
-        long_term_context = ""
-        long_term_settings = self.config.get("long_term_settings", {}) or {}
-        if long_term_settings.get("enable", True):
-            long_term_context = self.long_term.format_day_context(
-                persona.id,
-                date.fromisoformat(current.date),
-                fallback_to_latest=True,
-            )
-        try:
-            relationship_context = await self._personal_network_context(persona.id)
-            plan = await self.plan_generator.rewrite_schedule(
-                current,
-                persona,
-                extra=extra or "",
-                long_term_context=long_term_context,
-                relationship_context=relationship_context,
-            )
-        except Exception as exc:
-            logger.warning(
-                "[Virtual Life] Schedule rewrite failed persona=%s: %s", persona.id, exc
-            )
-            yield event.plain_result(
-                "日程重写失败，已保留原日程，请检查 LLM 输出或日志。"
-            )
-            return
-        try:
-            self.storage.plans[self.storage.plan_key(plan.date, persona.id)] = plan
-            await self.storage.save_plans()
-            await self._reschedule_plan_sessions(persona, plan)
-        except Exception as exc:
-            logger.warning(
-                "[Virtual Life] Schedule rewrite persistence failed persona=%s: %s",
-                persona.id,
-                exc,
-            )
-            yield event.plain_result("日程已生成，但保存或调度失败，请检查日志。")
-            return
-        yield event.plain_result(format_plan(plan, self._now()))
+        yield event.plain_result(await self._cmd_rewrite_part(event, extra, part="schedule"))
 
     @virtual_daily_group.command("重写穿搭")
     @filter.permission_type(filter.PermissionType.ADMIN)
@@ -2687,41 +2548,7 @@ class ProactiveVirtualDailyPlugin(
         self, event: AstrMessageEvent, extra: str | None = None
     ):
         """保留主题、心情与时间日程，只重写今日穿搭。"""
-        _, include_outfit = self._daily_generation_flags()
-        if not include_outfit:
-            yield event.plain_result("穿搭生成功能已关闭。")
-            return
-        persona, current = await self._ensure_plan_for_umo(event.unified_msg_origin)
-        if current.status != "ok":
-            yield event.plain_result(
-                "今日没有可局部重写的有效穿搭，请先使用“虚拟日程 重写”。"
-            )
-            return
-        try:
-            plan = await self.plan_generator.rewrite_outfit(
-                current, persona, extra=extra or ""
-            )
-        except Exception as exc:
-            logger.warning(
-                "[Virtual Life] Outfit rewrite failed persona=%s: %s", persona.id, exc
-            )
-            yield event.plain_result(
-                "穿搭重写失败，已保留原穿搭，请检查 LLM 输出或日志。"
-            )
-            return
-        try:
-            self.storage.plans[self.storage.plan_key(plan.date, persona.id)] = plan
-            await self.storage.save_plans()
-            await self._reschedule_plan_sessions(persona, plan)
-        except Exception as exc:
-            logger.warning(
-                "[Virtual Life] Outfit rewrite persistence failed persona=%s: %s",
-                persona.id,
-                exc,
-            )
-            yield event.plain_result("穿搭已生成，但保存或调度失败，请检查日志。")
-            return
-        yield event.plain_result(format_outfit(plan))
+        yield event.plain_result(await self._cmd_rewrite_part(event, extra, part="outfit"))
 
     @filter.command_group("大时间表")
     def long_term_group(self):
@@ -2734,114 +2561,26 @@ class ProactiveVirtualDailyPlugin(
         self, event: AstrMessageEvent, requirements: str | None = None
     ):
         """根据自然语言要求生成追加草稿。"""
-        persona = await self.personas.resolve(event.unified_msg_origin)
-        latest = self.long_term.latest_stage(persona.id)
-        start = (
-            date.fromisoformat(latest["end_date"]) + timedelta(days=1)
-            if latest
-            else self._now().date()
-        )
-        try:
-            await self._create_long_term_draft(
-                persona=persona,
-                admin_umo=event.unified_msg_origin,
-                requirements=requirements or "",
-                start_date=start,
-                previous_stage=latest,
-                source="natural",
-                mode="append",
-            )
-        except Exception as exc:
-            logger.warning("[虚拟人生] long_term_generate 失败: %s", exc, exc_info=True)
-            yield event.plain_result(f"生成草稿失败：{exc}")
-            return
-        yield event.plain_result(
-            "已生成大时间表草稿，使用 /大时间表 草稿 查看，确认后执行 /大时间表 批准。"
-        )
+        yield event.plain_result(await self._cmd_long_term_generate(event, requirements))
 
     @long_term_group.command("导入")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def long_term_import(self, event: AstrMessageEvent, content: str):
         """导入结构化 JSON 为替换全部阶段的草稿。"""
-        persona = await self.personas.resolve(event.unified_msg_origin)
-        try:
-            stages = self._parse_long_term_json(content, persona.id)
-            await self.long_term.set_draft(
-                persona.id,
-                stages,
-                source="json",
-                admin_umo=event.unified_msg_origin,
-                created_at=self._now().isoformat(),
-                requirements="结构化数据导入",
-                mode="replace_all",
-            )
-            self.image_renderer.invalidate_persona(persona.id)
-        except Exception as exc:
-            logger.warning("[虚拟人生] long_term_import 失败: %s", exc, exc_info=True)
-            yield event.plain_result(f"导入草稿失败：{exc}")
-            return
-        yield event.plain_result("结构化数据已保存为草稿，确认后执行 /大时间表 批准。")
+        yield event.plain_result(await self._cmd_long_term_import(event, content))
 
     @long_term_group.command("草稿")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def long_term_draft(self, event: AstrMessageEvent):
         """查看当前人格待批准草稿。"""
-        persona = await self.personas.resolve(event.unified_msg_origin)
-        draft = self.long_term.get_draft(persona.id)
-        if not draft:
-            yield event.plain_result("当前人格没有待批准草稿。")
-            return
-        stages = [self.long_term.with_holidays(stage) for stage in draft["stages"]]
-        fallback = json.dumps({**draft, "stages": stages}, ensure_ascii=False, indent=2)
-        jobs = [
-            lambda stage=stage: self.image_renderer.render_stage(
-                stage,
-                persona.id,
-                status="draft",
-                draft_metadata=draft,
-            )
-            for stage in stages
-        ]
-        results = await self._image_view_results(
-            event,
-            f"{persona.id} · 大时间表草稿 · 待批准 · 共 {len(jobs)} 个阶段",
-            fallback,
-            jobs,
-        )
-        for result in results:
+        for result in await self._cmd_long_term_draft(event):
             yield result
 
     @long_term_group.command("批准")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def long_term_approve(self, event: AstrMessageEvent):
         """批准草稿并重新生成今日日程。"""
-        persona = await self.personas.resolve(event.unified_msg_origin)
-        try:
-            approved = await self.long_term.approve_draft(
-                persona.id, event.unified_msg_origin
-            )
-            self.image_renderer.invalidate_persona(persona.id)
-            plan = await self._refresh_persona_daily_plan(persona)
-        except Exception as exc:
-            logger.warning("[虚拟人生] long_term_approve 失败: %s", exc, exc_info=True)
-            yield event.plain_result(f"批准失败：{exc}")
-            return
-        components = []
-        if plan.has_schedule:
-            components.append("日程")
-        if plan.has_outfit:
-            components.append("穿搭")
-        generation_result = (
-            "，已按开关重生成今日" + "和".join(components)
-            if components
-            else "；日程和穿搭生成均已关闭，未生成今日内容"
-        )
-        yield event.plain_result(
-            "大时间表已生效"
-            + generation_result
-            + "："
-            + "、".join(stage["name"] for stage in approved)
-        )
+        yield event.plain_result(await self._cmd_long_term_approve(event))
 
     @long_term_group.command("拒绝")
     @filter.permission_type(filter.PermissionType.ADMIN)
@@ -2849,63 +2588,13 @@ class ProactiveVirtualDailyPlugin(
         self, event: AstrMessageEvent, feedback: str | None = None
     ):
         """拒绝草稿；提供修改意见时重新生成。"""
-        persona = await self.personas.resolve(event.unified_msg_origin)
-        draft = self.long_term.get_draft(persona.id)
-        if not draft:
-            yield event.plain_result("当前人格没有待拒绝草稿。")
-            return
-        await self.long_term.reject_draft(persona.id)
-        self.image_renderer.invalidate_persona(persona.id)
-        if not feedback:
-            yield event.plain_result("草稿已拒绝并删除。")
-            return
-        start = date.fromisoformat(draft["stages"][0]["start_date"])
-        previous = (
-            self.long_term.latest_stage(persona.id)
-            if draft.get("mode") == "append"
-            else None
-        )
-        requirements = "；".join(
-            part
-            for part in (draft.get("requirements", ""), f"修改意见：{feedback}")
-            if part
-        )
-        try:
-            await self._create_long_term_draft(
-                persona=persona,
-                admin_umo=event.unified_msg_origin,
-                requirements=requirements,
-                start_date=start,
-                previous_stage=previous,
-                source="revision",
-                mode=str(draft.get("mode", "append")),
-            )
-        except Exception as exc:
-            logger.warning("[虚拟人生] long_term_reject 失败: %s", exc, exc_info=True)
-            yield event.plain_result(f"草稿已拒绝，但重新生成失败：{exc}")
-            return
-        yield event.plain_result("已按修改意见重新生成草稿，使用 /大时间表 草稿 查看。")
+        yield event.plain_result(await self._cmd_long_term_reject(event, feedback))
 
     @long_term_group.command("列表")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def long_term_list(self, event: AstrMessageEvent):
         """查看当前人格全部已批准阶段。"""
-        persona = await self.personas.resolve(event.unified_msg_origin)
-        stages = self.long_term.list_for_persona(persona.id)
-        if not stages:
-            yield event.plain_result("当前人格没有已批准的大时间表。")
-            return
-        fallback = "\n".join(
-            f"{stage['id']} | {stage['name']} | {stage['kind']} | {stage['start_date']} 至 {stage['end_date']} | 优先级 {stage['priority']}"
-            for stage in stages
-        )
-        results = await self._image_view_results(
-            event,
-            f"{persona.id} · 已批准阶段，共 {len(stages)} 个",
-            fallback,
-            [lambda: self.image_renderer.render_stage_list(stages, persona.id)],
-        )
-        for result in results:
+        for result in await self._cmd_long_term_list(event):
             yield result
 
     @long_term_group.command("查看")
@@ -2914,34 +2603,7 @@ class ProactiveVirtualDailyPlugin(
         self, event: AstrMessageEvent, stage_id: str | None = None
     ):
         """查看阶段；可省略参数或输入阶段 ID、名称及唯一片段。"""
-        persona = await self.personas.resolve(event.unified_msg_origin)
-        stage, candidates = self.long_term.resolve_stage(
-            persona.id, self._now().date(), stage_id or ""
-        )
-        if not stage:
-            if candidates:
-                lines = ["找到多个匹配阶段，请使用完整 ID 或名称："]
-                lines.extend(
-                    f"- {item['id']} | {item['name']} | {item['start_date']} 至 {item['end_date']}"
-                    for item in candidates
-                )
-                yield event.plain_result("\n".join(lines))
-            elif stage_id:
-                yield event.plain_result(
-                    "未找到匹配阶段，请先使用 /大时间表 列表 查看可用 ID。"
-                )
-            else:
-                yield event.plain_result("当前人格没有已批准的大时间表。")
-            return
-        stage = self.long_term.with_holidays(stage)
-        fallback = json.dumps(stage, ensure_ascii=False, indent=2)
-        results = await self._image_view_results(
-            event,
-            f"{persona.id} · {stage['name']}",
-            fallback,
-            [lambda: self.image_renderer.render_stage(stage, persona.id)],
-        )
-        for result in results:
+        for result in await self._cmd_long_term_view(event, stage_id):
             yield result
 
     @long_term_group.command("重生成")
@@ -2950,25 +2612,7 @@ class ProactiveVirtualDailyPlugin(
         self, event: AstrMessageEvent, requirements: str | None = None
     ):
         """重新生成替换全部阶段的草稿。"""
-        persona = await self.personas.resolve(event.unified_msg_origin)
-        previous = self.long_term.latest_stage(persona.id)
-        try:
-            await self._create_long_term_draft(
-                persona=persona,
-                admin_umo=event.unified_msg_origin,
-                requirements=requirements or "重新规划完整大时间表",
-                start_date=self._now().date(),
-                previous_stage=previous,
-                source="regenerate",
-                mode="replace_all",
-            )
-        except Exception as exc:
-            logger.warning("[虚拟人生] long_term_regenerate 失败: %s", exc, exc_info=True)
-            yield event.plain_result(f"重生成草稿失败：{exc}")
-            return
-        yield event.plain_result(
-            "已生成替换全部阶段的草稿，使用 /大时间表 草稿 查看，批准后才会生效。"
-        )
+        yield event.plain_result(await self._cmd_long_term_regenerate(event, requirements))
 
     @filter.command_group("主动消息")
     def proactive_group(self):
@@ -2977,47 +2621,13 @@ class ProactiveVirtualDailyPlugin(
 
     @proactive_group.command("状态")
     async def proactive_status(self, event: AstrMessageEvent):
-        persona, plan = await self._ensure_plan_for_umo(event.unified_msg_origin)
-        if not plan.has_schedule:
-            yield event.plain_result("今日没有日程，主动消息未安排。")
-            return
-        state = self.policy.ensure_state(
-            event.unified_msg_origin, persona.id, plan, self._now()
-        )
-        yield event.plain_result(
-            f"人格：{persona.id}\n今日预算：{state.sent_count}/{state.daily_budget}\n"
-            f"连续未回复：{state.unanswered_count}"
-        )
+        yield event.plain_result(await self._cmd_proactive_status(event))
 
     @proactive_group.command("立即")
     @filter.permission_type(filter.PermissionType.ADMIN)
     async def trigger_now(self, event: AstrMessageEvent):
-        persona, plan = await self._ensure_plan_for_umo(event.unified_msg_origin)
-        if not plan.has_schedule:
-            yield event.plain_result("今日没有日程，无法发送测试主动消息。")
-            return
-        sent = await self._deliver(
-            event.unified_msg_origin,
-            persona,
-            plan,
-            "管理员要求立即测试主动消息",
-            0,
-            self._conversation_generation(event.unified_msg_origin),
-        )
-        yield event.plain_result(
-            "测试主动消息已发送。" if sent else "会话状态已变化，测试主动消息未发送。"
-        )
+        yield event.plain_result(await self._cmd_proactive_now(event))
 
     @proactive_group.command("执行时间")
     async def proactive_execution_times(self, event: AstrMessageEvent):
-        _, plan = await self._ensure_plan_for_umo(event.unified_msg_origin)
-        entries = self._scheduled_proactive_entries(event.unified_msg_origin, plan)
-        if not entries:
-            yield event.plain_result("当前会话没有已安排的主动消息。")
-            return
-        lines = ["主动消息具体执行时间："]
-        lines.extend(
-            f"- {run_at.astimezone(self.timezone).strftime('%Y-%m-%d %H:%M:%S %z')}｜{label}"
-            for run_at, label in entries
-        )
-        yield event.plain_result("\n".join(lines))
+        yield event.plain_result(await self._cmd_proactive_times(event))
